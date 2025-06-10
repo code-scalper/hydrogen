@@ -5,6 +5,8 @@ import {
   FolderIcon,
 } from "@heroicons/react/24/solid";
 
+import FolderContext from "./FolderContext";
+
 type FolderData = {
   name: string;
   children?: FolderData[];
@@ -20,8 +22,16 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
 
   const toggle = () => setOpen((prev) => !prev);
 
+  const [contextOpen, setContextOpen] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+    setContextOpen(true);
+  };
   return (
-    <div className="text-white text-xs">
+    <div className="text-white text-xs" onContextMenu={handleContextMenu}>
       <div
         className="flex items-center cursor-pointer gap-1 mb-1"
         style={{ paddingLeft: `${level * 16}px` }}
@@ -45,6 +55,13 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
         data.children?.map((child, idx) => (
           <FolderItem key={idx} data={child} level={level + 1} />
         ))}
+
+      <FolderContext
+        open={contextOpen}
+        setOpen={setContextOpen}
+        top={contextMenuPos.y}
+        left={contextMenuPos.x}
+      />
     </div>
   );
 };

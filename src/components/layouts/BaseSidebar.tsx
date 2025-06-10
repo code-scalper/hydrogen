@@ -1,5 +1,5 @@
 import SidebarHeader from "./SidebarHeader";
-import { FolderItem } from "../ui/FolderItem";
+import { FolderItem } from "@/components/ui/specific/FolderItem";
 
 import { useProjectStore } from "@/store/useProjectStore";
 

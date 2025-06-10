@@ -1,5 +1,5 @@
 export interface FolderItemInterface {
-  id?: string;
+  id: string;
   name: string;
   type?: "folder" | "file";
   children?: FolderItemInterface[];

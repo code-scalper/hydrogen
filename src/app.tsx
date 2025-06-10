@@ -1,5 +1,5 @@
-// import LOGO_SRC from "@/assets/logo.png";
-
+import LOGO_SRC from "@/assets/logo.png";
+// import Map from "@/assets/image14.png";
 // import { useState } from "react";
 // import { Routes, Route, Link } from "react-router-dom";
 
@@ -38,8 +38,14 @@ export default function App() {
 
         {/* 나머지 본문이 들어올 영역 (선택사항) */}
         <div className="flex-1 p-4 overflow-auto text-white">
-          <Flex direction="column" gap="2">
-            <Text>제작중!!!!</Text>
+          <Flex
+            direction="column"
+            gap="2"
+            className="justify-center items-center pt-40"
+          >
+            <img src={LOGO_SRC} width={200} alt="map" />
+            {/* <img src={Map} alt="map" /> */}
+            {/* <Text>제작중!!!!</Text> */}
             {/* <Text>Hello from Radix Themes :)</Text>
             <Button>Let's go</Button> */}
           </Flex>
