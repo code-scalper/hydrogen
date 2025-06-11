@@ -63,7 +63,7 @@ const BaseHeader = () => {
     <div className="flex justify-between items-center border-b border-slate-700">
       <div className="m-0 px-3">
         <h1 className="flex  font-bold text-blue-400 text-xl">
-          Hydrogen{" "}
+          Hydrogen
           <span className="text-white font-normal ml-1">Simulator</span>
         </h1>
       </div>

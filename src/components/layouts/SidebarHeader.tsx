@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "../button";
-import { CreateFolderModal } from "../ui/specific/CreateFolderModal";
+import { CreateProjectModal } from "../ui/specific/CreateProjectModal";
 import { CreateScenarioModal } from "@/components/ui/specific/CreateScenarioModal";
+import { CreateDeviceModal } from "@/components/ui/specific/CreateDeviceModal";
+
 import { useProjectStore } from "@/store/useProjectStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { generateCustomId } from "@/lib/utils";
@@ -11,13 +13,24 @@ import { FolderItemInterface } from "@/types";
 const SidebarHeader = () => {
   const addFolder = useProjectStore((state) => state.addFolder);
   const addScenario = useProjectStore((state) => state.addScenario);
+
   const scenarioOpen = useInteractionStore((state) => state.scenarioOpen);
   const setScenarioOpen = useInteractionStore((state) => state.setScenarioOpen);
+  const deviceOpen = useInteractionStore((state) => state.deviceOpen);
+  const setDeviceOpen = useInteractionStore((state) => state.setDeviceOpen);
+
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleCreate = (folderName: string) => {
+  const handleCreate = (folderName: string, description: string) => {
     setIsOpen(false);
-    addFolder({ name: folderName, id: generateCustomId("project") });
+    const id = generateCustomId("project");
+    addFolder({
+      name: folderName,
+      id,
+      isExpanded: true,
+      type: "project",
+      description,
+    });
 
     // 여기에 폴더 추가 로직
   };
@@ -26,7 +39,29 @@ const SidebarHeader = () => {
     scenario: FolderItemInterface
   ) => {
     setScenarioOpen(false);
-    addScenario(projectId, scenario);
+    addScenario(projectId, {
+      ...scenario,
+      type: "scenario",
+      isExpanded: true,
+      parentId: projectId,
+    });
+
+    // 여기에 폴더 추가 로직
+  };
+
+  const handleCreateDevice = (
+    projectId: string,
+    scenarioId: string,
+    device: FolderItemInterface
+  ) => {
+    setDeviceOpen(false);
+    console.log(projectId, scenarioId, device);
+    // addScenario(projectId, {
+    //   ...scenario,
+    //   type: "scenario",
+    //   isExpanded: true,
+    //   parentId: projectId,
+    // });
 
     // 여기에 폴더 추가 로직
   };
@@ -48,7 +83,7 @@ const SidebarHeader = () => {
         시나리오생성
       </Button>
 
-      <CreateFolderModal
+      <CreateProjectModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onCreate={handleCreate}
@@ -57,6 +92,11 @@ const SidebarHeader = () => {
         isOpen={scenarioOpen}
         onClose={() => setScenarioOpen(false)}
         onCreate={handleCreateScenario}
+      />
+      <CreateDeviceModal
+        isOpen={deviceOpen}
+        onClose={() => setDeviceOpen(false)}
+        onCreate={handleCreateDevice}
       />
     </div>
   );

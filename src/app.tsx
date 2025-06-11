@@ -6,6 +6,7 @@
 // import Monitor from "./pages/monitor/Monitor";
 import BaseHeader from "./components/layouts/BaseHeader";
 import BaseSideBar from "./components/layouts/BaseSidebar";
+import BaseFooter from "./components/layouts/BaseFooter";
 import { Flex } from "@radix-ui/themes";
 import MainRouter from "./router/MainRouter";
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
           </Flex>
         </div>
       </div>
+      <BaseFooter />
     </div>
   );
 }

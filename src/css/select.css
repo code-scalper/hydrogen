@@ -13,9 +13,9 @@ button {
   justify-content: space-between;
   border-radius: 4px;
   padding: 0 15px;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
-  height: 35px;
+  height: 30px;
   gap: 5px;
   background-color: white;
   color: var(--violet-11);

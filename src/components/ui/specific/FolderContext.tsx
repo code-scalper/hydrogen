@@ -8,23 +8,29 @@ import {
 } from "@radix-ui/react-icons";
 import "@/css/dropdown.css";
 
-import { useInteractionStore } from "@/store/useInteractionStore";
-
 interface FolderContextInterface {
   open: boolean;
   setOpen: (arg1: boolean) => void;
   top: number;
   left: number;
+  onRename?: () => void; // ✨ 이름 바꾸기 콜백
+  type: string;
+  onDelete: () => void;
+  onScenarioOpen: () => void;
+  onDeviceOpen: () => void;
 }
 
 const FolderContext = ({
   open,
   setOpen,
+  onRename,
   top,
   left,
+  type = "project",
+  onDelete,
+  onDeviceOpen,
+  onScenarioOpen,
 }: FolderContextInterface) => {
-  const setScenarioOpen = useInteractionStore((state) => state.setScenarioOpen);
-
   const [bookmarksChecked, setBookmarksChecked] = useState(true);
   const [urlsChecked, setUrlsChecked] = useState(false);
   const [person, setPerson] = useState("pedro");
@@ -46,21 +52,72 @@ const FolderContext = ({
             left,
           }}
         >
+          <DropdownMenu.Item
+            className="DropdownMenuItem"
+            onClick={() => {
+              onDeviceOpen();
+            }}
+          >
+            상세보기 <div className="RightSlot">⌘+T</div>
+          </DropdownMenu.Item>
           <DropdownMenu.Item className="DropdownMenuItem">
             새 프로젝트 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item>
           <DropdownMenu.Item
             className="DropdownMenuItem"
             onClick={() => {
-              setScenarioOpen(true);
-              setOpen(false);
+              onScenarioOpen();
             }}
           >
             새 시나리오 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item>
-          <DropdownMenu.Item className="DropdownMenuItem">
-            삭제하기 <div className="RightSlot">⌘+D</div>
-          </DropdownMenu.Item>
+
+          {type === "project" && (
+            <>
+              <DropdownMenu.Item
+                className="DropdownMenuItem"
+                onClick={() => {
+                  onRename?.(); // 부모에서 처리
+                }}
+              >
+                이름 바꾸기 <div className="RightSlot">F2</div>
+              </DropdownMenu.Item>{" "}
+              <DropdownMenu.Item
+                className="DropdownMenuItem text-rose-400"
+                onClick={() => {
+                  setOpen(false);
+                  onDelete(); // 전달된 삭제 콜백 실행
+                }}
+              >
+                삭제하기 <div className="RightSlot">⌘+D</div>
+              </DropdownMenu.Item>
+            </>
+          )}
+          {type === "scenario" && (
+            <>
+              <DropdownMenu.Item
+                className="DropdownMenuItem"
+                onClick={() => {
+                  onRename?.(); // 부모에서 처리
+                }}
+              >
+                이름 바꾸기 <div className="RightSlot">F2</div>
+              </DropdownMenu.Item>{" "}
+              <DropdownMenu.Item
+                className="DropdownMenuItem text-red-500"
+                onClick={() => {
+                  setOpen(false);
+                  onDelete(); // 전달된 삭제 콜백 실행
+                }}
+              >
+                삭제하기 <div className="RightSlot">⌘+D</div>
+              </DropdownMenu.Item>
+            </>
+          )}
+
+          {type === "device" && <></>}
+          {type === "property" && <></>}
+
           {/*<DropdownMenu.Item className="DropdownMenuItem" disabled>
             New Private Window <div className="RightSlot">⇧+⌘+N</div>
           </DropdownMenu.Item> */}
