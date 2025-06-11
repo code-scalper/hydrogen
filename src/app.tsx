@@ -1,4 +1,3 @@
-import LOGO_SRC from "@/assets/logo.png";
 // import Map from "@/assets/image14.png";
 // import { useState } from "react";
 // import { Routes, Route, Link } from "react-router-dom";
@@ -7,7 +6,8 @@ import LOGO_SRC from "@/assets/logo.png";
 // import Monitor from "./pages/monitor/Monitor";
 import BaseHeader from "./components/layouts/BaseHeader";
 import BaseSideBar from "./components/layouts/BaseSidebar";
-import { Flex, Text } from "@radix-ui/themes";
+import { Flex } from "@radix-ui/themes";
+import MainRouter from "./router/MainRouter";
 export default function App() {
   // const introductionPhrases = [
   //   "Build modern apps with Electron and React!",
@@ -43,7 +43,7 @@ export default function App() {
             gap="2"
             className="justify-center items-center pt-40"
           >
-            <img src={LOGO_SRC} width={200} alt="map" />
+            <MainRouter />
             {/* <img src={Map} alt="map" /> */}
             {/* <Text>제작중!!!!</Text> */}
             {/* <Text>Hello from Radix Themes :)</Text>

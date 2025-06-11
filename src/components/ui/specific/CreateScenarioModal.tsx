@@ -1,11 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import SelectBox from "../SelectBox";
 import { useProjectStore } from "@/store/useProjectStore";
+
+import { FolderItemInterface } from "@/types";
 
 interface CreateScenarioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string) => void;
+  onCreate: (projectId: string, scenario: FolderItemInterface) => void;
 }
 
 export const CreateScenarioModal = ({
@@ -13,9 +15,15 @@ export const CreateScenarioModal = ({
   onClose,
   onCreate,
 }: CreateScenarioModalProps) => {
-  const [name, setName] = useState("");
+  const [, setName] = useState("");
   const folders = useProjectStore((state) => state.folderList);
   const scenarios = useProjectStore((state) => state.scenarios);
+  const selectedProject = useProjectStore((state) => state.selectedProject);
+
+  // const setSelectedProject = useProjectStore(
+  //   (state) => state.setSelectedProject
+  // );
+
   const selectItems = useMemo(() => {
     const items =
       folders.map((folder) => {
@@ -31,6 +39,15 @@ export const CreateScenarioModal = ({
       }) || [];
     return items ? items : [];
   }, [scenarios]);
+
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedScenarioId, setSelectedScenarioId] = useState("");
+  const [selectedScenario, setSelectedScenario] = useState<any>(null);
+  useEffect(() => {
+    if (selectedProject) {
+      setSelectedProjectId(selectedProject.id);
+    }
+  }, [selectedProject]);
 
   if (!isOpen) return null;
 
@@ -53,7 +70,11 @@ export const CreateScenarioModal = ({
         {/* Content */}
         <div className="p-4 flex items-center flex-start gap-2">
           <label className="text-sm text-slate-200 mr-3">프로젝트 선택</label>
-          <SelectBox selectItems={selectItems} />
+          <SelectBox
+            selectItems={selectItems}
+            value={selectedProjectId}
+            onValueChange={(val) => setSelectedProjectId(val)}
+          />
           {/* <input
             type="text"
             value={name}
@@ -70,7 +91,14 @@ export const CreateScenarioModal = ({
         </div>
         <div className="p-4 flex items-center flex-start gap-2">
           <label className="text-sm text-slate-200 mr-3">시나리오 선택</label>
-          <SelectBox selectItems={selectScenarioItems} />
+          <SelectBox
+            selectItems={selectScenarioItems}
+            value={selectedScenarioId}
+            onValueChange={(val, data) => {
+              setSelectedScenarioId(val);
+              setSelectedScenario(data);
+            }}
+          />
         </div>
 
         {/* Footer */}
@@ -83,7 +111,7 @@ export const CreateScenarioModal = ({
           </button>
           <button
             onClick={() => {
-              onCreate(name);
+              onCreate(selectedProjectId, selectedScenario);
               setName("");
               onClose();
             }}

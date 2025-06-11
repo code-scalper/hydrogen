@@ -19,3 +19,7 @@ export function generateCustomId(keyword: string): string {
   // 조합
   return `${keyword}_${randomString}_${formattedDate}`;
 }
+
+export function saveLocalStore(key: string, data: any): void {
+  window.electronStore.set(key, data);
+}

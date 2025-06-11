@@ -4,20 +4,22 @@ import {
   ChevronDownIcon,
   FolderIcon,
 } from "@heroicons/react/24/solid";
+import { useProjectStore } from "@/store/useProjectStore";
 
 import FolderContext from "./FolderContext";
 
-type FolderData = {
-  name: string;
-  children?: FolderData[];
-};
+import { FolderItemInterface } from "@/types";
 
 interface FolderItemProps {
-  data: FolderData;
+  data: FolderItemInterface;
   level?: number;
 }
 
 export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
+  const setSelectedProject = useProjectStore(
+    (state) => state.setSelectedProject
+  );
+
   const [open, setOpen] = useState(false);
 
   const toggle = () => setOpen((prev) => !prev);
@@ -29,6 +31,7 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
     e.preventDefault();
     setContextMenuPos({ x: e.clientX, y: e.clientY });
     setContextOpen(true);
+    setSelectedProject(data);
   };
   return (
     <div className="text-white text-xs" onContextMenu={handleContextMenu}>

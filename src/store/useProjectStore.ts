@@ -1,16 +1,20 @@
 // store/useProjectStore.ts
 import { create } from "zustand";
 import { FolderItemInterface } from "@/types";
-
+import { saveLocalStore } from "@/lib/utils";
+import { KEYS } from "@/lib/constants";
 interface ProjectState {
+  selectedProject: FolderItemInterface | null;
   scenarios: FolderItemInterface[];
   folderList: FolderItemInterface[];
   setFolderList: (folderList: FolderItemInterface[]) => void;
-
+  setSelectedProject: (selectedProject: FolderItemInterface) => void;
   addFolder: (folder: FolderItemInterface) => void;
+  addScenario: (projectId: string, scenario: FolderItemInterface) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set) => ({
+  selectedProject: null,
   scenarios: [
     {
       id: "scenario1",
@@ -123,40 +127,34 @@ export const useProjectStore = create<ProjectState>((set) => ({
       ],
     },
   ],
-  folderList: [
-    {
-      id: "sdjakadsad",
-      name: "프로젝트1",
-      children: [
-        {
-          id: "scenario_123",
-          name: "시나리오1 SFC_110",
-          children: [
-            { name: "장치1", id: "chap1" },
-            { name: "장치2", id: "chap1" },
-            { name: "장치3", id: "chap1" },
-            { name: "장치4", id: "chap1" },
-            { name: "장치5", id: "chap1" },
-          ],
-        },
-        {
-          id: "scenario_1234",
-          name: "시나리오2 SFC_220",
-          children: [
-            { name: "dd1", id: "chap1" },
-            { name: "dd2", id: "chap1" },
-          ],
-        },
-        {
-          id: "scenario_1235",
-          name: "시나리오3 SFC_330",
-        },
-      ],
-    },
-  ],
+  folderList: [],
   setFolderList: (folderList) => set({ folderList }),
+  setSelectedProject: (selectedProject) => set({ selectedProject }),
   addFolder: (folder) =>
-    set((state) => ({
-      folderList: [...state.folderList, folder],
-    })),
+    set((state) => {
+      const folderList = [...state.folderList, folder];
+      saveLocalStore(KEYS.PROJECT, folderList);
+      return {
+        folderList,
+      };
+    }),
+  addScenario: (projectId, scenario) =>
+    set((state) => {
+      const updatedFolderList = state.folderList.map((folder) => {
+        if (folder.id === projectId) {
+          const updatedChildren = folder.children
+            ? [...folder.children, scenario]
+            : [scenario]; // children이 없을 경우 새 배열로 시작
+          return {
+            ...folder,
+            children: updatedChildren,
+          };
+        }
+        return folder;
+      });
+      saveLocalStore(KEYS.PROJECT, updatedFolderList);
+      return {
+        folderList: updatedFolderList,
+      };
+    }),
 }));

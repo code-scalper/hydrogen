@@ -2,12 +2,13 @@ import { useState } from "react";
 import { DropdownMenu } from "radix-ui";
 
 import {
-  HamburgerMenuIcon,
   DotFilledIcon,
   CheckIcon,
   ChevronRightIcon,
 } from "@radix-ui/react-icons";
 import "@/css/dropdown.css";
+
+import { useInteractionStore } from "@/store/useInteractionStore";
 
 interface FolderContextInterface {
   open: boolean;
@@ -22,6 +23,8 @@ const FolderContext = ({
   top,
   left,
 }: FolderContextInterface) => {
+  const setScenarioOpen = useInteractionStore((state) => state.setScenarioOpen);
+
   const [bookmarksChecked, setBookmarksChecked] = useState(true);
   const [urlsChecked, setUrlsChecked] = useState(false);
   const [person, setPerson] = useState("pedro");
@@ -46,7 +49,13 @@ const FolderContext = ({
           <DropdownMenu.Item className="DropdownMenuItem">
             새 프로젝트 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item>
-          <DropdownMenu.Item className="DropdownMenuItem">
+          <DropdownMenu.Item
+            className="DropdownMenuItem"
+            onClick={() => {
+              setScenarioOpen(true);
+              setOpen(false);
+            }}
+          >
             새 시나리오 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item>
           <DropdownMenu.Item className="DropdownMenuItem">

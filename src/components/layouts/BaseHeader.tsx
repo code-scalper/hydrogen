@@ -17,36 +17,44 @@ const NAVI_ITEMS = [
   {
     icon: <ArchiveBoxArrowDownIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
     name: "저장",
+    to: "/",
   },
   {
     icon: <FolderOpenIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
     name: "불러오기",
+    to: "/",
   },
   {
     icon: <PlayCircleIcon className={`${ICON_SIZE} text-green-500`} />,
     name: "실행",
+    to: "/",
   },
   {
     icon: <StopCircleIcon className={`${ICON_SIZE} text-red-500`} />,
     name: "중지",
+    to: "/",
   },
   {
     icon: <QuestionMarkCircleIcon className={`${ICON_SIZE} text-purple-500`} />,
     name: "What-IF",
+    to: "/what-if",
   },
   {
     icon: <CalculatorIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
     name: "경제성평가",
+    to: "/economic-evaluation",
   },
   {
     icon: <BookOpenIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
     name: "매뉴얼",
+    to: "/manual",
   },
   {
     icon: (
       <PresentationChartLineIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />
     ),
     name: "리포트",
+    to: "/report",
   },
 ];
 
@@ -61,7 +69,7 @@ const BaseHeader = () => {
       </div>
       <nav className="flex gap-x-1 justify-end p-3 cursor-pointer ">
         {NAVI_ITEMS.map((navi, index) => (
-          <Link to="/monitor" key={index}>
+          <Link to={navi.to} key={index}>
             <span className="text-white flex justify-center flex-col items-center cursor-pointer w-14">
               {navi.icon}
               <span className="text-slate-400 text-[10px]">{navi.name}</span>
