@@ -13,6 +13,7 @@ import electron, { ipcMain as ipcMain$1, app as app$1, BrowserWindow } from "ele
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import fs$1 from "fs";
 import process$1 from "node:process";
 import { promisify, isDeepStrictEqual } from "node:util";
 import fs from "node:fs";
@@ -15278,6 +15279,15 @@ ipcMain$1.handle("electron-store-set", (event, key, value) => {
 });
 ipcMain$1.handle("electron-store-delete", (event, key) => {
   store.delete(key);
+});
+ipcMain$1.on("save-project-backup", (_event, data, fileName) => {
+  const backupPath = path.join(app$1.getPath("userData"), `${fileName}.json`);
+  try {
+    fs$1.writeFileSync(backupPath, JSON.stringify(data, null, 2), "utf-8");
+    console.log("✅ 프로젝트 백업 저장 완료:", backupPath);
+  } catch (err) {
+    console.error("❌ 프로젝트 백업 저장 실패:", err);
+  }
 });
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

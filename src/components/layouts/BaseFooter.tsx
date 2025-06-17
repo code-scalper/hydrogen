@@ -3,6 +3,12 @@ import ProgressBar from "../ui/ProgressBar";
 import BaseAvatar from "../ui/BaseAvatar";
 import FooterTools from "./FooterTools";
 import BaseSeparator from "../ui/BaseSeperator";
+import {
+  PlayIcon,
+  StopIcon,
+  PlusIcon,
+  DownloadIcon,
+} from "@radix-ui/react-icons";
 const formatTime = (seconds: number) => {
   const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
   const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
@@ -21,8 +27,23 @@ const BaseFooter = () => {
   }, []);
   return (
     <div className="bg-slate-700/90 flex justify-between p-2 px-4">
-      <div>
+      <div className="flex items-center">
         <BaseAvatar />
+        <BaseSeparator />
+        <ul className="flex space-x-2 cursor-pointer">
+          <li>
+            <PlayIcon className="w-4 h-4 text-emerald-500" />
+          </li>
+          <li>
+            <StopIcon className="w-4 h-4 text-rose-500" />
+          </li>
+          {/* <li>
+            <PlusIcon className="w-4 h-4 text-white" />
+          </li>
+          <li>
+            <DownloadIcon className="w-4 h-4 text-white" />
+          </li> */}
+        </ul>
       </div>
 
       <div className="flex items-center ">

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import SelectBox from "../SelectBox";
 import { useProjectStore } from "@/store/useProjectStore";
 
-import { FolderItemInterface } from "@/types";
+import { ProjectInterface } from "@/types";
 
 import SFC1012 from "@/assets/sfc/sfc_1012.png";
 import SFC1013 from "@/assets/sfc/sfc_1013.png";
@@ -19,7 +19,7 @@ import SFC3022 from "@/assets/sfc/sfc_3022.png";
 interface CreateScenarioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (projectId: string, scenario: FolderItemInterface) => void;
+  onCreate: (projectId: string, scenario: ProjectInterface) => void;
 }
 
 const IMAGES: any = {
@@ -137,7 +137,7 @@ export const CreateScenarioModal = ({
         <div className="flex justify-end gap-2 px-4 py-3">
           <button
             onClick={onClose}
-            className="text-xs px-4 py-1 rounded bg-gray-500 text-gray-200 hover:bg-gray-600"
+            className="text-xs px-4 py-1  bg-gray-500 text-gray-200 hover:bg-gray-600"
           >
             취소
           </button>
@@ -147,7 +147,7 @@ export const CreateScenarioModal = ({
               setName("");
               onClose();
             }}
-            className="text-xs px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+            className="text-xs px-4 py-1  bg-blue-500 text-white hover:bg-blue-600"
           >
             생성
           </button>

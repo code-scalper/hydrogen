@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
-import { FolderItemInterface } from "@/types";
+import { ProjectInterface, ScenarioInterface, DeviceInterface } from "@/types";
 
 // components
 import BaseScrollArea from "../BaseScrollArea";
@@ -12,7 +12,7 @@ interface CreateDeviceModalProps {
   onCreate: (
     projectId: string,
     scenarioId: string,
-    device: FolderItemInterface
+    device: DeviceInterface
   ) => void;
 }
 
@@ -23,26 +23,61 @@ export const CreateDeviceModal = ({
 }: CreateDeviceModalProps) => {
   const folders = useProjectStore((state) => state.folderList);
   const scenarios = useProjectStore((state) => state.scenarios);
+
   const selectedDevice = useProjectStore((state) => state.selectedDevice);
+  const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);
+  const updateDevicePropValue = useProjectStore(
+    (state) => state.updateDevicePropValue
+  );
 
-  const selectItems = useMemo(() => {
-    const items =
-      folders.map((folder) => {
-        return { label: folder.name, key: folder.id };
-      }) || [];
-    return items ? items : [];
-  }, [folders]);
+  const [properties1, properties2] = useMemo(() => {
+    console.log(selectedDevice, "selected device");
+    const allProps = selectedDevice?.props || [];
+    console.log(allProps, "all props");
+    const first = allProps.slice(0, 8);
+    const rest = allProps.slice(7);
+    return [first, rest];
+  }, [selectedDevice]);
 
-  const selectScenarioItems = useMemo(() => {
-    const items =
-      scenarios.map((scenario) => {
-        return { label: scenario.name, key: scenario.id, data: scenario };
-      }) || [];
-    return items ? items : [];
-  }, [scenarios]);
+  // const scenarioNames = useMemo(() => {
+  //   return scenarios.map((s) => s.name);
+  // }, [scenarios]);
+  // const selectScenarioItems = useMemo(() => {
+  //   const items =
+  //     scenarios.map((scenario) => {
+  //       return { label: scenario.name, key: scenario.id, data: scenario };
+  //     }) || [];
+  //   return items ? items : [];
+  // }, [scenarios]);
+
+  const parentProject = useMemo<ProjectInterface | null>(() => {
+    const target = folders.find(
+      (folder) => folder.id === selectedDevice?.projectId
+    );
+    return target ?? null;
+  }, [selectedDevice]);
+
+  const parentScenario = useMemo<
+    ScenarioInterface | { name: string; children: DeviceInterface[] }
+  >(() => {
+    const target = parentProject?.children?.find(
+      (scenario) => scenario.id === selectedDevice?.scenarioId
+    ) as ScenarioInterface | undefined;
+
+    return (
+      target ?? {
+        name: "No Item",
+        children: [],
+      }
+    );
+  }, [selectedDevice, parentProject]);
+
+  const devices = useMemo<DeviceInterface[]>(() => {
+    return (parentScenario.children as DeviceInterface[]) || [];
+  }, [parentScenario]);
 
   useEffect(() => {
-    console.log(selectedDevice, "selected^^Device");
+    console.log(selectedDevice, "selected^^Device", devices);
   }, [selectedDevice]);
 
   if (!isOpen) return null;
@@ -65,23 +100,50 @@ export const CreateDeviceModal = ({
         <div className="p-4 flex space-x-5">
           <div className="space-y-3">
             <label className="text-md text-slate-200 mr-3 font-bold">
-              시나리오 SFC2023
+              {parentScenario.name}
             </label>
-            <BaseScrollArea items={[]} />
+            <BaseScrollArea
+              items={devices}
+              displayProperty="name"
+              selectedId={selectedDevice?.id}
+              onItemClick={(device) => setSelectedDevice(device)}
+            />
           </div>
           <div className="space-y-3">
             <div>
               <label className="text-md  mr-3 font-bold">변수 입력 영역</label>
               <span>입력 변수 범위확인</span>
             </div>
-            <div className="w-[250px] h-[400px] bg-gray-700">
-              <DevicePropertyInput
-                label="test"
-                value="text"
-                unit="kg"
-                onChange={() => {}}
-              />
-            </div>
+            {selectedDevice && (
+              <div className="flex space-x-5">
+                <div className="w-[250px] h-[400px] bg-gray-700">
+                  {properties1.map((prop, index) => (
+                    <DevicePropertyInput
+                      label={prop.name}
+                      key={`${selectedDevice?.id}-${prop.key}-${index}`} // ✅ 장치가 바뀌면 key도 바뀜
+                      value={prop.value || ""}
+                      unit={prop.unit}
+                      onChange={(val) =>
+                        updateDevicePropValue(selectedDevice?.id, prop.key, val)
+                      }
+                    />
+                  ))}
+                </div>
+                <div className="w-[250px] h-[400px] bg-gray-700">
+                  {properties2.map((prop, index) => (
+                    <DevicePropertyInput
+                      label={prop.name}
+                      key={`${selectedDevice?.id}-${prop.key}-${index}`} // ✅ 장치가 바뀌면 key도 바뀜
+                      value={prop.value || ""}
+                      unit={prop.unit}
+                      onChange={(val) =>
+                        updateDevicePropValue(selectedDevice?.id, prop.key, val)
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -109,20 +171,15 @@ export const CreateDeviceModal = ({
         <div className="flex justify-end gap-2 px-4 py-3">
           <button
             onClick={onClose}
-            className="text-xs px-4 py-1 rounded bg-gray-500 text-gray-200 hover:bg-gray-600"
+            className="text-xs px-4 py-1  bg-gray-500 text-gray-200 hover:bg-gray-600"
           >
             취소
           </button>
-          <button
-            // onClick={() => {
-            //   onCreate(selectedProjectId, selectedScenario);
-
-            //   onClose();
-            // }}
+          {/* <button
             className="text-xs px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
           >
             생성
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

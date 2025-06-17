@@ -7,7 +7,7 @@
 import BaseHeader from "./components/layouts/BaseHeader";
 import BaseSideBar from "./components/layouts/BaseSidebar";
 import BaseFooter from "./components/layouts/BaseFooter";
-import { Flex } from "@radix-ui/themes";
+import BaseContentHeader from "./components/layouts/BaseContentHeader";
 import MainRouter from "./router/MainRouter";
 export default function App() {
   // const introductionPhrases = [
@@ -38,18 +38,17 @@ export default function App() {
         </div>
 
         {/* 나머지 본문이 들어올 영역 (선택사항) */}
-        <div className="flex-1 p-4 overflow-auto text-white">
-          <Flex
-            direction="column"
-            gap="2"
-            className="justify-center items-center pt-40"
-          >
-            <MainRouter />
-            {/* <img src={Map} alt="map" /> */}
-            {/* <Text>제작중!!!!</Text> */}
-            {/* <Text>Hello from Radix Themes :)</Text>
+        <div className="flex-1  overflow-auto text-white relative">
+          <BaseContentHeader />
+          <div className="flex-1 p-4 overflow-auto text-white">
+            <div className="h-full w-full border border-gray-800 px-10 bg-zinc-800">
+              <MainRouter />
+              {/* <img src={Map} alt="map" /> */}
+              {/* <Text>제작중!!!!</Text> */}
+              {/* <Text>Hello from Radix Themes :)</Text>
             <Button>Let's go</Button> */}
-          </Flex>
+            </div>
+          </div>
         </div>
       </div>
       <BaseFooter />

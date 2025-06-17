@@ -1,10 +1,10 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { FolderItemInterface } from "@/types"; // 너의 FolderItem 타입
+import { ProjectInterface } from "@/types"; // 너의 FolderItem 타입
 // import { MoreHorizontal } from "lucide-react"; // 아이콘 (선택사항)
 import { useState } from "react";
 
 interface FolderItemProps {
-  data: FolderItemInterface;
+  data: ProjectInterface;
 }
 
 export const FolderItemWithContext = ({ data }: FolderItemProps) => {

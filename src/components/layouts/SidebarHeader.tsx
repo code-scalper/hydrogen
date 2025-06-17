@@ -8,7 +8,7 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { generateCustomId } from "@/lib/utils";
 
-import { FolderItemInterface } from "@/types";
+import { ProjectInterface } from "@/types";
 
 const SidebarHeader = () => {
   const addFolder = useProjectStore((state) => state.addFolder);
@@ -36,9 +36,16 @@ const SidebarHeader = () => {
   };
   const handleCreateScenario = (
     projectId: string,
-    scenario: FolderItemInterface
+    scenario: ProjectInterface
   ) => {
     setScenarioOpen(false);
+
+    if (scenario.children) {
+      scenario.children = scenario.children.map((sc: ProjectInterface) => {
+        return { ...sc, projectId, scenarioId: scenario.id };
+      });
+    }
+
     addScenario(projectId, {
       ...scenario,
       type: "scenario",
@@ -52,7 +59,7 @@ const SidebarHeader = () => {
   const handleCreateDevice = (
     projectId: string,
     scenarioId: string,
-    device: FolderItemInterface
+    device: ProjectInterface
   ) => {
     setDeviceOpen(false);
     console.log(projectId, scenarioId, device);
@@ -67,7 +74,7 @@ const SidebarHeader = () => {
   };
 
   return (
-    <div className="flex justify-center items-center gap-1 pt-3">
+    <div className="flex justify-center items-center gap-1 pt-2">
       {/* <BaseDialog
         name="프로젝트생성"
         title="프로젝트생성"

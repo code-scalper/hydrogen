@@ -3,18 +3,19 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
   FolderIcon,
+  DeviceTabletIcon,
 } from "@heroicons/react/24/solid";
 import { useProjectStore } from "@/store/useProjectStore";
 import FolderContext from "./FolderContext";
 
-import { FolderItemInterface } from "@/types";
+import { ProjectInterface, ScenarioInterface, DeviceInterface } from "@/types";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import "@/css/tooltip.css";
 
 import { useInteractionStore } from "@/store/useInteractionStore";
 
 interface FolderItemProps {
-  data: FolderItemInterface;
+  data: ProjectInterface;
   level?: number;
   parentId?: string;
 }
@@ -57,7 +58,7 @@ export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
   const [contextOpen, setContextOpen] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
 
-  const findParentProject = (id: string): FolderItemInterface | undefined => {
+  const findParentProject = (id: string): ProjectInterface | undefined => {
     return folderList.find((project) =>
       project.children?.some(function search(child) {
         if (child.id === id) return true;
@@ -80,16 +81,20 @@ export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
     setContextOpen(true);
     switch (data.type) {
       case "project":
-        if (selectedProject?.id !== data.id) setSelectedProject(data);
+        if (selectedProject?.id !== data.id)
+          setSelectedProject(data as ProjectInterface);
         break;
       case "scenario":
-        if (selectedScenario?.id !== data.id) setSelectedScenario(data);
+        if (selectedScenario?.id !== data.id)
+          setSelectedScenario(data as ScenarioInterface);
         break;
       case "device":
-        if (selectedDevice?.id !== data.id) setSelectedDevice(data);
+        if (selectedDevice?.id !== data.id)
+          setSelectedDevice(data as DeviceInterface);
         break;
       case "property":
-        if (selectedProperty?.id !== data.id) setSelectedProperty(data);
+        if (selectedProperty?.id !== data.id)
+          setSelectedProperty(data as ProjectInterface); // 또는 PropertyInterface로 바꿔야 할 수도 있음
         break;
     }
   };
@@ -114,7 +119,27 @@ export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
 
   const handleDeviceOpen = () => {
     setDeviceOpen(true);
-    console.log("first", data, parentId);
+  };
+
+  const handleItemClick = () => {
+    toggle();
+
+    // if (data.type === "device") {
+    //   setSelectedDevice(data)
+    //   console.log("device", data);
+    // }
+
+    if (data.type === "scenario") {
+      setSelectedScenario(data as ScenarioInterface);
+      // onScenarioClick(data); // ✅ 커스텀 이벤트 실행
+    }
+  };
+
+  const handleItemDoubleClick = () => {
+    if (data.type === "device") {
+      setDeviceOpen(true);
+      setSelectedDevice(data as DeviceInterface);
+    }
   };
 
   return (
@@ -123,7 +148,8 @@ export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
         className="flex items-center cursor-pointer gap-1 mb-1"
         style={{ paddingLeft: `${level * 16}px` }}
         onContextMenu={handleContextMenu}
-        onClick={toggle}
+        onClick={handleItemClick}
+        onDoubleClick={handleItemDoubleClick}
       >
         {data.children?.length ? (
           open ? (
@@ -135,7 +161,12 @@ export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
           <div className="w-3 h-3" />
         )}
 
-        <FolderIcon className="h-3 w-3 text-amber-400" />
+        {data.type === "device" ? (
+          <DeviceTabletIcon className="h-3 w-3 text-amber-600" />
+        ) : (
+          <FolderIcon className="h-3 w-3 text-amber-400" />
+        )}
+
         {/* 이름 영역 */}
         {isEditing ? (
           <input

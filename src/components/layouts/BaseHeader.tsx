@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 
 import {
-  FolderOpenIcon,
-  ArchiveBoxArrowDownIcon,
-  PlayCircleIcon,
-  StopCircleIcon,
+  // FolderOpenIcon,
+  // ArchiveBoxArrowDownIcon,
+  // PlayCircleIcon,
+  // StopCircleIcon,
+  CodeBracketSquareIcon,
   QuestionMarkCircleIcon,
   CalculatorIcon,
   PresentationChartLineIcon,
@@ -14,24 +15,29 @@ import {
 const ICON_SIZE = "h-6 w-6";
 const ICON_COLOR = "text-gray-300";
 const NAVI_ITEMS = [
+  // {
+  //   icon: <ArchiveBoxArrowDownIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
+  //   name: "저장",
+  //   to: "/",
+  // },
+  // {
+  //   icon: <FolderOpenIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
+  //   name: "불러오기",
+  //   to: "/",
+  // },
+  // {
+  //   icon: <PlayCircleIcon className={`${ICON_SIZE} text-green-500`} />,
+  //   name: "실행",
+  //   to: "/",
+  // },
+  // {
+  //   icon: <StopCircleIcon className={`${ICON_SIZE} text-red-500`} />,
+  //   name: "중지",
+  //   to: "/",
+  // },
   {
-    icon: <ArchiveBoxArrowDownIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
-    name: "저장",
-    to: "/",
-  },
-  {
-    icon: <FolderOpenIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
-    name: "불러오기",
-    to: "/",
-  },
-  {
-    icon: <PlayCircleIcon className={`${ICON_SIZE} text-green-500`} />,
-    name: "실행",
-    to: "/",
-  },
-  {
-    icon: <StopCircleIcon className={`${ICON_SIZE} text-red-500`} />,
-    name: "중지",
+    icon: <CodeBracketSquareIcon className={`${ICON_SIZE} text-blue-400`} />,
+    name: "시뮬레이터",
     to: "/",
   },
   {

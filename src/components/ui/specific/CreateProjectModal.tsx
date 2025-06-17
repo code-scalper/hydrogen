@@ -88,7 +88,7 @@ export const CreateProjectModal = ({
         <div className="flex justify-end gap-2 px-4 py-3">
           <button
             onClick={onClose}
-            className="text-xs px-4 py-1 rounded bg-gray-500 text-gray-200 hover:bg-gray-600"
+            className="text-xs px-4 py-1  bg-gray-500 text-gray-200 hover:bg-gray-600"
           >
             취소
           </button>
@@ -98,7 +98,7 @@ export const CreateProjectModal = ({
               setName("");
               onClose();
             }}
-            className="text-xs px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+            className="text-xs px-4 py-1  bg-blue-500 text-white hover:bg-blue-600"
           >
             생성
           </button>

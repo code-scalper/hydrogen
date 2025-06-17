@@ -23,3 +23,31 @@ export function generateCustomId(keyword: string): string {
 export function saveLocalStore(key: string, data: any): void {
   window.electronStore.set(key, data);
 }
+
+let lastBackupAt = 0;
+const BACKUP_INTERVAL = 1000 * 10; // 10초 간격
+
+export const throttledBackup = (data: any, fileName: string = "backup") => {
+  const now = Date.now();
+  if (now - lastBackupAt >= BACKUP_INTERVAL) {
+    lastBackupAt = now;
+    // 👉 Electron main process에 백업 IPC 전송
+    window.ipcRenderer.send("save-project-backup", data, fileName);
+  }
+};
+
+// const autoDownloadJSON = (data: any, filename = "project_data_backup") => {
+//   const dataStr = JSON.stringify(data, null, 2);
+//   const blob = new Blob([dataStr], { type: "application/json" });
+//   const url = URL.createObjectURL(blob);
+
+//   const a = document.createElement("a");
+//   a.href = url;
+//   a.download = `${filename}.json`;
+//   a.style.display = "none";
+
+//   document.body.appendChild(a);
+//   a.click(); // 💥 사용자에게 물어보지 않고 자동으로 다운로드 시작
+//   document.body.removeChild(a);
+//   URL.revokeObjectURL(url); // 메모리 해제
+// };

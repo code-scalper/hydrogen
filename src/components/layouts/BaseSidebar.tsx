@@ -24,6 +24,7 @@ const BaseSidebar = () => {
       mounted.current = true;
     }
   }, []);
+
   return (
     <div>
       <SidebarHeader />
