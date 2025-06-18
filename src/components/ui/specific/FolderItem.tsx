@@ -20,7 +20,7 @@ interface FolderItemProps {
   parentId?: string;
 }
 
-export const FolderItem = ({ data, level = 0, parentId }: FolderItemProps) => {
+export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
   // STORE START
   const setSelectedProject = useProjectStore(
     (state) => state.setSelectedProject

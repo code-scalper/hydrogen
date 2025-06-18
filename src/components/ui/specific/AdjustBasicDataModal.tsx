@@ -95,7 +95,7 @@ export const AdjustBasicDataModal = ({
   onCreate,
 }: AdjustBasicDataModalProps) => {
   // 상태 접근
-  const { dataset, setValue, resetDataset } = useBasicDataStore();
+  const { dataset, setValue } = useBasicDataStore();
 
   const [name, setName] = useState("");
   const deviceOptions = [

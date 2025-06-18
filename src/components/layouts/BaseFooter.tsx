@@ -3,12 +3,7 @@ import ProgressBar from "../ui/ProgressBar";
 import BaseAvatar from "../ui/BaseAvatar";
 import FooterTools from "./FooterTools";
 import BaseSeparator from "../ui/BaseSeperator";
-import {
-  PlayIcon,
-  StopIcon,
-  PlusIcon,
-  DownloadIcon,
-} from "@radix-ui/react-icons";
+import { PlayIcon, StopIcon } from "@radix-ui/react-icons";
 const formatTime = (seconds: number) => {
   const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
   const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");

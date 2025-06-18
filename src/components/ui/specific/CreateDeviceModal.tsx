@@ -19,10 +19,8 @@ interface CreateDeviceModalProps {
 export const CreateDeviceModal = ({
   isOpen,
   onClose,
-  onCreate,
 }: CreateDeviceModalProps) => {
   const folders = useProjectStore((state) => state.folderList);
-  const scenarios = useProjectStore((state) => state.scenarios);
 
   const selectedDevice = useProjectStore((state) => state.selectedDevice);
   const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);

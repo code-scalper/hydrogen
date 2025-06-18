@@ -68,3 +68,23 @@ input::selection {
   background-color: #2563eb !important; /* 예: sky-400 */
   color: white;
 }
+
+/* Scrollbar for dark theme (e.g., gray-900) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937; /* gray-800 */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* gray-600 */
+  border-radius: 8px;
+  border: 2px solid #1f2937; /* gray-800 for padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280; /* gray-500 */
+}

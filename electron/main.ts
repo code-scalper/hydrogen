@@ -6,15 +6,15 @@ import fs from "fs"; // ✅ 파일 저장용 모듈
 import Store from "electron-store";
 
 const store = new Store();
-ipcMain.handle("electron-store-get", (event, key) => {
+ipcMain.handle("electron-store-get", (_, key) => {
   return store.get(key);
 });
 
-ipcMain.handle("electron-store-set", (event, key, value) => {
+ipcMain.handle("electron-store-set", (_, key, value) => {
   store.set(key, value);
 });
 
-ipcMain.handle("electron-store-delete", (event, key) => {
+ipcMain.handle("electron-store-delete", (_, key) => {
   store.delete(key);
 });
 

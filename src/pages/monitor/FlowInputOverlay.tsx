@@ -25,7 +25,6 @@ const getArrowColor = (status: "normal" | "warning" | "error") => {
 
 const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
   point,
-  scenarioId,
   onChange,
   status,
   label = "sample",

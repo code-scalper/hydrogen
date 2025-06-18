@@ -26,7 +26,7 @@ const BaseSidebar = () => {
   }, []);
 
   return (
-    <div>
+    <div className="overflow-x-hidden overflow-y-hidden">
       <SidebarHeader />
       <div className="p-2">
         {folders.length === 0 && (

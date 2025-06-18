@@ -28,7 +28,7 @@ const BaseContentHeader = () => {
 
   const type = "A";
 
-  const [displayExtraTool, setDisplayExtraTool] = useState(false);
+  const [displayExtraTool] = useState(false);
   return (
     <>
       <div className="bg-cyan-950 p-2  fixed w-full z-50 flex items-center">

@@ -31,14 +31,14 @@ const Monitor = () => {
       : images[`/src/assets/diagram/diagram3.png`];
   }, [selectedScenario]);
 
-  const getStatusFromValue = (
-    value: string
-  ): "normal" | "warning" | "error" => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "error";
-    if (num > 20) return "warning";
-    return "normal";
-  };
+  // const getStatusFromValue = (
+  //   value: string
+  // ): "normal" | "warning" | "error" => {
+  //   const num = parseFloat(value);
+  //   if (isNaN(num)) return "error";
+  //   if (num > 20) return "warning";
+  //   return "normal";
+  // };
 
   const debouncedUpdate = useDebouncedCallback(
     (id: string, value: string) => {
@@ -76,8 +76,6 @@ const Monitor = () => {
 
           {/* input overlay */}
           {selectedScenario?.inputPoints?.map((point) => {
-            const status = getStatusFromValue(point.value);
-
             return (
               <FlowInputOverlay
                 key={point.id}
