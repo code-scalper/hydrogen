@@ -59,6 +59,8 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
+    console.log("RENDERER_DIST:", RENDERER_DIST);
+    console.log("index.html path:", path.join(RENDERER_DIST, "index.html"));
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
