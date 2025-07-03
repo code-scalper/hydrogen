@@ -1,93 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useBasicDataStore } from "@/store/useBasicDataStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import LabeledInput from "../LabelInput";
 import LabelSelect from "../LabelSelect";
 
 import { Button } from "@radix-ui/themes";
+
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 interface AdjustBasicDataModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (name: string, description: string) => void;
 }
-
-const INPUT_LIST1 = [
-  {
-    key: "key1",
-    label: "대기 온도 (T_AmbC)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key2",
-    label: "HBk 초기 압력 (P_Hbk_0)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  { key: "key3", label: "SFC", type: "text", placeholder: "예: 40" },
-  {
-    key: "key4",
-    label: "디스펜서 2 적용 여부 (D2ON)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key5",
-    label: "연속 충전 적용 여부 (ContOn)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-];
-
-const INPUT_LIST2 = [
-  {
-    key: "key1",
-    label: "버퍼 탱크 충전 시간",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key2",
-    label: "PSV 용량 계산 적용 여부",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key3",
-    label: "디스펜서1 설정 시간 (t_PreSet1)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key4",
-    label: "디스펜서2 설정 시간 (t_PreSet2)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-  {
-    key: "key5",
-    label: "압축기 작동 모드 (CompMod)",
-    type: "text",
-    placeholder: "예: 40",
-    unit: "kg",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. ",
-  },
-];
 
 export const AdjustBasicDataModal = ({
   isOpen,
@@ -95,13 +19,64 @@ export const AdjustBasicDataModal = ({
   onCreate,
 }: AdjustBasicDataModalProps) => {
   // 상태 접근
-  const { dataset, setValue } = useBasicDataStore();
+  const { setValue, getDatasetById } = useBasicDataStore();
 
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
+  const { updateScenarioBaseDataValue } = useProjectStore();
   const [name, setName] = useState("");
-  const deviceOptions = [
-    { id: "1", name: "온도센서" },
-    { id: "2", name: "압력센서" },
-  ];
+
+  const targetId = useMemo(() => {
+    return selectedScenario
+      ? `${selectedScenario.parentId}_${selectedScenario.id}`
+      : "NONE";
+  }, [selectedScenario]);
+
+  const scenarioBaseData = useMemo(() => {
+    return selectedScenario?.baseData || [];
+  }, [selectedScenario]);
+
+  const baseData1 = useMemo(() => {
+    const half = Math.ceil(scenarioBaseData.length / 2);
+    return scenarioBaseData.slice(0, half);
+  }, [scenarioBaseData]);
+
+  const baseData2 = useMemo(() => {
+    const half = Math.ceil(scenarioBaseData.length / 2);
+    return scenarioBaseData.slice(half);
+  }, [scenarioBaseData]);
+
+  const [formState, setFormState] = useState<Record<string, string>>({});
+  const debouncedUpdateValue = useDebouncedCallback(
+    (key: string, value: string) => {
+      console.log(key, value);
+      setValue(targetId, key, value);
+      updateScenarioBaseDataValue(key, value);
+    },
+    300 // 300ms debounce
+  );
+  // 시나리오 변경 or 모달 열릴 때 초기값 설정
+  useEffect(() => {
+    if (!selectedScenario || !isOpen) return;
+
+    const targetId = `${selectedScenario.parentId}_${selectedScenario.id}`;
+    const raw = getDatasetById(targetId) || [];
+
+    const obj = raw.reduce((acc, cur) => {
+      acc[cur.key] = cur.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    setFormState(obj);
+  }, [selectedScenario, isOpen]);
+
+  const handleChange = (key: string, val: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      [key]: val,
+    }));
+
+    debouncedUpdateValue(key, val);
+  };
 
   if (!isOpen) return null;
 
@@ -123,62 +98,65 @@ export const AdjustBasicDataModal = ({
 
         {/* Content */}
         <div className="p-4 space-y-2">
-          <div>
-            <Button variant="solid" radius="none" onClick={() => {}}>
-              입력변수
+          <div className="flex items-center  justify-between mb-5">
+            <h2 className="mr-5 font-bold">{selectedScenario?.sfcName}</h2>
+            <Button variant="outline" radius="none" onClick={() => {}}>
+              입력변수 범위 확인
             </Button>
           </div>
           <div className="flex space-x-3">
             <div className="flex-1 space-y-2">
-              {INPUT_LIST1.map((input, index) =>
+              {baseData1.map((input, index) =>
                 input.type === "text" ? (
                   <LabeledInput
                     key={index}
-                    label={input.label}
+                    label={input.name}
                     name={input.key}
                     unit={input.unit}
                     description={input.description}
-                    value={dataset[input.key] || ""}
-                    onChange={setValue}
-                    placeholder={input.placeholder}
+                    value={formState[input.key] || ""}
+                    onChange={handleChange}
+                    placeholder={input.placeholder || ""}
                     onEnter={() => onCreate(name, "")}
                   />
                 ) : (
                   <LabelSelect
-                    label={input.label}
+                    key={index}
+                    label={input.name}
                     name={input.key}
                     unit={input.unit}
                     description={input.description}
-                    options={deviceOptions}
-                    value={dataset[input.key] || ""}
-                    onChange={setValue}
+                    options={input.options}
+                    value={formState[input.key] || ""}
+                    onChange={handleChange}
                   />
                 )
               )}
             </div>
             <div className="flex-1 space-y-2">
-              {INPUT_LIST2.map((input, index) =>
+              {baseData2.map((input, index) =>
                 input.type === "text" ? (
                   <LabeledInput
                     key={index}
-                    label={input.label}
+                    label={input.name}
                     name={input.key}
                     unit={input.unit}
                     description={input.description}
-                    value={dataset[input.key] || ""}
-                    onChange={setValue}
+                    value={formState[input.key] || ""}
+                    onChange={handleChange}
                     placeholder={input.placeholder}
                     onEnter={() => onCreate(name, "")}
                   />
                 ) : (
                   <LabelSelect
-                    label={input.label}
+                    key={index}
+                    label={input.name}
                     name={input.key}
                     unit={input.unit}
                     description={input.description}
-                    options={deviceOptions}
-                    value={dataset[input.key] || ""}
-                    onChange={setValue}
+                    options={input.options}
+                    value={formState[input.key] || ""}
+                    onChange={handleChange}
                   />
                 )
               )}

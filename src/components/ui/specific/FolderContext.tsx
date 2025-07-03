@@ -52,14 +52,14 @@ const FolderContext = ({
             left,
           }}
         >
-          <DropdownMenu.Item
+          {/* <DropdownMenu.Item
             className="DropdownMenuItem"
             onClick={() => {
               onDeviceOpen();
             }}
           >
             상세보기 <div className="RightSlot">⌘+T</div>
-          </DropdownMenu.Item>
+          </DropdownMenu.Item> */}
           <DropdownMenu.Item className="DropdownMenuItem">
             새 프로젝트 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item>
@@ -121,7 +121,7 @@ const FolderContext = ({
           {/*<DropdownMenu.Item className="DropdownMenuItem" disabled>
             New Private Window <div className="RightSlot">⇧+⌘+N</div>
           </DropdownMenu.Item> */}
-          <DropdownMenu.Sub>
+          {/* <DropdownMenu.Sub>
             <DropdownMenu.SubTrigger className="DropdownMenuSubTrigger">
               더 보기
               <div className="RightSlot">
@@ -149,11 +149,11 @@ const FolderContext = ({
                 </DropdownMenu.Item>
               </DropdownMenu.SubContent>
             </DropdownMenu.Portal>
-          </DropdownMenu.Sub>
+          </DropdownMenu.Sub> */}
 
-          <DropdownMenu.Separator className="DropdownMenuSeparator" />
+          {/* <DropdownMenu.Separator className="DropdownMenuSeparator" /> */}
 
-          <DropdownMenu.CheckboxItem
+          {/* <DropdownMenu.CheckboxItem
             className="DropdownMenuCheckboxItem"
             checked={bookmarksChecked}
             onCheckedChange={setBookmarksChecked}
@@ -198,7 +198,7 @@ const FolderContext = ({
               </DropdownMenu.ItemIndicator>
               저런저런 옵션이다
             </DropdownMenu.RadioItem>
-          </DropdownMenu.RadioGroup>
+          </DropdownMenu.RadioGroup> */}
 
           <DropdownMenu.Arrow className="DropdownMenuArrow" />
         </DropdownMenu.Content>

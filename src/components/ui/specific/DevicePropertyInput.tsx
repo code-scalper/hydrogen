@@ -37,7 +37,9 @@ const DevicePropertyInput = ({
           debouncedUpdate(val);
         }}
       />
-      <span className="text-slate-400 text-xs w-1/6 text-right">{unit}</span>
+      <span className="text-slate-400 text-xs w-1/6 text-right">
+        {unit === "-" ? "" : unit}
+      </span>
     </div>
   );
 };

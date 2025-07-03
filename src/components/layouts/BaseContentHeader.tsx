@@ -14,8 +14,10 @@ import { AdjustBasicDataModal } from "../ui/specific/AdjustBasicDataModal";
 
 // store
 import { useInteractionStore } from "@/store/useInteractionStore";
+import { useProjectStore } from "@/store/useProjectStore";
 
 const BaseContentHeader = () => {
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
   const adjustBasicDataOpen = useInteractionStore(
     (state) => state.adjustBasicDataOpen
   );
@@ -29,19 +31,23 @@ const BaseContentHeader = () => {
   const type = "A";
 
   const [displayExtraTool] = useState(false);
+
   return (
     <>
       <div className="bg-cyan-950 p-2  fixed w-full z-50 flex items-center">
-        <div className="mr-5">
-          <Button
-            variant="solid"
-            radius="none"
-            className="!bg-cyan-800 !cursor-pointer"
-            onClick={() => setAdjustBasicDataOpen(true)}
-          >
-            <GearIcon /> 기준정보
-          </Button>
-        </div>
+        {selectedScenario && selectedScenario.baseData && (
+          <div className="mr-5">
+            <Button
+              variant="solid"
+              radius="none"
+              className="!bg-cyan-800 !cursor-pointer"
+              onClick={() => setAdjustBasicDataOpen(true)}
+            >
+              <GearIcon /> 기준정보
+            </Button>
+          </div>
+        )}
+
         {displayExtraTool && (
           <div>
             {type === "A" ? (

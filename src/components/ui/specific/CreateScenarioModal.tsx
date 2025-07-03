@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import SelectBox from "../SelectBox";
 import { useProjectStore } from "@/store/useProjectStore";
 
-import { ProjectInterface } from "@/types";
+import { ScenarioInterface } from "@/types";
 
 import SFC1012 from "@/assets/sfc/sfc_1012.png";
 import SFC1013 from "@/assets/sfc/sfc_1013.png";
@@ -19,7 +19,7 @@ import SFC3022 from "@/assets/sfc/sfc_3022.png";
 interface CreateScenarioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (projectId: string, scenario: ProjectInterface) => void;
+  onCreate: (projectId: string, scenario: ScenarioInterface) => void;
 }
 
 const IMAGES: any = {
@@ -42,7 +42,8 @@ export const CreateScenarioModal = ({
   onClose,
   onCreate,
 }: CreateScenarioModalProps) => {
-  const [, setName] = useState("");
+  const [typed, setTyped] = useState(false);
+  const [name, setName] = useState("");
   const folders = useProjectStore((state) => state.folderList);
   const scenarios = useProjectStore((state) => state.scenarios);
   const selectedProject = useProjectStore((state) => state.selectedProject);
@@ -62,7 +63,7 @@ export const CreateScenarioModal = ({
   const selectScenarioItems = useMemo(() => {
     const items =
       scenarios.map((scenario) => {
-        return { label: scenario.name, key: scenario.id, data: scenario };
+        return { label: scenario.sfcName, key: scenario.id, data: scenario };
       }) || [];
     return items ? items : [];
   }, [scenarios]);
@@ -111,6 +112,38 @@ export const CreateScenarioModal = ({
                 onValueChange={(val) => setSelectedProjectId(val)}
               />
             </div>
+            <div className=" flex items-center flex-start gap-2">
+              <label className="text-xs text-slate-200 mr-3">
+                시나리오 이름
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  if (!typed) {
+                    setTyped(true);
+                  }
+                  setName(e.target.value);
+                }}
+                className="text-white text-xs border-none bg-gray-700 border rounded p-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-800 flex-1"
+                placeholder="예: Scenario Name"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onCreate(selectedProjectId, {
+                      ...selectedScenario,
+                      name,
+                    });
+                    setTyped(true);
+                  }
+                }}
+                // onKeyDown={(e) => {
+                //   if (e.key === "Enter") {
+                //     // 엔터를 눌렀을 때 실행할 코드
+                //     onCreate(name, description); // 예: 폴더 생성
+                //   }
+                // }}
+              />
+            </div>
             <div className="flex items-center flex-start gap-2">
               <label className="text-xs text-slate-200 mr-3">
                 시나리오 선택
@@ -121,6 +154,10 @@ export const CreateScenarioModal = ({
                 onValueChange={(val, data) => {
                   setSelectedScenarioId(val);
                   setSelectedScenario(data);
+                  if (!typed || name.trim() === "") {
+                    setName(data.name);
+                    setTyped(false);
+                  }
                 }}
               />
             </div>
@@ -143,7 +180,7 @@ export const CreateScenarioModal = ({
           </button>
           <button
             onClick={() => {
-              onCreate(selectedProjectId, selectedScenario);
+              onCreate(selectedProjectId, { ...selectedScenario, name });
               setName("");
               onClose();
             }}

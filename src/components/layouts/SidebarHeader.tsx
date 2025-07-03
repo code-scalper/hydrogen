@@ -8,9 +8,16 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { generateCustomId } from "@/lib/utils";
 
-import { ProjectInterface } from "@/types";
+import { ScenarioInterface, DeviceInterface } from "@/types";
 
-const SidebarHeader = () => {
+// constants
+import { SCENARIO_BASE_DATA } from "@/constants";
+
+interface SidebarHeaderProps {
+  handleProjectOpen: (arg: string) => void;
+}
+
+const SidebarHeader = ({ handleProjectOpen }: SidebarHeaderProps) => {
   const addFolder = useProjectStore((state) => state.addFolder);
   const addScenario = useProjectStore((state) => state.addScenario);
 
@@ -36,39 +43,32 @@ const SidebarHeader = () => {
   };
   const handleCreateScenario = (
     projectId: string,
-    scenario: ProjectInterface
+    scenario: ScenarioInterface
   ) => {
     setScenarioOpen(false);
 
     if (scenario.children) {
-      scenario.children = scenario.children.map((sc: ProjectInterface) => {
+      scenario.children = scenario.children.map((sc: DeviceInterface) => {
         return { ...sc, projectId, scenarioId: scenario.id };
       });
     }
+
+    const baseData = SCENARIO_BASE_DATA;
 
     addScenario(projectId, {
       ...scenario,
       type: "scenario",
       isExpanded: true,
       parentId: projectId,
+      baseData, // ✅ optional Scenario-specific data
     });
 
-    // 여기에 폴더 추가 로직
+    // ✅ 프로젝트 폴더 펼침 상태 강제
+    handleProjectOpen(projectId);
   };
 
-  const handleCreateDevice = (
-    projectId: string,
-    scenarioId: string,
-    device: ProjectInterface
-  ) => {
+  const handleCreateDevice = () => {
     setDeviceOpen(false);
-    console.log(projectId, scenarioId, device);
-    // addScenario(projectId, {
-    //   ...scenario,
-    //   type: "scenario",
-    //   isExpanded: true,
-    //   parentId: projectId,
-    // });
 
     // 여기에 폴더 추가 로직
   };

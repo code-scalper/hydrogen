@@ -35,7 +35,7 @@ const BaseScrollArea = ({
                     : "hover:bg-gray-600"
                 )}
               >
-                {item[displayProperty]}
+                {item[displayProperty] || item.engName || item.id}
               </div>
             ))}
           </div>

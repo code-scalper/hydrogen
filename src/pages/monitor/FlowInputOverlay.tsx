@@ -2,14 +2,17 @@ import { useState, useEffect } from "react";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
-import type { InputPoint } from "@/types";
+import type { DeviceProperty } from "@/types";
 
 interface FlowInputOverlayProps {
-  point: InputPoint;
+  point: DeviceProperty;
   scenarioId: string;
   onChange: (id: string, value: string) => void;
-  status: "normal" | "warning" | "error";
+  status?: "normal" | "warning" | "error";
   label: string;
+  overlayStyle?: React.CSSProperties;
+  scale: number;
+  inputHeight: number;
 }
 
 const getArrowColor = (status: "normal" | "warning" | "error") => {
@@ -26,8 +29,11 @@ const getArrowColor = (status: "normal" | "warning" | "error") => {
 const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
   point,
   onChange,
-  status,
+  status = "normal",
   label = "sample",
+  overlayStyle = {},
+  scale,
+  inputHeight,
 }) => {
   const [inputValue, setInputValue] = useState(point.value);
 
@@ -37,12 +43,11 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
   }, [point.value]);
   return (
     <div
-      className="absolute flex items-center w-[200px] space-x-3 bg-white/80 border border-gray-800 p-1"
-      style={{
-        left: `${point.x * 100}%`,
-        top: `${point.y * 100}%`,
-        transform: "translate(-50%, -50%)",
-      }}
+      className={clsx(
+        "absolute flex items-center min-w-[200px] space-x-3 bg-white/80 border border-gray-800 p-1",
+        "transform -translate-x-1/2 -translate-y-1/2"
+      )}
+      style={overlayStyle}
     >
       <input
         type="text"
@@ -50,15 +55,29 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
         onChange={(e) => {
           const newVal = e.target.value;
           setInputValue(newVal); // 👉 UI 즉시 반영
-          onChange(point.id, newVal); // 👉 디바운스 실행
+          onChange(point.key, newVal); // 👉 디바운스 실행
         }}
-        className="px-2 w-16 text-xs text-black text-right border-b border-gray-500 bg-transparent 
+        className="px-2 text-xs text-black text-right border-b border-gray-500 bg-transparent 
         focus:outline-none focus:border-b-2 focus:border-blue-600"
+        style={{
+          height: `${inputHeight}px`,
+          width: `${60 * scale}px`,
+          fontSize: `${12 * scale}px`,
+          padding: `${2 * scale}px`,
+        }}
       />
       <ArrowLongRightIcon
-        className={clsx("min-w-[15px] w-4 h-4 ml-1 ", getArrowColor(status))}
+        style={{
+          width: `${16 * scale}px`,
+          height: `${16 * scale}px`,
+          minWidth: `${15 * scale}px`,
+        }}
+        className={clsx("ml-1", getArrowColor(status))}
       />
-      <span className="text-gray-900 text-xs">{label}</span>
+
+      <span className="text-gray-900" style={{ fontSize: `${12 * scale}px` }}>
+        {label}
+      </span>
     </div>
   );
 };

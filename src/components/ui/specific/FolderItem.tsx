@@ -15,12 +15,16 @@ import "@/css/tooltip.css";
 import { useInteractionStore } from "@/store/useInteractionStore";
 
 interface FolderItemProps {
-  data: ProjectInterface;
+  data: ProjectInterface | ScenarioInterface | DeviceInterface;
   level?: number;
-  parentId?: string;
+  shouldOpenProjectId: string;
 }
 
-export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
+export const FolderItem = ({
+  data,
+  level = 0,
+  shouldOpenProjectId,
+}: FolderItemProps) => {
   // STORE START
   const setSelectedProject = useProjectStore(
     (state) => state.setSelectedProject
@@ -60,9 +64,19 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
 
   const findParentProject = (id: string): ProjectInterface | undefined => {
     return folderList.find((project) =>
-      project.children?.some(function search(child) {
+      project.children?.some(function search(
+        child: ScenarioInterface | DeviceInterface
+      ): boolean {
         if (child.id === id) return true;
-        if (child.children) return child.children.some(search);
+
+        if (
+          child.type === "scenario" &&
+          "children" in child &&
+          child.children
+        ) {
+          return child.children.some(search); // child.children is DeviceInterface[]
+        }
+
         return false;
       })
     );
@@ -85,8 +99,10 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
           setSelectedProject(data as ProjectInterface);
         break;
       case "scenario":
-        if (selectedScenario?.id !== data.id)
-          setSelectedScenario(data as ScenarioInterface);
+        if (selectedScenario?.id !== data.id) {
+          setSelectedScenario(data as unknown as ScenarioInterface);
+        }
+
         break;
       case "device":
         if (selectedDevice?.id !== data.id)
@@ -130,17 +146,24 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
     // }
 
     if (data.type === "scenario") {
-      setSelectedScenario(data as ScenarioInterface);
+      setSelectedScenario(data as unknown as ScenarioInterface);
       // onScenarioClick(data); // ✅ 커스텀 이벤트 실행
     }
   };
 
   const handleItemDoubleClick = () => {
     if (data.type === "device") {
+      console.log(data, "data!!!");
       setDeviceOpen(true);
       setSelectedDevice(data as DeviceInterface);
     }
   };
+
+  useEffect(() => {
+    if (shouldOpenProjectId === data.id) {
+      setOpen(true);
+    }
+  }, [shouldOpenProjectId]);
 
   return (
     <div className="text-white text-xs">
@@ -151,7 +174,7 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
         onClick={handleItemClick}
         onDoubleClick={handleItemDoubleClick}
       >
-        {data.children?.length ? (
+        {data?.children?.length ? (
           open ? (
             <ChevronDownIcon className="h-3 w-3 text-slate-300" />
           ) : (
@@ -187,7 +210,7 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
         ) : (
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
-              <span>{data.name}</span>
+              <span>{data.name || data.id}</span>
             </Tooltip.Trigger>
             {data.description && (
               <Tooltip.Portal>
@@ -211,7 +234,7 @@ export const FolderItem = ({ data, level = 0 }: FolderItemProps) => {
             key={idx}
             data={child}
             level={level + 1}
-            parentId={data.id}
+            shouldOpenProjectId=""
           />
         ))}
 

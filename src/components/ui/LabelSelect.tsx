@@ -61,7 +61,7 @@ const LabelSelect = ({
       <select
         value={value}
         onChange={(e) => onChange(name, e.target.value)}
-        className="text-white text-xs bg-gray-700 border-none p-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-800 flex-1"
+        className="text-white text-xs bg-gray-700 border-none p-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-800 w-2/5"
       >
         <option value="">선택</option>
         {options.map((option) => (

@@ -3,51 +3,86 @@ export interface ProjectInterface {
   parentId?: string;
   name: string;
   description?: string;
-  type: "project" | "scenario" | "device" | "property";
-  children?: ProjectInterface[];
-  isExpanded?: boolean; // 펼침 상태 관리용
-
+  type: "project" | "scenario" | "device" | "property" | "module";
+  children?: ScenarioInterface[] | undefined;
+  isExpanded?: boolean;
   src?: string;
-  inputPoints?: InputPoint[];
 }
 
 export interface InputPoint {
   id: string;
   x: number; // 0 ~ 1
   y: number;
-  value: string;
-  label: string;
+  value?: string;
+  status: "normal" | "warning" | "error";
 }
-
-export interface ScenarioInterface extends ProjectInterface {
-  children: DeviceInterface[];
+export interface ScenarioInterface {
+  id: string;
+  parentId?: string;
+  name: string;
+  description?: string;
+  type: "scenario";
+  sfcName: string;
   src: string;
-  inputPoints: {
-    id: string;
-    x: number;
-    y: number;
-    value: string;
-    label: string;
-    status: "normal" | "warning" | "error";
-  }[];
+  isExpanded?: boolean;
+  // inputPoints: InputPoint[];
+  children: DeviceInterface[] | undefined;
+  baseData?: BaseDataProps[];
 }
 export type DeviceProperty = {
   key: string;
   name: string;
   unit: string;
   value?: string;
+  description: string;
+  displayOnDiagram?: boolean;
+  status?: string;
+  x?: number;
+  y?: number;
+  order: number;
+  io?: string;
+  type: string;
+  options?: { id: string; name: string }[];
 };
 
 export type DevicePropertyMap = {
   [deviceId: string]: DeviceProperty[];
 };
-export interface DeviceInterface {
+
+export interface DeviceBaseInterface {
   id: string;
   name: string;
-  type: "device";
-  src: string;
-  projectId: string;
-  scenarioId: string;
+  engName?: string;
+  type: "device" | "module";
+  src?: string;
+  projectId?: string;
+  scenarioId?: string;
   unit?: string;
-  props: DeviceProperty[]; // ✅ 배열로 정의
+  props: DeviceProperty[];
+  size: number;
+
+  displayOnDiagram?: boolean;
+  /** ⬇️ 새로 추가된 좌표 정보 */
+  x: number; // 0 ~ 1, 이미지 기준 상대 좌표
+  y: number;
+  order: number;
+}
+
+export interface DeviceInterface extends DeviceBaseInterface {
+  //
+  children?: DeviceInterface[];
+  description?: string;
+}
+
+export interface BaseDataProps {
+  id: string;
+  key: string;
+  name: string;
+  altName?: string;
+  unit: string;
+  value: string;
+  type: string;
+  options?: any;
+  description: string;
+  placeholder?: string;
 }
