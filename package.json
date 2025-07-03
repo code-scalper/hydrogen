@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder --config electron-builder.json5",
-    "lint": "npx @biomejs/biome check --write src",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "lint": "npx @biomejs/biome check src",
+    "lint:fix": "npx @biomejs/biome check src --apply",
+    "format": "npx @biomejs/biome format src --write"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

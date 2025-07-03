@@ -1,88 +1,88 @@
 export interface ProjectInterface {
-  id: string;
-  parentId?: string;
-  name: string;
-  description?: string;
-  type: "project" | "scenario" | "device" | "property" | "module";
-  children?: ScenarioInterface[] | undefined;
-  isExpanded?: boolean;
-  src?: string;
+	id: string;
+	parentId?: string;
+	name: string;
+	description?: string;
+	type: "project" | "scenario" | "device" | "property" | "module";
+	children?: ScenarioInterface[] | undefined;
+	isExpanded?: boolean;
+	src?: string;
 }
 
 export interface InputPoint {
-  id: string;
-  x: number; // 0 ~ 1
-  y: number;
-  value?: string;
-  status: "normal" | "warning" | "error";
+	id: string;
+	x: number; // 0 ~ 1
+	y: number;
+	value?: string;
+	status: "normal" | "warning" | "error";
 }
 export interface ScenarioInterface {
-  id: string;
-  parentId?: string;
-  name: string;
-  description?: string;
-  type: "scenario";
-  sfcName: string;
-  src: string;
-  isExpanded?: boolean;
-  // inputPoints: InputPoint[];
-  children: DeviceInterface[] | undefined;
-  baseData?: BaseDataProps[];
+	id: string;
+	parentId?: string;
+	name: string;
+	description?: string;
+	type: "scenario";
+	sfcName: string;
+	src: string;
+	isExpanded?: boolean;
+	// inputPoints: InputPoint[];
+	children: DeviceInterface[] | undefined;
+	baseData?: BaseDataProps[];
 }
 export type DeviceProperty = {
-  key: string;
-  name: string;
-  unit: string;
-  value?: string;
-  description: string;
-  displayOnDiagram?: boolean;
-  status?: string;
-  x?: number;
-  y?: number;
-  order: number;
-  io?: string;
-  type: string;
-  options?: { id: string; name: string }[];
+	key: string;
+	name: string;
+	unit: string;
+	value?: string;
+	description: string;
+	displayOnDiagram?: boolean;
+	status?: string;
+	x?: number;
+	y?: number;
+	order: number;
+	io?: string;
+	type: string;
+	options?: { id: string; name: string }[];
 };
 
 export type DevicePropertyMap = {
-  [deviceId: string]: DeviceProperty[];
+	[deviceId: string]: DeviceProperty[];
 };
 
 export interface DeviceBaseInterface {
-  id: string;
-  name: string;
-  engName?: string;
-  type: "device" | "module";
-  src?: string;
-  projectId?: string;
-  scenarioId?: string;
-  unit?: string;
-  props: DeviceProperty[];
-  size: number;
+	id: string;
+	name: string;
+	engName?: string;
+	type: "device" | "module";
+	src?: string;
+	projectId?: string;
+	scenarioId?: string;
+	unit?: string;
+	props: DeviceProperty[];
+	size: number;
 
-  displayOnDiagram?: boolean;
-  /** ⬇️ 새로 추가된 좌표 정보 */
-  x: number; // 0 ~ 1, 이미지 기준 상대 좌표
-  y: number;
-  order: number;
+	displayOnDiagram?: boolean;
+	/** ⬇️ 새로 추가된 좌표 정보 */
+	x: number; // 0 ~ 1, 이미지 기준 상대 좌표
+	y: number;
+	order: number;
 }
 
 export interface DeviceInterface extends DeviceBaseInterface {
-  //
-  children?: DeviceInterface[];
-  description?: string;
+	//
+	children?: DeviceInterface[];
+	description?: string;
 }
 
 export interface BaseDataProps {
-  id: string;
-  key: string;
-  name: string;
-  altName?: string;
-  unit: string;
-  value: string;
-  type: string;
-  options?: any;
-  description: string;
-  placeholder?: string;
+	id: string;
+	key: string;
+	name: string;
+	altName?: string;
+	unit: string;
+	value: string;
+	type: string;
+	options?: any;
+	description: string;
+	placeholder?: string;
 }

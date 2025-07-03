@@ -1,5 +1,5 @@
 const EconomicEvaluation = () => {
-  return <div>EconomicEvaluation</div>;
+	return <div>EconomicEvaluation</div>;
 };
 
 export default EconomicEvaluation;

@@ -1,11 +1,11 @@
-import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 import LOGO_SRC from "@/assets/logo.png";
-import FlowInputOverlay from "./FlowInputOverlay";
-import { useProjectStore } from "@/store/useProjectStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FlowInputOverlay from "./FlowInputOverlay";
 
-import { ScenarioInterface } from "@/types";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import type { ScenarioInterface } from "@/types";
 
 import BaseToast from "@/components/ui/BaseToast";
 
@@ -23,13 +23,13 @@ const Monitor = () => {
   const setDeviceOpen = useInteractionStore((state) => state.setDeviceOpen);
 
   const [open, setOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setOpen(false); // 이전 Toast 닫기
-    setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
-    setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
-  };
+  const [toastMessage, _] = useState("");
+  // const showToast = (message: string) => {
+  //   setToastMessage(message);
+  //   setOpen(false); // 이전 Toast 닫기
+  //   setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
+  //   setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
+  // };
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 

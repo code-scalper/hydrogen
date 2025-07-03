@@ -1,10 +1,3 @@
-import { InputPoint } from "@/types";
-
-import { DEVICES } from "./devices";
-interface InputPointsInterface {
-  [sfcName: string]: InputPoint[];
-}
-
 // export const INPUT_POINTS: InputPointsInterface = {
 //   SFC1012: [
 //     {

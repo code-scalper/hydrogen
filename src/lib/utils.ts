@@ -1,39 +1,39 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+	return twMerge(clsx(inputs));
 }
 
 export function generateCustomId(keyword: string): string {
-  // 랜덤 문자열 생성 (10자리)
-  const randomString = Math.random().toString(36).substring(2, 12);
+	// 랜덤 문자열 생성 (10자리)
+	const randomString = Math.random().toString(36).substring(2, 12);
 
-  // 날짜 형식: YYYYMMDDHHMMSS
-  const now = new Date();
-  const formattedDate = now
-    .toISOString()
-    .replace(/[-:T.Z]/g, "")
-    .slice(0, 14); // YYYYMMDDHHMMSS
+	// 날짜 형식: YYYYMMDDHHMMSS
+	const now = new Date();
+	const formattedDate = now
+		.toISOString()
+		.replace(/[-:T.Z]/g, "")
+		.slice(0, 14); // YYYYMMDDHHMMSS
 
-  // 조합
-  return `${keyword}_${randomString}_${formattedDate}`;
+	// 조합
+	return `${keyword}_${randomString}_${formattedDate}`;
 }
 
 export function saveLocalStore(key: string, data: any): void {
-  window.electronStore.set(key, data);
+	window.electronStore.set(key, data);
 }
 
 let lastBackupAt = 0;
 const BACKUP_INTERVAL = 1000 * 10; // 10초 간격
 
-export const throttledBackup = (data: any, fileName: string = "backup") => {
-  const now = Date.now();
-  if (now - lastBackupAt >= BACKUP_INTERVAL) {
-    lastBackupAt = now;
-    // 👉 Electron main process에 백업 IPC 전송
-    window.ipcRenderer.send("save-project-backup", data, fileName);
-  }
+export const throttledBackup = (data: any, fileName = "backup") => {
+	const now = Date.now();
+	if (now - lastBackupAt >= BACKUP_INTERVAL) {
+		lastBackupAt = now;
+		// 👉 Electron main process에 백업 IPC 전송
+		window.ipcRenderer.send("save-project-backup", data, fileName);
+	}
 };
 
 // const autoDownloadJSON = (data: any, filename = "project_data_backup") => {

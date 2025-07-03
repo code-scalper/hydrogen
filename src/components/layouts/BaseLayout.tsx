@@ -1,13 +1,13 @@
 const BaseLayout = () => {
-  return (
-    <div className="bg-gray-950 w-screen h-screen flex flex-col items-center justify-center gap-5 p-5">
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="text-3xl text-slate-200"></h1>
-        <span className="text-xl text-slate-300">
-          Edit file src/app.tsx to start!
-        </span>
-      </div>
-      {/*  <div className="flex flex-col items-center gap-3">
+	return (
+		<div className="bg-gray-950 w-screen h-screen flex flex-col items-center justify-center gap-5 p-5">
+			<div className="flex flex-col items-center gap-3">
+				<h1 className="text-3xl text-slate-200"></h1>
+				<span className="text-xl text-slate-300">
+					Edit file src/app.tsx to start!
+				</span>
+			</div>
+			{/*  <div className="flex flex-col items-center gap-3">
         <Routes>
           <Route path="/monitor" element={<Monitor />} />
         </Routes>
@@ -49,9 +49,9 @@ const BaseLayout = () => {
       >
         Click me!
       </Button> */}
-      <div className="w-screen h-64 absolute top-[-200px] bg-blue-500/20 rounded-full blur-3xl z-0" />
-    </div>
-  );
+			<div className="w-screen h-64 absolute top-[-200px] bg-blue-500/20 rounded-full blur-3xl z-0" />
+		</div>
+	);
 };
 
 export default BaseLayout;

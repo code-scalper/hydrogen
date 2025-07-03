@@ -1,6 +1,10 @@
+import type {
+  DeviceInterface,
+  ProjectInterface,
+  ScenarioInterface,
+} from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ProjectInterface, ScenarioInterface, DeviceInterface } from "@/types";
 
 import { SCENARIOS } from "@/constants";
 import cloneDeep from "lodash/cloneDeep";
@@ -175,6 +179,7 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       updateInputValue: (pointId, newValue) => {
+        console.log(pointId, newValue);
         const state = get();
         const projectId = state.selectedScenario?.parentId || "";
         const scenarioId = state.selectedScenario?.id || "";
@@ -194,7 +199,7 @@ export const useProjectStore = create<ProjectState>()(
 
             return {
               ...scenario,
-              inputPoints: {} || {},
+              inputPoints: {},
             };
           });
 

@@ -1,11 +1,5 @@
-import { useState } from "react";
 import { DropdownMenu } from "radix-ui";
 
-import {
-  DotFilledIcon,
-  CheckIcon,
-  ChevronRightIcon,
-} from "@radix-ui/react-icons";
 import "@/css/dropdown.css";
 
 interface FolderContextInterface {
@@ -28,12 +22,8 @@ const FolderContext = ({
   left,
   type = "project",
   onDelete,
-  onDeviceOpen,
   onScenarioOpen,
 }: FolderContextInterface) => {
-  const [bookmarksChecked, setBookmarksChecked] = useState(true);
-  const [urlsChecked, setUrlsChecked] = useState(false);
-  const [person, setPerson] = useState("pedro");
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       {/* <DropdownMenu.Trigger asChild>

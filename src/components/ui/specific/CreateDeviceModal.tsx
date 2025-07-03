@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
-import { ProjectInterface, ScenarioInterface, DeviceInterface } from "@/types";
+import type {
+  DeviceInterface,
+  ProjectInterface,
+  ScenarioInterface,
+} from "@/types";
+import { useMemo, useState } from "react";
 
 import BaseToast from "../BaseToast";
 
