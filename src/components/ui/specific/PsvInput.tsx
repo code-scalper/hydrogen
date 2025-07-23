@@ -1,19 +1,14 @@
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { useEffect, useState } from "react";
 
-interface DevicePropertyInputProps {
+interface PsvInputProps {
   label: string;
   value: string;
   unit: string;
   onChange: (value: string) => void;
 }
 
-const DevicePropertyInput = ({
-  label,
-  value,
-  unit,
-  onChange,
-}: DevicePropertyInputProps) => {
+const PsvInput = ({ label, value, unit, onChange }: PsvInputProps) => {
   const [internalValue, setInternalValue] = useState(value);
 
   const debouncedUpdate = useDebouncedCallback((val: string) => {
@@ -29,7 +24,7 @@ const DevicePropertyInput = ({
       <label className=" text-slate-200 w-1/3">{label}</label>
       <input
         type="text"
-        className="w-1/2 px-2 py-1  bg-gray-700 text-white border-b border-slate-600 focus:outline-none focus:border-b-2 focus:border-blue-600"
+        className="w-1/2 px-2 py-1bg-gray-700 text-white border-b border-slate-600 focus:outline-none focus:border-b-2 focus:border-blue-600"
         value={internalValue}
         onChange={(e) => {
           const val = e.target.value;
@@ -44,4 +39,4 @@ const DevicePropertyInput = ({
   );
 };
 
-export default DevicePropertyInput;
+export default PsvInput;
