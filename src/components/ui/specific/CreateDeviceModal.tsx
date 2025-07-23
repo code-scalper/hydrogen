@@ -1,4 +1,5 @@
 import { useProjectStore } from "@/store/useProjectStore";
+import { useInteractionStore } from "@/store/useInteractionStore";
 import type {
   DeviceInterface,
   ProjectInterface,
@@ -11,6 +12,8 @@ import BaseToast from "../BaseToast";
 // components
 import BaseScrollArea from "../BaseScrollArea";
 import DevicePropertyInput from "./DevicePropertyInput";
+
+import { PsvCalculatorModal } from "./PsvCalculatorModal";
 
 interface CreateDeviceModalProps {
   isOpen: boolean;
@@ -63,6 +66,9 @@ export const CreateDeviceModal = ({
     (state) => state.updateDevicePropValue
   );
 
+  // const psvOpen = useInteractionStore((state)=>state.psvOpen)
+  const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
+
   const [open, setOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const showToast = (message: string) => {
@@ -109,7 +115,9 @@ export const CreateDeviceModal = ({
   }, [parentScenario]);
 
   const onPsvClick = () => {
-    showToast("PSV 계산 UI 개발중");
+    setPsvOpen(true);
+    // console.log("psv click");
+    // showToast("PSV 계산 UI 개발중");
   };
 
   if (!isOpen) return null;
@@ -216,6 +224,7 @@ export const CreateDeviceModal = ({
 
         <BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
       </div>
+      <PsvCalculatorModal onCreate={() => {}} />
     </div>
   );
 };
