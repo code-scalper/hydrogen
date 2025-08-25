@@ -4,7 +4,7 @@ import { useInteractionStore } from "@/store/useInteractionStore";
 import type { ScenarioInterface } from "@/types";
 
 // custom components
-import PsvInput from "./PsvInput";
+import PsvInput from "../PsvInput";
 
 interface PsvCalculatorModalProps {
   onCreate: (projectId: string, scenario: ScenarioInterface) => void;
@@ -34,7 +34,7 @@ const properties2 = [
   },
   { name: "Tank 표면온도", key: "tank_temp", value: "", unit: "K" },
 ];
-export const PsvCalculatorModal = ({ onCreate }: PsvCalculatorModalProps) => {
+export const PsvModal1 = ({ onCreate }: PsvCalculatorModalProps) => {
   const psvOpen = useInteractionStore((state) => state.psvOpen);
   const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
 
@@ -65,7 +65,7 @@ export const PsvCalculatorModal = ({ onCreate }: PsvCalculatorModalProps) => {
               className="w-[90%]"
             />
           </div>
-          <div className="w-[230px] bg-gray-700 overflow-y-auto text-[10px]">
+          <div className="w-[320px] bg-gray-700 overflow-y-auto text-[10px]">
             <p className="bg-stone-700 p-2">
               Input Specification: Pressure safety value
             </p>

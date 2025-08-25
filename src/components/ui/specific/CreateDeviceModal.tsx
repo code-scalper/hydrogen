@@ -13,7 +13,7 @@ import BaseToast from "../BaseToast";
 import BaseScrollArea from "../BaseScrollArea";
 import DevicePropertyInput from "./DevicePropertyInput";
 
-import { PsvCalculatorModal } from "./PsvCalculatorModal";
+import { PsvModal1 } from "./psv-calculator/PsvModal1";
 
 interface CreateDeviceModalProps {
   isOpen: boolean;
@@ -224,7 +224,7 @@ export const CreateDeviceModal = ({
 
         <BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
       </div>
-      <PsvCalculatorModal onCreate={() => {}} />
+      <PsvModal1 onCreate={() => {}} />
     </div>
   );
 };
