@@ -1,10 +1,9 @@
-import { useEffect } from "react";
 import { useInteractionStore } from "@/store/useInteractionStore";
 
 import type { ScenarioInterface } from "@/types";
 
 // custom components
-import PsvInput from "../PsvInput";
+import PsvInput from "./PsvInput";
 
 interface PsvCalculatorModalProps {
   onCreate: (projectId: string, scenario: ScenarioInterface) => void;

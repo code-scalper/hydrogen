@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import type { DeviceProperty } from "@/types";
 
-interface FlowInputOverlayProps {
+interface FlowOutputOverlayProps {
   point: DeviceProperty;
   scenarioId: string;
   onChange: (id: string, value: string) => void;
@@ -17,17 +17,18 @@ interface FlowInputOverlayProps {
 }
 
 const getArrowColor = (status: "normal" | "warning" | "error") => {
-  switch (status) {
-    case "normal":
-      return "text-sky-400"; // 파란색
-    case "warning":
-      return "text-yellow-400"; // 노란색
-    case "error":
-      return "text-red-500"; // 빨간색
-  }
+  // switch (status) {
+  //   case "normal":
+  //     return "text-sky-400"; // 파란색
+  //   case "warning":
+  //     return "text-yellow-400"; // 노란색
+  //   case "error":
+  //     return "text-red-500"; // 빨간색
+  // }
+  return "text-red-500";
 };
 
-const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
+const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
   point,
   onChange,
   status = "normal",
@@ -43,13 +44,12 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
   useEffect(() => {
     setInputValue(point.value);
   }, [point.value]);
-
   return (
     <div
       className={clsx(
-        "absolute flex items-center justify-start space-x-1 p-1 rounded",
-        "transform -translate-y-1/2", // X축 중앙정렬 제거
-        reverseOrder ? "flex-row-reverse space-x-reverse" : "flex-row"
+        "absolute flex items-center space-x-1 p-1 rounded",
+        "transform -translate-y-1/2",
+        "flex-row-reverse" // 항상 오른쪽 기준 (인풋이 오른쪽 끝)
       )}
       style={overlayStyle}
     >
@@ -57,6 +57,7 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
       <input
         type="text"
         value={inputValue}
+        readOnly
         onChange={(e) => {
           const newVal = e.target.value;
           setInputValue(newVal);
@@ -66,9 +67,7 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
           focus:outline-none focus:border-blue-500 rounded-sm"
         style={{
           height: `${Math.max(18, Math.min(inputHeight, 32))}px`,
-          width: fixedInputWidth
-            ? `${fixedInputWidth}px`
-            : `${Math.max(30, Math.min(40 * scale, 80))}px`,
+          width: `${fixedInputWidth}px`, // 👈 고정폭
           fontSize: `${Math.max(10, Math.min(12 * scale, 18))}px`,
           minWidth: "40px",
           maxWidth: "120px",
@@ -101,4 +100,4 @@ const FlowInputOverlay: React.FC<FlowInputOverlayProps> = ({
   );
 };
 
-export default FlowInputOverlay;
+export default FlowOutputOverlay;
