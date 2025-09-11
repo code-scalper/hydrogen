@@ -26,7 +26,7 @@ const INPUT_ITEMS = [
   },
 ];
 
-export const PsvModal_4050 = ({ onCreate }: PsvCalculatorModalProps) => {
+export const PsvModal_4050 = ({}: PsvCalculatorModalProps) => {
   const psvOpen = useInteractionStore((s) => s.psvOpen);
   const setPsvOpen = useInteractionStore((s) => s.setPsvOpen);
 
@@ -75,7 +75,7 @@ export const PsvModal_4050 = ({ onCreate }: PsvCalculatorModalProps) => {
                     label={prop.name}
                     value={prop.value}
                     unit={prop.unit ?? "-"}
-                    onChange={(v) => {
+                    onChange={() => {
                       // TODO: 상태/스토어에 맞춰 업데이트 로직 작성
                       // 예) updateDeviceProp(group.title, prop.key, v)
                     }}

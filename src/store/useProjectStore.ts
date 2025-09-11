@@ -29,13 +29,13 @@ interface ProjectState {
   updateItemName: (
     id: string,
     newName: string,
-    type: "project" | "scenario" | "device" | "property" | "module",
+    type: "project" | "scenario" | "device" | "property" | "module" | "input",
     parentId?: string
   ) => void;
 
   deleteItem: (
     id: string,
-    type: "project" | "scenario" | "device" | "property" | "module",
+    type: "project" | "scenario" | "device" | "property" | "module" | "input",
     parentId?: string
   ) => void;
 

@@ -25,6 +25,7 @@ const getArrowColor = (status: "normal" | "warning" | "error") => {
   //   case "error":
   //     return "text-red-500"; // 빨간색
   // }
+  console.log(status);
   return "text-red-500";
 };
 
@@ -37,7 +38,6 @@ const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
   scale,
   inputHeight,
   fixedInputWidth = 0,
-  reverseOrder = false,
 }) => {
   const [inputValue, setInputValue] = useState(point.value);
 

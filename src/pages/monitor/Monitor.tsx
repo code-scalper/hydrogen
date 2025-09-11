@@ -8,8 +8,6 @@ import FlowOutputOverlay from "./FlowOutputOverlay";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import type { ScenarioInterface } from "@/types";
 
-import { SCENARIOS } from "@/constants";
-
 import BaseToast from "@/components/ui/BaseToast";
 
 const images = import.meta.glob("@/assets/diagram/*", {
@@ -189,9 +187,6 @@ const Monitor = () => {
 
           {/* 아웃풋 포인트 */}
           {points.outputs?.map((point: any, index: number) => {
-            const left = (point.x || 0) * fixedWidth;
-            const top = (point.y || 0) * fixedHeight;
-
             return (
               <FlowOutputOverlay
                 key={`${point.key}${index}`}

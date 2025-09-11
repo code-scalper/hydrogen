@@ -1,5 +1,5 @@
 import { useProjectStore } from "@/store/useProjectStore";
-import { useInteractionStore } from "@/store/useInteractionStore";
+
 import type {
   DeviceInterface,
   ProjectInterface,
@@ -13,7 +13,6 @@ import BaseToast from "../BaseToast";
 import BaseScrollArea from "../BaseScrollArea";
 import DevicePropertyInput from "./DevicePropertyInput";
 
-import { PsvModal1 } from "./psv-calculator/PsvModal1";
 import ExtraInfoPanel from "./ExtraInfoPanel";
 
 interface CreateDeviceModalProps {
@@ -38,16 +37,16 @@ export const CreateDeviceModal = ({
   );
 
   // const psvOpen = useInteractionStore((state)=>state.psvOpen)
-  const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
+  // const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
 
   const [open, setOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setOpen(false); // 이전 Toast 닫기
-    setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
-    setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
-  };
+  const [toastMessage] = useState("");
+  // const showToast = (message: string) => {
+  //   setToastMessage(message);
+  //   setOpen(false); // 이전 Toast 닫기
+  //   setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
+  //   setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
+  // };
 
   const [showExtra, setShowExtra] = useState(false);
 
@@ -84,12 +83,6 @@ export const CreateDeviceModal = ({
   const devices = useMemo<DeviceInterface[]>(() => {
     return (parentScenario.children as DeviceInterface[]) || [];
   }, [parentScenario]);
-
-  const onPsvClick = () => {
-    setPsvOpen(true);
-    // console.log("psv click");
-    // showToast("PSV 계산 UI 개발중");
-  };
 
   if (!isOpen) return null;
 
@@ -195,7 +188,7 @@ export const CreateDeviceModal = ({
 
         <BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
       </div>
-      <PsvModal1 onCreate={() => {}} />
+      {/* <PsvModal1 onCreate={() => {}} /> */}
     </div>
   );
 };
