@@ -225,10 +225,10 @@ const Monitor = () => {
                   top: `${top}px`,
                   transform: "translateY(-50%)",
                   fontSize: `${Math.max(10, Math.min(12 * scale, 18))}px`,
-                  width: `${Math.max(16, Math.min(device.size * scale, 48))}px`,
+                  width: `${Math.max(16, Math.min(device.size * scale, 64))}px`,
                   height: `${Math.max(
                     16,
-                    Math.min(device.size * scale, 48)
+                    Math.min(device.size * scale, 64)
                   )}px`,
                 }}
                 onClick={() => {

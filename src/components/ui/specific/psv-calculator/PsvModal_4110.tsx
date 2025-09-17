@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import type { ScenarioInterface } from "@/types";
 import PsvInput from "./PsvInput";
 import SFC4110 from "@/assets/sfc/sfc_4110.png";
 import { DEVICES } from "@/constants/devices";
 import { PsvInputGroup } from "./PsvInputGroup";
+import PsvButtons from "./PsvButtons";
 
 interface PsvCalculatorModalProps {
   onCreate?: (projectId: string, scenario: ScenarioInterface) => void;
@@ -31,9 +33,15 @@ const INPUT_ITEMS = [
   },
 ];
 
+// charts
+import ChartModal from "../charts/ChartModal"; // ✅ ChartModal import
+import { multiData, variableDefs } from "../charts/sample-data";
+
 export const PsvModal_4110 = ({}: PsvCalculatorModalProps) => {
   const psvOpen = useInteractionStore((s) => s.psvOpen);
   const setPsvOpen = useInteractionStore((s) => s.setPsvOpen);
+
+  const [chartOpen, setChartOpen] = useState(false);
 
   if (!psvOpen) return null;
 
@@ -93,32 +101,16 @@ export const PsvModal_4110 = ({}: PsvCalculatorModalProps) => {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-center gap-2 px-4 py-3 border-t border-stone-700">
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-gray-500 text-gray-200 hover:bg-gray-600"
-          >
-            닫기
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            계산
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            그래프 출력
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            저장
-          </button>
-        </div>
+        <PsvButtons setPsvOpen={setPsvOpen} setChartOpen={setChartOpen} />
+        {/* ✅ ChartModal 호출 */}
+        <ChartModal
+          open={chartOpen}
+          onClose={() => setChartOpen(false)}
+          type="multi"
+          data={multiData}
+          variables={variableDefs}
+          showTable={true}
+        />
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import type { ScenarioInterface } from "@/types";
 import PsvInput from "./PsvInput";
 import SFC4050 from "@/assets/sfc/sfc_4050.png";
 import { DEVICES } from "@/constants/devices";
 import { PsvInputGroup } from "./PsvInputGroup";
+import PsvButtons from "./PsvButtons";
 
 interface PsvCalculatorModalProps {
   onCreate?: (projectId: string, scenario: ScenarioInterface) => void;
@@ -25,10 +27,14 @@ const INPUT_ITEMS = [
     y: 60,
   },
 ];
+import ChartModal from "../charts/ChartModal"; // ✅ ChartModal import
+import { singleChartData } from "../charts/sample-data";
 
 export const PsvModal_4050 = ({}: PsvCalculatorModalProps) => {
   const psvOpen = useInteractionStore((s) => s.psvOpen);
   const setPsvOpen = useInteractionStore((s) => s.setPsvOpen);
+
+  const [chartOpen, setChartOpen] = useState(false);
 
   if (!psvOpen) return null;
 
@@ -50,7 +56,7 @@ export const PsvModal_4050 = ({}: PsvCalculatorModalProps) => {
 
         {/* Content */}
         <div className="relative flex-1 p-4 overflow-auto h-full">
-          {/* 배경 이미지 (컨테이너 폭 안에서만 표시) */}
+          {/* 배경 이미지 */}
           <div className="absolute inset-x-0 top-0 p-5 overflow-hidden flex-1 h-full">
             <img
               src={SFC4050}
@@ -59,8 +65,7 @@ export const PsvModal_4050 = ({}: PsvCalculatorModalProps) => {
             />
           </div>
 
-          {/* === 여기부터 INPUT_ITEMS 렌더 (x,y에 따라 배치) === */}
-
+          {/* === INPUT_ITEMS 렌더 === */}
           {INPUT_ITEMS.map((group, gIdx) => (
             <PsvInputGroup
               key={gIdx}
@@ -76,45 +81,27 @@ export const PsvModal_4050 = ({}: PsvCalculatorModalProps) => {
                     value={prop.value}
                     unit={prop.unit ?? "-"}
                     onChange={() => {
-                      // TODO: 상태/스토어에 맞춰 업데이트 로직 작성
-                      // 예) updateDeviceProp(group.title, prop.key, v)
+                      // TODO: 상태 업데이트 로직
                     }}
                   />
                 ))}
               </div>
             </PsvInputGroup>
           ))}
-          {/* === INPUT_ITEMS 렌더 끝 === */}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-center gap-2 px-4 py-3 border-t border-stone-700">
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-gray-500 text-gray-200 hover:bg-gray-600"
-          >
-            닫기
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            계산
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            그래프 출력
-          </button>
-          <button
-            onClick={() => setPsvOpen(false)}
-            className="text-xs px-6 py-2 bg-blue-700 text-gray-200 hover:bg-gray-600"
-          >
-            저장
-          </button>
-        </div>
+        <PsvButtons setPsvOpen={setPsvOpen} setChartOpen={setChartOpen} />
       </div>
+
+      {/* ✅ ChartModal 호출 */}
+      <ChartModal
+        open={chartOpen}
+        onClose={() => setChartOpen(false)}
+        type="line"
+        data={singleChartData}
+        showTable={false}
+      />
     </div>
   );
 };

@@ -22,6 +22,10 @@ import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
 import { PsvModal_4130 } from "../ui/specific/psv-calculator/PsvModal_4130";
 import { PsvModal_4500 } from "../ui/specific/psv-calculator/PsvModal_4500";
 
+import { EconomicEvaluation } from "../views/economic-evaluation/EconomicEvaluation";
+import { EconomicEvaluationWithGraph } from "../views/economic-evaluation/EconomicEvaluationWithGraph";
+import { WhatIf } from "../views/what-if/WhatIf";
+import { WhatIfAnalisys } from "../views/what-if/WhatIfAnalisys";
 const ICON_SIZE = "h-6 w-6";
 const ICON_COLOR = "text-gray-300";
 
@@ -34,12 +38,13 @@ const NAVI_ITEMS = [
   {
     icon: <QuestionMarkCircleIcon className={`${ICON_SIZE} text-purple-500`} />,
     name: "What-IF",
-    to: "/what-if",
+    key: "what-if",
   },
   {
     icon: <ScaleIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
     name: "경제성평가",
-    to: "/economic-evaluation",
+    key: "economic-evaluation",
+    // to: "/economic-evaluation",
   },
   {
     icon: <CalculatorIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />,
@@ -71,6 +76,10 @@ const NAVI_ITEMS = [
 ];
 
 const BaseHeader = () => {
+  const [showModal1, setShowModal1] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
+  const [showModal3, setShowModal3] = useState(false);
+
   const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
   const setSelectedPsvKey = useProjectStore((state) => state.setSelectedPsvKey);
 
@@ -84,6 +93,19 @@ const BaseHeader = () => {
     Array.isArray(navi?.children) && navi.children.length > 0;
 
   const handleClick = (navi: any, index: number) => {
+    console.log(navi, index, "click");
+
+    if (navi.key === "economic-evaluation") {
+      // setShowModal1((prev) => !prev);
+      setShowModal1((prev) => !prev);
+      return;
+    }
+    if (navi.key === "what-if") {
+      // setShowModal1((prev) => !prev);
+      setShowModal2((prev) => !prev);
+      return;
+    }
+
     if (hasChildren(navi)) {
       setOpenIndex((prev) => (prev === index ? null : index));
       return;
@@ -97,7 +119,7 @@ const BaseHeader = () => {
   }) => {
     setPsvOpen(true);
     setSelectedPsvKey(child.key);
-    console.log(child, "child");
+
     if (child.component) {
       setActiveChildComp(() => child.component as React.ComponentType);
     }
@@ -114,6 +136,14 @@ const BaseHeader = () => {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
+
+  const handleEvent = (key: string) => {
+    if (key === "whatif") {
+      setShowModal2(false);
+      setShowModal3(true);
+    }
+    console.log(key, "handleEvent");
+  };
 
   return (
     <div
@@ -193,6 +223,22 @@ const BaseHeader = () => {
         })}
       </nav>
 
+      <WhatIfAnalisys
+        handleEvent={handleEvent}
+        showModal={showModal3}
+        setShowModal={setShowModal3}
+      />
+
+      <WhatIf
+        handleEvent={handleEvent}
+        showModal={showModal2}
+        setShowModal={setShowModal2}
+      />
+
+      <EconomicEvaluationWithGraph
+        showModal={showModal1}
+        setShowModal={setShowModal1}
+      />
       {ActiveChildComp && (
         <div className="absolute bottom-4 right-4 z-[98]">
           <ActiveChildComp />
