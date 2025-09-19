@@ -1,5 +1,5 @@
 import { useProjectStore } from "@/store/useProjectStore";
-import { useInteractionStore } from "@/store/useInteractionStore";
+
 import type {
   DeviceInterface,
   ProjectInterface,
@@ -13,7 +13,7 @@ import BaseToast from "../BaseToast";
 import BaseScrollArea from "../BaseScrollArea";
 import DevicePropertyInput from "./DevicePropertyInput";
 
-import { PsvCalculatorModal } from "./PsvCalculatorModal";
+import ExtraInfoPanel from "./ExtraInfoPanel";
 
 interface CreateDeviceModalProps {
   isOpen: boolean;
@@ -24,36 +24,6 @@ interface CreateDeviceModalProps {
     device: DeviceInterface
   ) => void;
 }
-
-const ExtraInfoPanel = ({ props }: { props: DeviceInterface["props"] }) => {
-  return (
-    <div className="w-[400px] bg-gray-700 p-3 text-[10px] overflow-y-auto max-h-[550px]">
-      <h3 className="text-sm font-bold mb-2 text-white">추가 정보</h3>
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-gray-600">
-            <th className="py-1 px-2 text-gray-300">Name</th>
-            <th className="py-1 px-2 text-gray-300">Description</th>
-            <th className="py-1 px-2 text-gray-300">Unit</th>
-            <th className="py-1 px-2 text-gray-300">Min</th>
-            <th className="py-1 px-2 text-gray-300">Max</th>
-          </tr>
-        </thead>
-        <tbody>
-          {props.map((prop) => (
-            <tr key={prop.key} className="border-b border-gray-600">
-              <td className="py-1 px-2 text-white">{prop.name}</td>
-              <td className="py-1 px-2 text-white">{prop.description}</td>
-              <td className="py-1 px-2 text-white">{prop.unit}</td>
-              <td className="py-1 px-2 text-white"></td> {/* min */}
-              <td className="py-1 px-2 text-white"></td> {/* max */}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
 
 export const CreateDeviceModal = ({
   isOpen,
@@ -67,16 +37,16 @@ export const CreateDeviceModal = ({
   );
 
   // const psvOpen = useInteractionStore((state)=>state.psvOpen)
-  const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
+  // const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
 
   const [open, setOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setOpen(false); // 이전 Toast 닫기
-    setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
-    setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
-  };
+  const [toastMessage] = useState("");
+  // const showToast = (message: string) => {
+  //   setToastMessage(message);
+  //   setOpen(false); // 이전 Toast 닫기
+  //   setTimeout(() => setOpen(true), 10); // 새 Toast 열기 (React state refresh 대응)
+  //   setTimeout(() => setOpen(false), 2000); // 새 Toast 열기 (React state refresh 대응)
+  // };
 
   const [showExtra, setShowExtra] = useState(false);
 
@@ -113,12 +83,6 @@ export const CreateDeviceModal = ({
   const devices = useMemo<DeviceInterface[]>(() => {
     return (parentScenario.children as DeviceInterface[]) || [];
   }, [parentScenario]);
-
-  const onPsvClick = () => {
-    setPsvOpen(true);
-    // console.log("psv click");
-    // showToast("PSV 계산 UI 개발중");
-  };
 
   if (!isOpen) return null;
 
@@ -207,12 +171,12 @@ export const CreateDeviceModal = ({
               >
                 취소
               </button>
-              <button
+              {/* <button
                 onClick={onPsvClick}
                 className="text-xs px-4 py-1 bg-rose-500 text-gray-200 hover:bg-gray-600"
               >
                 PSV 계산
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -224,7 +188,7 @@ export const CreateDeviceModal = ({
 
         <BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
       </div>
-      <PsvCalculatorModal onCreate={() => {}} />
+      {/* <PsvModal1 onCreate={() => {}} /> */}
     </div>
   );
 };

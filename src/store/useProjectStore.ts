@@ -9,13 +9,14 @@ import { persist } from "zustand/middleware";
 import { SCENARIOS } from "@/constants";
 import cloneDeep from "lodash/cloneDeep";
 interface ProjectState {
+  selectedPsvKey: string | null;
   selectedProject: ProjectInterface | null;
   selectedScenario: ScenarioInterface | null;
   selectedDevice: DeviceInterface | null;
   selectedProperty: ProjectInterface | null;
   folderList: ProjectInterface[];
   scenarios: ScenarioInterface[];
-
+  setSelectedPsvKey: (key: string) => void;
   setSelectedProject: (selectedProject: ProjectInterface) => void;
   setSelectedScenario: (selectedScenario: ScenarioInterface) => void;
   setSelectedDevice: (selectedDevice: DeviceInterface) => void;
@@ -28,13 +29,13 @@ interface ProjectState {
   updateItemName: (
     id: string,
     newName: string,
-    type: "project" | "scenario" | "device" | "property" | "module",
+    type: "project" | "scenario" | "device" | "property" | "module" | "input",
     parentId?: string
   ) => void;
 
   deleteItem: (
     id: string,
-    type: "project" | "scenario" | "device" | "property" | "module",
+    type: "project" | "scenario" | "device" | "property" | "module" | "input",
     parentId?: string
   ) => void;
 
@@ -50,6 +51,7 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>()(
   persist(
     (set, get) => ({
+      selectedPsvKey: null,
       selectedProject: null,
       selectedScenario: null,
       selectedDevice: null,
@@ -57,6 +59,7 @@ export const useProjectStore = create<ProjectState>()(
       scenarios: SCENARIOS,
       folderList: [],
 
+      setSelectedPsvKey: (selectedPsvKey) => set({ selectedPsvKey }),
       setSelectedProject: (selectedProject) => set({ selectedProject }),
       setSelectedScenario: (selectedScenario) => set({ selectedScenario }),
       setSelectedDevice: (selectedDevice) => set({ selectedDevice }),
@@ -297,7 +300,7 @@ export const useProjectStore = create<ProjectState>()(
     }),
     {
       name: "project-store", // localStorage key
-      version: 14, // 기존보다 높은 버전 번호로 변경
+      version: 25, // 기존보다 높은 버전 번호로 변경
       // partialize: (state) => ({
       //   folderList: state.folderList,
       //   scenarios: state.scenarios,
