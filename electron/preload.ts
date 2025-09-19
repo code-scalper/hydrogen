@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
+contextBridge.exposeInMainWorld("electronAPI", {
+  runExe: () => ipcRenderer.invoke("run-exe"),
+});
 
 contextBridge.exposeInMainWorld("electronStore", {
   get: (key: string) => ipcRenderer.invoke("electron-store-get", key),

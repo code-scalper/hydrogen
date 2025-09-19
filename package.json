@@ -26,6 +26,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.441.0",
     "react": "^18.2.0",
+    "react-circular-progressbar": "^2.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.6.2",
     "tailwind-merge": "^2.5.2",
