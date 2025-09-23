@@ -52,8 +52,8 @@ export const EconomicEvaluation = ({
                   "V130-2",
                   "V140-2",
                   "V150-2",
-                ].map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-600">
+                ].map((item) => (
+                  <tr key={item} className="hover:bg-gray-600">
                     <td className="p-2 border border-gray-600 text-center">
                       <input type="checkbox" className="accent-blue-500" />
                     </td>
@@ -88,8 +88,8 @@ export const EconomicEvaluation = ({
                   { name: "고압탱크 가스 질량", value: 0, unit: "kg" },
                   { name: "고압탱크 SOC", value: 0, unit: "%" },
                   { name: "압력상승률", value: 0, unit: "MPa/min" },
-                ].map((row, idx) => (
-                  <tr key={idx} className="hover:bg-gray-600">
+                ].map((row) => (
+                  <tr key={row.name} className="hover:bg-gray-600">
                     <td className="p-2 border border-gray-600">{row.name}</td>
                     <td className="p-2 border border-gray-600 text-right">
                       {row.value}

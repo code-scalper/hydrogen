@@ -51,7 +51,6 @@ export const AdjustBasicDataModal = ({
   const [formState, setFormState] = useState<Record<string, string>>({});
   const debouncedUpdateValue = useDebouncedCallback(
     (key: string, value: string) => {
-      console.log(key, value);
       setValue(targetId, key, value);
       updateScenarioBaseDataValue(key, value);
     },
@@ -119,7 +118,7 @@ export const AdjustBasicDataModal = ({
                 {baseData1.map((input, index) =>
                   input.type === "text" ? (
                     <LabeledInput
-                      key={index}
+                      key={input.key ?? index}
                       label={input.name}
                       name={input.key}
                       unit={input.unit}
@@ -131,7 +130,7 @@ export const AdjustBasicDataModal = ({
                     />
                   ) : (
                     <LabelSelect
-                      key={index}
+                      key={input.key ?? index}
                       label={input.name}
                       name={input.key}
                       unit={input.unit}
@@ -147,7 +146,7 @@ export const AdjustBasicDataModal = ({
                 {baseData2.map((input, index) =>
                   input.type === "text" ? (
                     <LabeledInput
-                      key={index}
+                      key={input.key ?? index}
                       label={input.name}
                       name={input.key}
                       unit={input.unit}
@@ -159,7 +158,7 @@ export const AdjustBasicDataModal = ({
                     />
                   ) : (
                     <LabelSelect
-                      key={index}
+                      key={input.key ?? index}
                       label={input.name}
                       name={input.key}
                       unit={input.unit}

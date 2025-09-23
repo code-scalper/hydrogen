@@ -25,7 +25,6 @@ const getArrowColor = (status: "normal" | "warning" | "error") => {
   //   case "error":
   //     return "text-red-500"; // 빨간색
   // }
-  console.log(status);
   return "text-red-500";
 };
 

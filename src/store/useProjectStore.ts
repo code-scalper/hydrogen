@@ -178,11 +178,10 @@ export const useProjectStore = create<ProjectState>()(
             );
           }
 
-          return { folderList: updatedFolderList };
-        }),
+      return { folderList: updatedFolderList };
+    }),
 
       updateInputValue: (pointId, newValue) => {
-        console.log(pointId, newValue);
         const state = get();
         const projectId = state.selectedScenario?.parentId || "";
         const scenarioId = state.selectedScenario?.id || "";

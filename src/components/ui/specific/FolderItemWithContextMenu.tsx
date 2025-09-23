@@ -40,7 +40,6 @@ export const FolderItemWithContext = ({ data }: FolderItemProps) => {
               <DropdownMenu.Item
                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                 onSelect={() => {
-                  console.log("이름 변경:", data.name);
                   setOpen(false);
                 }}
               >
@@ -50,7 +49,6 @@ export const FolderItemWithContext = ({ data }: FolderItemProps) => {
               <DropdownMenu.Item
                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                 onSelect={() => {
-                  console.log("삭제:", data.name);
                   setOpen(false);
                 }}
               >
@@ -60,7 +58,6 @@ export const FolderItemWithContext = ({ data }: FolderItemProps) => {
               <DropdownMenu.Item
                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                 onSelect={() => {
-                  console.log("하위 폴더 추가:", data.name);
                   setOpen(false);
                 }}
               >
