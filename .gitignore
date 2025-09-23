@@ -25,3 +25,6 @@ dist-ssr
 
 #Eletron builds
 release
+
+# Generated Excel workbook
+third-party/Input_Total.xlsx

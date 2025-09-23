@@ -16,6 +16,7 @@ import { AdjustBasicDataModal } from "../ui/specific/AdjustBasicDataModal";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import CircularProgress from "../ui/CircularProgress";
+import { collectScenarioInputValues } from "@/lib/simulation";
 
 const BaseContentHeader = () => {
   const selectedScenario = useProjectStore((state) => state.selectedScenario);
@@ -81,11 +82,17 @@ const BaseContentHeader = () => {
   };
 
   const handleRun = async () => {
+    const payload = collectScenarioInputValues(selectedScenario);
+    if (!payload) {
+      console.warn("실행할 시나리오가 선택되지 않았습니다.");
+      return;
+    }
+
     setRunning(true);
     startProgress();
 
     try {
-      await window.electronAPI.runExe();
+      await window.electronAPI.runExe(payload);
       stopProgress();
     } catch (e) {
       console.error("실행 실패", e);

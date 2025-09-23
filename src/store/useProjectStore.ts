@@ -182,37 +182,68 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       updateInputValue: (pointId, newValue) => {
-        console.log(pointId, newValue);
         const state = get();
-        const projectId = state.selectedScenario?.parentId || "";
-        const scenarioId = state.selectedScenario?.id || "";
+        const projectId = state.selectedScenario?.parentId;
+        const scenarioId = state.selectedScenario?.id;
+
+        if (!projectId || !scenarioId) return;
 
         const updatedFolderList = state.folderList.map((project) => {
-          if (project.id !== projectId) return project;
+          if (project.id !== projectId || !project.children) return project;
 
-          const updatedChildren = project.children?.map((scenario) => {
+          const updatedScenarios = project.children.map((scenario) => {
             if (scenario.id !== scenarioId) return scenario;
 
-            // const updatedInputPoints = scenario.inputPoints?.map((input) => {
-            //   if (input.id === pointId) {
-            //     return { ...input, value: newValue };
-            //   }
-            //   return input;
-            // });
+            const updatedChildren = scenario.children?.map((device) => {
+              let touched = false;
+
+              const updatedProps = device.props?.map((prop) => {
+                if (prop.key === pointId) {
+                  touched = true;
+                  return { ...prop, value: newValue };
+                }
+                return prop;
+              });
+
+              const updatedOutputProps = device.outputProps?.map((prop) => {
+                if (prop.key === pointId) {
+                  touched = true;
+                  return { ...prop, value: newValue };
+                }
+                return prop;
+              });
+
+              if (!touched) {
+                return device;
+              }
+
+              return {
+                ...device,
+                props: updatedProps ?? device.props,
+                outputProps: updatedOutputProps ?? device.outputProps,
+              };
+            });
 
             return {
               ...scenario,
-              inputPoints: {},
+              children: updatedChildren,
             };
           });
 
           return {
             ...project,
-            children: updatedChildren,
+            children: updatedScenarios,
           };
         });
 
-        set({ folderList: updatedFolderList });
+        const updatedProject = updatedFolderList.find(
+          (project) => project.id === projectId,
+        );
+        const updatedScenario =
+          updatedProject?.children?.find((scenario) => scenario.id === scenarioId) ??
+          null;
+
+        set({ folderList: updatedFolderList, selectedScenario: updatedScenario });
       },
 
       updateDevicePropValue: (device, propKey, newValue) => {

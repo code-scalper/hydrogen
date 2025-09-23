@@ -6,7 +6,7 @@ import {
   CalculatorIcon,
   // FolderOpenIcon,
   // ArchiveBoxArrowDownIcon,
-  // PlayCircleIcon,
+  PlayCircleIcon,
   // StopCircleIcon,
   ScaleIcon,
   CodeBracketSquareIcon,
@@ -16,6 +16,7 @@ import {
 
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
+import { collectScenarioInputValues } from "@/lib/simulation";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
@@ -30,6 +31,11 @@ const ICON_SIZE = "h-6 w-6";
 const ICON_COLOR = "text-gray-300";
 
 const NAVI_ITEMS = [
+  {
+    icon: <PlayCircleIcon className={`${ICON_SIZE} text-emerald-400`} />,
+    name: "실행",
+    key: "run-simulation",
+  },
   {
     icon: <CodeBracketSquareIcon className={`${ICON_SIZE} text-blue-400`} />,
     name: "시뮬레이터",
@@ -82,6 +88,7 @@ const BaseHeader = () => {
 
   const setPsvOpen = useInteractionStore((state) => state.setPsvOpen);
   const setSelectedPsvKey = useProjectStore((state) => state.setSelectedPsvKey);
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [ActiveChildComp, setActiveChildComp] =
@@ -92,8 +99,27 @@ const BaseHeader = () => {
   const hasChildren = (navi: any) =>
     Array.isArray(navi?.children) && navi.children.length > 0;
 
+  const handleRun = async () => {
+    const payload = collectScenarioInputValues(selectedScenario);
+    if (!payload) {
+      console.warn("실행할 시나리오가 선택되지 않았습니다.");
+      return;
+    }
+
+    try {
+      await window.electronAPI.runExe(payload);
+    } catch (error) {
+      console.error("실행 실패", error);
+    }
+  };
+
   const handleClick = (navi: any, index: number) => {
     console.log(navi, index, "click");
+
+    if (navi.key === "run-simulation") {
+      handleRun();
+      return;
+    }
 
     if (navi.key === "economic-evaluation") {
       // setShowModal1((prev) => !prev);

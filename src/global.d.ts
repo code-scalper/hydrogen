@@ -3,7 +3,10 @@ export {};
 declare global {
   interface Window {
     electronAPI: {
-      runExe: () => Promise<string>;
+      runExe: (payload?: {
+        sfc?: string | null;
+        values?: Record<string, string>;
+      }) => Promise<string>;
     };
     electronStore: {
       get: (key: string) => Promise<any>;
