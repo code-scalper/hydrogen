@@ -10,31 +10,38 @@ import "@/css/select.css";
 import * as RadixSelect from "@radix-ui/react-select";
 
 interface selectItemInterface {
-	key: string;
-	label: string;
-	data?: any;
+        key: string;
+        label: React.ReactNode;
+        data?: any;
+        disabled?: boolean;
+        className?: string;
 }
 interface SelectBoxInterface {
-	placeholder?: string;
-	selectItems: selectItemInterface[];
-	value?: string; // 추가
-	onValueChange?: (value: string, data?: any) => void; // 추가
+        placeholder?: string;
+        selectItems: selectItemInterface[];
+        value?: string; // 추가
+        onValueChange?: (value: string, data?: any) => void; // 추가
 }
 
 const SelectItem = React.forwardRef<
-	HTMLDivElement,
-	RadixSelect.SelectItemProps & { className?: string }
->(({ children, className, ...props }, forwardedRef) => (
-	<RadixSelect.Item
-		className={classnames("SelectItem", className)}
-		{...props}
-		ref={forwardedRef}
-	>
-		<RadixSelect.ItemText>{children}</RadixSelect.ItemText>
-		<RadixSelect.ItemIndicator className="SelectItemIndicator">
-			<CheckIcon />
-		</RadixSelect.ItemIndicator>
-	</RadixSelect.Item>
+        HTMLDivElement,
+        RadixSelect.SelectItemProps & { className?: string }
+>(({ children, className, disabled, ...props }, forwardedRef) => (
+        <RadixSelect.Item
+                className={classnames(
+                        "SelectItem",
+                        className,
+                        disabled ? "opacity-60" : null,
+                )}
+                disabled={disabled}
+                {...props}
+                ref={forwardedRef}
+        >
+                <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
+                <RadixSelect.ItemIndicator className="SelectItemIndicator">
+                        <CheckIcon />
+                </RadixSelect.ItemIndicator>
+        </RadixSelect.Item>
 ));
 
 SelectItem.displayName = "SelectItem"; // ⚠️ forwardRef에는 필수!
@@ -72,11 +79,16 @@ const SelectBox = ({
 					<Select.Viewport className="SelectViewport">
 						<Select.Group>
 							{/* <Select.Label className="SelectLabel">Fruits</Select.Label> */}
-							{selectItems.map((item, index) => (
-								<SelectItem key={index} value={item.key}>
-									{item.label}
-								</SelectItem>
-							))}
+                                                        {selectItems.map((item, index) => (
+                                                                <SelectItem
+                                                                        key={index}
+                                                                        value={item.key}
+                                                                        className={item.className}
+                                                                        disabled={item.disabled}
+                                                                >
+                                                                        {item.label}
+                                                                </SelectItem>
+                                                        ))}
 						</Select.Group>
 						{/* 
                 <Select.Separator className="SelectSeparator" />
