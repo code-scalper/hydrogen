@@ -60,13 +60,34 @@ export const CreateScenarioModal = ({
     return items ? items : [];
   }, [folders]);
 
+  const existingScenarioIds = useMemo(() => {
+    if (!selectedProjectId) {
+      return new Set<string>();
+    }
+
+    const project = folders.find((folder) => folder.id === selectedProjectId);
+    const ids = project?.children?.map((child) => child.id) || [];
+
+    return new Set(ids);
+  }, [folders, selectedProjectId]);
+
   const selectScenarioItems = useMemo(() => {
     const items =
       scenarios.map((scenario) => {
-        return { label: scenario.sfcName, key: scenario.id, data: scenario };
+        const isExisting = existingScenarioIds.has(scenario.id);
+
+        return {
+          label: isExisting
+            ? `${scenario.sfcName} (이미 추가됨)`
+            : scenario.sfcName,
+          key: scenario.id,
+          data: scenario,
+          disabled: isExisting,
+          className: isExisting ? "text-gray-400" : undefined,
+        };
       }) || [];
     return items ? items : [];
-  }, [scenarios]);
+  }, [scenarios, existingScenarioIds]);
 
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [selectedScenarioId, setSelectedScenarioId] = useState("");
@@ -76,6 +97,32 @@ export const CreateScenarioModal = ({
       setSelectedProjectId(selectedProject.id);
     }
   }, [selectedProject]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedScenarioId("");
+      setSelectedScenario(null);
+      setName("");
+      setTyped(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (selectedScenarioId && existingScenarioIds.has(selectedScenarioId)) {
+      setSelectedScenarioId("");
+      setSelectedScenario(null);
+      setName("");
+      setTyped(false);
+    }
+  }, [existingScenarioIds, selectedScenarioId]);
+
+  const isScenarioAlreadyInProject = useMemo(() => {
+    if (!selectedScenarioId) return false;
+    return existingScenarioIds.has(selectedScenarioId);
+  }, [existingScenarioIds, selectedScenarioId]);
+
+  const isCreateDisabled =
+    !selectedProjectId || !selectedScenario || isScenarioAlreadyInProject;
 
   const selectedScenarioImage = useMemo(() => {
     const src = IMAGES[selectedScenarioId];
@@ -146,7 +193,7 @@ export const CreateScenarioModal = ({
                 className="text-white text-xs border-none bg-gray-700 border rounded p-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-800 flex-1"
                 placeholder="예: Scenario Name"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !isCreateDisabled) {
                     onCreate(selectedProjectId, {
                       ...selectedScenario,
                       name,
@@ -181,11 +228,17 @@ export const CreateScenarioModal = ({
           </button>
           <button
             onClick={() => {
+              if (isCreateDisabled) return;
               onCreate(selectedProjectId, { ...selectedScenario, name });
               setName("");
               onClose();
             }}
-            className="text-xs px-4 py-1  bg-blue-500 text-white hover:bg-blue-600"
+            disabled={isCreateDisabled}
+            className={`text-xs px-4 py-1  ${
+              isCreateDisabled
+                ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
           >
             생성
           </button>
