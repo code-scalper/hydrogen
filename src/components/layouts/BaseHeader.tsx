@@ -114,14 +114,13 @@ const BaseHeader = () => {
   };
 
   const handleClick = (navi: any, index: number) => {
-    
     console.log(navi, index, "click");
 
     if (navi.key === "run-simulation") {
       handleRun();
       return;
     }
-     if (navi.key === "economic-evaluation") {
+    if (navi.key === "economic-evaluation") {
       // setShowModal1((prev) => !prev);
       setShowModal1((prev) => !prev);
       return;
@@ -238,13 +237,13 @@ const BaseHeader = () => {
             </span>
           );
 
-          return navi.to !== undefined
-            ? (
-                <Link to={navi.to} key={navKey} className="no-underline">
-                  {content}
-                </Link>
-              )
-            : cloneElement(content, { key: navKey });
+          return navi.to !== undefined ? (
+            <Link to={navi.to} key={navKey} className="no-underline">
+              {content}
+            </Link>
+          ) : (
+            cloneElement(content, { key: navKey })
+          );
         })}
       </nav>
 
