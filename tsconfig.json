@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "types": ["vite/client"], // 이 아래 줄 추가
-    "typeRoots": ["./node_modules/@types", "./src/types"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

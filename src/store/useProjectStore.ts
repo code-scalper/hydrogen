@@ -178,8 +178,8 @@ export const useProjectStore = create<ProjectState>()(
             );
           }
 
-          return { folderList: updatedFolderList };
-        }),
+      return { folderList: updatedFolderList };
+    }),
 
       updateInputValue: (pointId, newValue) => {
         const state = get();

@@ -44,7 +44,7 @@ const BaseSidebar = () => {
         {folders.map((folder, index) => (
           <FolderItem
             data={folder}
-            key={index}
+            key={folder.id ?? index}
             shouldOpenProjectId={shouldOpenProjectId}
           />
         ))}

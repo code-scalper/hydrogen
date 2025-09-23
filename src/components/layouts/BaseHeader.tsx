@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -114,14 +114,14 @@ const BaseHeader = () => {
   };
 
   const handleClick = (navi: any, index: number) => {
+    
     console.log(navi, index, "click");
 
     if (navi.key === "run-simulation") {
       handleRun();
       return;
     }
-
-    if (navi.key === "economic-evaluation") {
+     if (navi.key === "economic-evaluation") {
       // setShowModal1((prev) => !prev);
       setShowModal1((prev) => !prev);
       return;
@@ -168,7 +168,6 @@ const BaseHeader = () => {
       setShowModal2(false);
       setShowModal3(true);
     }
-    console.log(key, "handleEvent");
   };
 
   return (
@@ -184,9 +183,9 @@ const BaseHeader = () => {
       </div>
       <nav className="relative flex gap-x-1 justify-end p-3">
         {NAVI_ITEMS.map((navi, index) => {
-          const item = (
+          const navKey = navi.key ?? navi.to ?? navi.name ?? index;
+          const content = (
             <span
-              key={index}
               className="relative text-white flex justify-center flex-col items-center cursor-pointer w-16 focus:outline-none"
               onClick={() => handleClick(navi, index)}
               onKeyDown={(e) => {
@@ -239,13 +238,13 @@ const BaseHeader = () => {
             </span>
           );
 
-          return navi.to !== undefined ? (
-            <Link to={navi.to} key={index} className="no-underline">
-              {item}
-            </Link>
-          ) : (
-            item
-          );
+          return navi.to !== undefined
+            ? (
+                <Link to={navi.to} key={navKey} className="no-underline">
+                  {content}
+                </Link>
+              )
+            : cloneElement(content, { key: navKey });
         })}
       </nav>
 

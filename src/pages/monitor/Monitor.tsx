@@ -104,8 +104,6 @@ const Monitor = () => {
   }, 500);
 
   const imageUrl = useMemo(() => {
-    console.log(selectedScenario, "selectedScenario");
-
     return selectedScenario
       ? images[`/src/assets/diagram/${selectedScenario.src}`]
       : images[`/src/assets/diagram/SFC_1022.jpg`];
@@ -166,7 +164,7 @@ const Monitor = () => {
 
             return (
               <FlowInputOverlay
-                key={`${point.key}${index}`}
+                key={point.key ?? point.id ?? index}
                 point={point}
                 scenarioId={selectedScenario.id}
                 onChange={debouncedUpdate}
@@ -189,7 +187,7 @@ const Monitor = () => {
           {points.outputs?.map((point: any, index: number) => {
             return (
               <FlowOutputOverlay
-                key={`${point.key}${index}`}
+                key={point.key ?? point.id ?? index}
                 point={point}
                 scenarioId={selectedScenario.id}
                 onChange={debouncedUpdate}
@@ -218,7 +216,7 @@ const Monitor = () => {
             return device.displayOnDiagram ? (
               <div
                 datatype={device.id}
-                key={`${device.id}${index}`}
+                key={device.id ?? index}
                 className="absolute text-white transition text-xs px-2 py-1 rounded cursor-pointer hover:bg-blue-600/0 bg-blue-600/0 z-50"
                 style={{
                   left: `${left}px`,
