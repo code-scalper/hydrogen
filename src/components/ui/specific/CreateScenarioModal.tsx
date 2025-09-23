@@ -48,6 +48,11 @@ export const CreateScenarioModal = ({
   const scenarios = useProjectStore((state) => state.scenarios);
   const selectedProject = useProjectStore((state) => state.selectedProject);
 
+
+
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedScenarioId, setSelectedScenarioId] = useState("");
+  const [selectedScenario, setSelectedScenario] = useState<any>(null);
   // const setSelectedProject = useProjectStore(
   //   (state) => state.setSelectedProject
   // );
@@ -89,9 +94,6 @@ export const CreateScenarioModal = ({
     return items ? items : [];
   }, [scenarios, existingScenarioIds]);
 
-  const [selectedProjectId, setSelectedProjectId] = useState("");
-  const [selectedScenarioId, setSelectedScenarioId] = useState("");
-  const [selectedScenario, setSelectedScenario] = useState<any>(null);
   useEffect(() => {
     if (selectedProject) {
       setSelectedProjectId(selectedProject.id);
