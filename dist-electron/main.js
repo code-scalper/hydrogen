@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var _validator, _encryptionKey, _options, _defaultValues;
-import electron, { ipcMain as ipcMain$1, app as app$1, BrowserWindow } from "electron";
+import electron, { ipcMain as ipcMain$1, app as app$1, dialog, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -21,6 +21,8 @@ import crypto from "node:crypto";
 import assert from "node:assert";
 import os from "node:os";
 import { execFile } from "child_process";
+import path$1 from "path";
+import zlib from "zlib";
 const isObject = (value) => {
   const type2 = typeof value;
   return value !== null && (type2 === "object" || type2 === "function");
@@ -15289,15 +15291,426 @@ class ElectronStore extends Conf {
     }
   }
 }
-ipcMain$1.handle("run-exe", async () => {
-  const isDev = !app$1.isPackaged;
-  const exePath = isDev ? path.join(__dirname, "..", "third-party", "MHySIM_HRS_Run.exe") : path.join(process.resourcesPath, "third-party", "MHySIM_HRS_Run.exe");
-  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, "");
-  const baseOutputDir = isDev ? path.join(__dirname, "..", "output") : path.join(process.resourcesPath, "output");
-  const datedOutputDir = path.join(baseOutputDir, today);
-  if (!fs$1.existsSync(datedOutputDir)) {
-    fs$1.mkdirSync(datedOutputDir, { recursive: true });
+const ZIP_LOCAL_FILE_HEADER_SIGNATURE = 67324752;
+const ZIP_CENTRAL_DIRECTORY_SIGNATURE = 33639248;
+const ZIP_END_OF_CENTRAL_DIRECTORY_SIGNATURE = 101010256;
+const hasOwn = Object.prototype.hasOwnProperty;
+function findEndOfCentralDirectory(buffer) {
+  for (let i = buffer.length - 22; i >= 0; i--) {
+    if (buffer.readUInt32LE(i) === ZIP_END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
+      return i;
+    }
   }
+  throw new Error("End of central directory not found");
+}
+function parseZip(buffer) {
+  const endOffset = findEndOfCentralDirectory(buffer);
+  const centralDirectorySize = buffer.readUInt32LE(endOffset + 12);
+  const centralDirectoryOffset = buffer.readUInt32LE(endOffset + 16);
+  const entries = [];
+  const entryMap = /* @__PURE__ */ new Map();
+  let offset = centralDirectoryOffset;
+  let index = 0;
+  while (offset < centralDirectoryOffset + centralDirectorySize) {
+    const signature = buffer.readUInt32LE(offset);
+    if (signature !== ZIP_CENTRAL_DIRECTORY_SIGNATURE) {
+      throw new Error("Invalid central directory signature");
+    }
+    const versionMadeBy = buffer.readUInt16LE(offset + 4);
+    const versionNeeded = buffer.readUInt16LE(offset + 6);
+    const generalPurpose = buffer.readUInt16LE(offset + 8);
+    const compressionMethod = buffer.readUInt16LE(offset + 10);
+    const lastModTime = buffer.readUInt16LE(offset + 12);
+    const lastModDate = buffer.readUInt16LE(offset + 14);
+    const crc322 = buffer.readUInt32LE(offset + 16);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const uncompressedSize = buffer.readUInt32LE(offset + 24);
+    const fileNameLength = buffer.readUInt16LE(offset + 28);
+    const extraFieldLength = buffer.readUInt16LE(offset + 30);
+    const fileCommentLength = buffer.readUInt16LE(offset + 32);
+    const diskNumberStart = buffer.readUInt16LE(offset + 34);
+    const internalAttrs = buffer.readUInt16LE(offset + 36);
+    const externalAttrs = buffer.readUInt32LE(offset + 38);
+    const localHeaderOffset = buffer.readUInt32LE(offset + 42);
+    const nameStart = offset + 46;
+    const nameEnd = nameStart + fileNameLength;
+    const fileName = buffer.slice(nameStart, nameEnd).toString("utf8");
+    const extraFieldStart = nameEnd;
+    const extraFieldEnd = extraFieldStart + extraFieldLength;
+    const extraField = buffer.slice(extraFieldStart, extraFieldEnd);
+    const commentStart = extraFieldEnd;
+    const commentEnd = commentStart + fileCommentLength;
+    const fileComment = buffer.slice(commentStart, commentEnd);
+    const localSignature = buffer.readUInt32LE(localHeaderOffset);
+    if (localSignature !== ZIP_LOCAL_FILE_HEADER_SIGNATURE) {
+      throw new Error(`Invalid local header signature for ${fileName}`);
+    }
+    const localFileNameLength = buffer.readUInt16LE(localHeaderOffset + 26);
+    const localExtraLength = buffer.readUInt16LE(localHeaderOffset + 28);
+    const dataStart = localHeaderOffset + 30 + localFileNameLength + localExtraLength;
+    const dataEnd = dataStart + compressedSize;
+    const compressedData = buffer.slice(dataStart, dataEnd);
+    const localExtraField = buffer.slice(
+      localHeaderOffset + 30 + localFileNameLength,
+      dataStart
+    );
+    const entry = {
+      fileName,
+      versionMadeBy,
+      versionNeeded,
+      generalPurpose,
+      compressionMethod,
+      lastModTime,
+      lastModDate,
+      crc32: crc322,
+      compressedSize,
+      uncompressedSize,
+      diskNumberStart,
+      internalAttrs,
+      externalAttrs,
+      extraField,
+      fileComment,
+      localExtraField,
+      compressedData,
+      localHeaderOffset,
+      order: index
+    };
+    entries.push(entry);
+    entryMap.set(fileName, entry);
+    offset = commentEnd;
+    index += 1;
+  }
+  return { entries, entryMap };
+}
+function crc32(data) {
+  let crc = 4294967295;
+  for (let i = 0; i < data.length; i++) {
+    const byte = data[i];
+    crc = crc >>> 8 ^ CRC32_TABLE[(crc ^ byte) & 255];
+  }
+  return (crc ^ 4294967295) >>> 0;
+}
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) {
+      if ((c & 1) !== 0) {
+        c = 3988292384 ^ c >>> 1;
+      } else {
+        c >>>= 1;
+      }
+    }
+    table[i] = c >>> 0;
+  }
+  return table;
+})();
+function inflateEntry(entry) {
+  if (entry.compressionMethod === 0) {
+    return Buffer.from(entry.compressedData);
+  }
+  if (entry.compressionMethod === 8) {
+    return zlib.inflateRawSync(entry.compressedData);
+  }
+  throw new Error(`Unsupported compression method: ${entry.compressionMethod}`);
+}
+function deflateBuffer(data, method) {
+  if (method === 0) {
+    return data;
+  }
+  if (method === 8) {
+    return zlib.deflateRawSync(data);
+  }
+  throw new Error(`Unsupported compression method: ${method}`);
+}
+function decodeXml(value) {
+  return value.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+function encodeXml(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function parseSharedStrings(xml) {
+  const result = [];
+  const siRegex = /<si>([\s\S]*?)<\/si>/g;
+  let siMatch;
+  while ((siMatch = siRegex.exec(xml)) !== null) {
+    const siContent = siMatch[1];
+    const tRegex = /<t[^>]*>([\s\S]*?)<\/t>/g;
+    let text = "";
+    let tMatch;
+    while ((tMatch = tRegex.exec(siContent)) !== null) {
+      text += decodeXml(tMatch[1]);
+    }
+    result.push(text);
+  }
+  return result;
+}
+function parseAttributes(raw) {
+  const attrs = {};
+  const attrRegex = /(\w+)=\"([^\"]*)\"/g;
+  let match;
+  while ((match = attrRegex.exec(raw)) !== null) {
+    attrs[match[1]] = match[2];
+  }
+  return attrs;
+}
+function buildAttributeString(attrs) {
+  const entries = Object.entries(attrs);
+  if (entries.length === 0) return "";
+  return entries.map(([key, value]) => `${key}="${value}"`).join(" ");
+}
+function hasMeaningfulValue(value) {
+  if (value === void 0 || value === null) return false;
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+  return true;
+}
+function updateSheetXml(sheetXml, sharedStrings, values) {
+  const rowKeyMap = /* @__PURE__ */ new Map();
+  const replacements = [];
+  let cursor = 0;
+  while (true) {
+    const start = sheetXml.indexOf("<c", cursor);
+    if (start === -1) break;
+    const tagEnd = sheetXml.indexOf(">", start);
+    if (tagEnd === -1) break;
+    let tagContent = sheetXml.slice(start + 2, tagEnd);
+    let selfClosing = false;
+    if (tagContent.endsWith("/")) {
+      selfClosing = true;
+      tagContent = tagContent.slice(0, -1);
+    }
+    const attrs = parseAttributes(tagContent);
+    const ref2 = attrs.r;
+    let inner = "";
+    let fullEnd = tagEnd + 1;
+    if (!selfClosing) {
+      const closeIndex = sheetXml.indexOf("</c>", tagEnd);
+      if (closeIndex === -1) break;
+      inner = sheetXml.slice(tagEnd + 1, closeIndex);
+      fullEnd = closeIndex + 4;
+    }
+    if (ref2) {
+      const match = /^([A-Z]+)(\d+)$/.exec(ref2);
+      if (match) {
+        const column = match[1];
+        const row = parseInt(match[2], 10);
+        if (column === "A") {
+          const valueMatch = inner.match(/<v>([\s\S]*?)<\/v>/);
+          if (valueMatch) {
+            const index = Number.parseInt(valueMatch[1], 10);
+            const key = sharedStrings[index];
+            if (key) {
+              rowKeyMap.set(row, key);
+            }
+          }
+        }
+        if (column === "B") {
+          const key = rowKeyMap.get(row);
+          const lookupKey = key ?? (row === 1 ? "SFC" : void 0);
+          if (lookupKey && hasOwn.call(values, lookupKey)) {
+            const newValue = values[lookupKey];
+            const attrCopy = { ...attrs };
+            const attrString = buildAttributeString(attrCopy);
+            let replacement;
+            if (!hasMeaningfulValue(newValue)) {
+              replacement = `<c${attrString ? ` ${attrString}` : ""}/>`;
+            } else {
+              const trimmed = `${newValue}`;
+              const numericValue = Number(trimmed);
+              const isNumeric = trimmed.trim().length > 0 && !Number.isNaN(numericValue);
+              if (isNumeric) {
+                delete attrCopy.t;
+                const updatedAttrString = buildAttributeString(attrCopy);
+                replacement = `<c${updatedAttrString ? ` ${updatedAttrString}` : ""}><v>${trimmed}</v></c>`;
+              } else {
+                attrCopy.t = "inlineStr";
+                const updatedAttrString = buildAttributeString(attrCopy);
+                replacement = `<c${updatedAttrString ? ` ${updatedAttrString}` : ""}><is><t>${encodeXml(trimmed)}</t></is></c>`;
+              }
+            }
+            replacements.push({ start, end: fullEnd, text: replacement });
+          }
+        }
+      }
+    }
+    cursor = fullEnd;
+  }
+  if (replacements.length === 0) {
+    return sheetXml;
+  }
+  replacements.sort((a, b) => a.start - b.start);
+  let result = "";
+  let lastIndex = 0;
+  for (const replacement of replacements) {
+    result += sheetXml.slice(lastIndex, replacement.start);
+    result += replacement.text;
+    lastIndex = replacement.end;
+  }
+  result += sheetXml.slice(lastIndex);
+  return result;
+}
+function rebuildZip(parsed) {
+  const ordered = [...parsed.entries].sort(
+    (a, b) => a.localHeaderOffset - b.localHeaderOffset
+  );
+  const chunks = [];
+  let offset = 0;
+  for (const entry of ordered) {
+    const fileNameBuffer = Buffer.from(entry.fileName, "utf8");
+    const localHeader = Buffer.alloc(30);
+    localHeader.writeUInt32LE(ZIP_LOCAL_FILE_HEADER_SIGNATURE, 0);
+    localHeader.writeUInt16LE(entry.versionNeeded, 4);
+    localHeader.writeUInt16LE(entry.generalPurpose, 6);
+    localHeader.writeUInt16LE(entry.compressionMethod, 8);
+    localHeader.writeUInt16LE(entry.lastModTime, 10);
+    localHeader.writeUInt16LE(entry.lastModDate, 12);
+    localHeader.writeUInt32LE(entry.crc32, 14);
+    localHeader.writeUInt32LE(entry.compressedSize, 18);
+    localHeader.writeUInt32LE(entry.uncompressedSize, 22);
+    localHeader.writeUInt16LE(fileNameBuffer.length, 26);
+    localHeader.writeUInt16LE(entry.localExtraField.length, 28);
+    chunks.push(localHeader, fileNameBuffer, entry.localExtraField, entry.compressedData);
+    entry.newLocalHeaderOffset = offset;
+    offset += localHeader.length + fileNameBuffer.length + entry.localExtraField.length + entry.compressedData.length;
+  }
+  const centralDirectoryOffset = offset;
+  const centralChunks = [];
+  for (const entry of ordered) {
+    const fileNameBuffer = Buffer.from(entry.fileName, "utf8");
+    const centralHeader = Buffer.alloc(46);
+    centralHeader.writeUInt32LE(ZIP_CENTRAL_DIRECTORY_SIGNATURE, 0);
+    centralHeader.writeUInt16LE(entry.versionMadeBy, 4);
+    centralHeader.writeUInt16LE(entry.versionNeeded, 6);
+    centralHeader.writeUInt16LE(entry.generalPurpose, 8);
+    centralHeader.writeUInt16LE(entry.compressionMethod, 10);
+    centralHeader.writeUInt16LE(entry.lastModTime, 12);
+    centralHeader.writeUInt16LE(entry.lastModDate, 14);
+    centralHeader.writeUInt32LE(entry.crc32, 16);
+    centralHeader.writeUInt32LE(entry.compressedSize, 20);
+    centralHeader.writeUInt32LE(entry.uncompressedSize, 24);
+    centralHeader.writeUInt16LE(fileNameBuffer.length, 28);
+    centralHeader.writeUInt16LE(entry.extraField.length, 30);
+    centralHeader.writeUInt16LE(entry.fileComment.length, 32);
+    centralHeader.writeUInt16LE(entry.diskNumberStart, 34);
+    centralHeader.writeUInt16LE(entry.internalAttrs, 36);
+    centralHeader.writeUInt32LE(entry.externalAttrs, 38);
+    centralHeader.writeUInt32LE(entry.newLocalHeaderOffset ?? 0, 42);
+    centralChunks.push(
+      centralHeader,
+      fileNameBuffer,
+      entry.extraField,
+      entry.fileComment
+    );
+    offset += centralHeader.length + fileNameBuffer.length + entry.extraField.length + entry.fileComment.length;
+  }
+  const centralDirectorySize = offset - centralDirectoryOffset;
+  const endRecord = Buffer.alloc(22);
+  endRecord.writeUInt32LE(ZIP_END_OF_CENTRAL_DIRECTORY_SIGNATURE, 0);
+  endRecord.writeUInt16LE(0, 4);
+  endRecord.writeUInt16LE(0, 6);
+  endRecord.writeUInt16LE(ordered.length, 8);
+  endRecord.writeUInt16LE(ordered.length, 10);
+  endRecord.writeUInt32LE(centralDirectorySize, 12);
+  endRecord.writeUInt32LE(centralDirectoryOffset, 16);
+  endRecord.writeUInt16LE(0, 20);
+  return Buffer.concat([...chunks, ...centralChunks, endRecord]);
+}
+function normalizeValues(scenarioValues, sfc) {
+  const normalized = {};
+  if (sfc) {
+    normalized.SFC = sfc;
+  }
+  for (const [key, value] of Object.entries(scenarioValues)) {
+    if (hasMeaningfulValue(value)) {
+      normalized[key] = value;
+    }
+  }
+  return normalized;
+}
+function updateInputTotalWorkbook(workbookPath, scenarioValues, sfc) {
+  if (!fs$1.existsSync(workbookPath)) {
+    throw new Error(`Workbook not found: ${workbookPath}`);
+  }
+  const buffer = fs$1.readFileSync(workbookPath);
+  const parsed = parseZip(buffer);
+  const sheetEntry = parsed.entryMap.get("xl/worksheets/sheet1.xml");
+  const sharedEntry = parsed.entryMap.get("xl/sharedStrings.xml");
+  if (!sheetEntry || !sharedEntry) {
+    throw new Error("Workbook is missing required worksheet or shared strings");
+  }
+  const sharedStringsXml = inflateEntry(sharedEntry).toString("utf8");
+  const sharedStrings = parseSharedStrings(sharedStringsXml);
+  const sheetXml = inflateEntry(sheetEntry).toString("utf8");
+  const normalizedValues = normalizeValues(scenarioValues, sfc);
+  const updatedSheetXml = updateSheetXml(
+    sheetXml,
+    sharedStrings,
+    normalizedValues
+  );
+  if (updatedSheetXml === sheetXml) {
+    return;
+  }
+  const updatedBuffer = Buffer.from(updatedSheetXml, "utf8");
+  const compressed = deflateBuffer(updatedBuffer, sheetEntry.compressionMethod);
+  sheetEntry.compressedData = compressed;
+  sheetEntry.compressedSize = compressed.length;
+  sheetEntry.uncompressedSize = updatedBuffer.length;
+  sheetEntry.crc32 = crc32(updatedBuffer);
+  const rebuilt = rebuildZip(parsed);
+  const tempPath = `${workbookPath}.tmp`;
+  fs$1.writeFileSync(tempPath, rebuilt);
+  fs$1.renameSync(tempPath, workbookPath);
+}
+function ensureInputTotalWorkbook(baseDir) {
+  const workbookPath = path$1.join(baseDir, "Input_Total.xlsx");
+  if (!fs$1.existsSync(workbookPath)) {
+    const templatePath = path$1.join(baseDir, "Input_Plant.xlsx");
+    if (!fs$1.existsSync(templatePath)) {
+      throw new Error("No template available to create Input_Total.xlsx");
+    }
+    fs$1.copyFileSync(templatePath, workbookPath);
+  }
+  return workbookPath;
+}
+createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env.APP_ROOT = path.join(__dirname, "..");
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+function getThirdPartyDir() {
+  return app$1.isPackaged ? path.join(process.resourcesPath, "third-party") : path.join(__dirname, "..", "third-party");
+}
+function getBaseOutputDir() {
+  return app$1.isPackaged ? path.join(process.resourcesPath, "output") : path.join(__dirname, "..", "output");
+}
+function ensureDir(p) {
+  if (!fs$1.existsSync(p)) fs$1.mkdirSync(p, { recursive: true });
+}
+ipcMain$1.handle("run-exe", async (_event, payload) => {
+  !app$1.isPackaged;
+  if (process.platform !== "win32") {
+    const msg = "이 기능은 Windows에서만 실행됩니다. (현재 OS: " + process.platform + ")";
+    console.warn("[run-exe] " + msg);
+    dialog.showErrorBox("Unsupported platform", msg);
+    throw new Error(msg);
+  }
+  const thirdPartyDir = getThirdPartyDir();
+  const exePath = path.join(thirdPartyDir, "MHySIM_HRS_Run.exe");
+  if (!fs$1.existsSync(exePath)) {
+    const msg = "실행 파일을 찾을 수 없습니다:\n" + exePath + "\n\n패키징 시 extraResources에 third-party를 포함했는지 확인하세요.";
+    console.error("[run-exe] " + msg);
+    dialog.showErrorBox("Executable missing", msg);
+    throw new Error(msg);
+  }
+  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, "");
+  const baseOutputDir = getBaseOutputDir();
+  ensureDir(baseOutputDir);
+  const datedOutputDir = path.join(baseOutputDir, today);
+  ensureDir(datedOutputDir);
   const workingDir = datedOutputDir;
   const filesBefore = fs$1.readdirSync(workingDir).filter((f) => /^Output_\d+\.csv$/i.test(f));
   for (const file of filesBefore) {
@@ -15309,10 +15722,20 @@ ipcMain$1.handle("run-exe", async () => {
       newIndex++;
       newFileName = `${baseName}-${newIndex}${ext}`;
     }
-    const from = path.join(workingDir, file);
-    const to = path.join(workingDir, newFileName);
-    fs$1.renameSync(from, to);
+    fs$1.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
     console.log(`📁 백업됨: ${file} → ${newFileName}`);
+  }
+  try {
+    const values = (payload == null ? void 0 : payload.values) ?? {};
+    const sfc = (payload == null ? void 0 : payload.sfc) ?? null;
+    if (Object.keys(values).length > 0 || sfc) {
+      const workbookBaseDir = thirdPartyDir;
+      const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
+      updateInputTotalWorkbook(workbookPath, values, sfc);
+    }
+  } catch (error2) {
+    console.error("❌ Excel 업데이트 실패:", error2);
+    throw error2;
   }
   return new Promise((resolve2, reject) => {
     console.log("🟡 실행 시작:", exePath);
@@ -15320,11 +15743,12 @@ ipcMain$1.handle("run-exe", async () => {
     execFile(exePath, { cwd: workingDir }, (error2, stdout, stderr) => {
       if (error2) {
         console.error("❌ 실행 실패:", error2);
-        reject("실패");
+        if (stderr) console.error("stderr:", stderr);
+        reject(error2);
         return;
       }
       console.log("✅ 실행 완료");
-      console.log("stdout:", stdout);
+      if (stdout) console.log("stdout:", stdout);
       const postFiles = fs$1.readdirSync(workingDir).filter((f) => /^Output_\d+\.csv$/i.test(f));
       for (const file of postFiles) {
         const ext = path.extname(file);
@@ -15336,9 +15760,7 @@ ipcMain$1.handle("run-exe", async () => {
           newIndex++;
           newFileName = `${baseName}-${newIndex}${ext}`;
         }
-        const from = path.join(workingDir, file);
-        const to = path.join(workingDir, newFileName);
-        fs$1.renameSync(from, to);
+        fs$1.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
         console.log(`📄 새 파일 리네이밍: ${file} → ${newFileName}`);
       }
       resolve2("실행 완료");
@@ -15364,13 +15786,6 @@ ipcMain$1.on("save-project-backup", (_event, data, fileName) => {
     console.error("❌ 프로젝트 백업 저장 실패:", err);
   }
 });
-createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
 function createWindow() {
   win = new BrowserWindow({
@@ -15397,9 +15812,7 @@ app$1.on("window-all-closed", () => {
   }
 });
 app$1.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 app$1.whenReady().then(createWindow);
 export {

@@ -13,12 +13,14 @@
     "dist-electron/**",
     "third-party/**", // ✅ .exe 포함
   ],
-  extraResources: [
+  "extraResources": [
     {
-      from: "third-party/",
-      to: "third-party",
-      filter: ["**/*.exe"],
+      "from": "third-party/",
+      "to": "third-party/",
+      "filter": ["**/*"]
     },
+    { "from": "third-party/", "to": "third-party/", "filter": ["**/*"] },
+    { "from": "output/", "to": "output/", "filter": ["**/*"] }
   ],
   mac: {
     target: ["dmg"],

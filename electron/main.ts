@@ -1,8 +1,8 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import fs from "fs"; // ✅ 파일 저장용 모듈
+import fs from "fs";
 import Store from "electron-store";
 import { execFile } from "child_process";
 
@@ -10,6 +10,38 @@ import {
   ensureInputTotalWorkbook,
   updateInputTotalWorkbook,
 } from "./utils/xlsx";
+
+//
+// ✅ __dirname 등 경로 상수는 가장 먼저 계산 (하단에 있던 것을 상단으로 이동)
+//
+createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+process.env.APP_ROOT = path.join(__dirname, "..");
+export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
+  ? path.join(process.env.APP_ROOT, "public")
+  : RENDERER_DIST;
+
+//
+// ✅ 공통 경로 헬퍼
+//
+function getThirdPartyDir() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "third-party")
+    : path.join(__dirname, "..", "third-party");
+}
+function getBaseOutputDir() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "output")
+    : path.join(__dirname, "..", "output");
+}
+function ensureDir(p: string) {
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+}
 
 interface RunExePayload {
   sfc?: string | null;
@@ -19,52 +51,63 @@ interface RunExePayload {
 // 계산모듈실행
 ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   const isDev = !app.isPackaged;
-  const exePath = isDev
-    ? path.join(__dirname, "..", "third-party", "MHySIM_HRS_Run.exe")
-    : path.join(process.resourcesPath, "third-party", "MHySIM_HRS_Run.exe");
+
+  // ✅ 플랫폼 분기: .exe는 Windows 전용
+  if (process.platform !== "win32") {
+    const msg =
+      "이 기능은 Windows에서만 실행됩니다. (현재 OS: " +
+      process.platform +
+      ")";
+    console.warn("[run-exe] " + msg);
+    dialog.showErrorBox("Unsupported platform", msg);
+    throw new Error(msg);
+  }
+
+  const thirdPartyDir = getThirdPartyDir();
+  const exePath = path.join(thirdPartyDir, "MHySIM_HRS_Run.exe");
+
+  if (!fs.existsSync(exePath)) {
+    const msg =
+      "실행 파일을 찾을 수 없습니다:\n" +
+      exePath +
+      "\n\n패키징 시 extraResources에 third-party를 포함했는지 확인하세요.";
+    console.error("[run-exe] " + msg);
+    dialog.showErrorBox("Executable missing", msg);
+    throw new Error(msg);
+  }
 
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const baseOutputDir = isDev
-    ? path.join(__dirname, "..", "output")
-    : path.join(process.resourcesPath, "output");
+  const baseOutputDir = getBaseOutputDir();
+  ensureDir(baseOutputDir);
   const datedOutputDir = path.join(baseOutputDir, today);
-
-  if (!fs.existsSync(datedOutputDir)) {
-    fs.mkdirSync(datedOutputDir, { recursive: true });
-  }
+  ensureDir(datedOutputDir);
 
   const workingDir = datedOutputDir;
 
-  // ✅ 1. 실행 전 백업
+  // ✅ 1) 실행 전 백업 (Output_*.csv → -n 채번)
   const filesBefore = fs
     .readdirSync(workingDir)
     .filter((f) => /^Output_\d+\.csv$/i.test(f));
 
   for (const file of filesBefore) {
-    const ext = path.extname(file); // .csv
-    const baseName = path.basename(file, ext); // Output_1022
+    const ext = path.extname(file);
+    const baseName = path.basename(file, ext);
     let newIndex = 1;
     let newFileName = `${baseName}-${newIndex}${ext}`;
-
     while (fs.existsSync(path.join(workingDir, newFileName))) {
       newIndex++;
       newFileName = `${baseName}-${newIndex}${ext}`;
     }
-
-    const from = path.join(workingDir, file);
-    const to = path.join(workingDir, newFileName);
-    fs.renameSync(from, to);
+    fs.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
     console.log(`📁 백업됨: ${file} → ${newFileName}`);
   }
 
-  // ✅ Excel 업데이트
+  // ✅ 2) Excel 업데이트 (있을 때만)
   try {
     const values = payload?.values ?? {};
     const sfc = payload?.sfc ?? null;
     if (Object.keys(values).length > 0 || sfc) {
-      const workbookBaseDir = isDev
-        ? path.join(__dirname, "..", "third-party")
-        : path.join(process.resourcesPath, "third-party");
+      const workbookBaseDir = thirdPartyDir;
       const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
       updateInputTotalWorkbook(workbookPath, values, sfc);
     }
@@ -73,44 +116,40 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw error;
   }
 
-  // ✅ 2. EXE 실행
-  return new Promise((resolve, reject) => {
+  // ✅ 3) EXE 실행
+  return new Promise<string>((resolve, reject) => {
     console.log("🟡 실행 시작:", exePath);
     console.log("📁 작업 디렉토리:", workingDir);
 
+    // 필요하면 timeout, maxBuffer 등 옵션을 더 줄 수 있음
     execFile(exePath, { cwd: workingDir }, (error, stdout, stderr) => {
       if (error) {
         console.error("❌ 실행 실패:", error);
-        reject("실패");
+        if (stderr) console.error("stderr:", stderr);
+        reject(error);
         return;
       }
 
       console.log("✅ 실행 완료");
-      console.log("stdout:", stdout);
+      if (stdout) console.log("stdout:", stdout);
 
-      // ✅ 3. 실행 후 새로 생긴 Output_*.csv 감지
+      // ✅ 4) 실행 후 새 Output_*.csv 감지 → 기본 이름에만 -n 채번
       const postFiles = fs
         .readdirSync(workingDir)
         .filter((f) => /^Output_\d+\.csv$/i.test(f));
 
       for (const file of postFiles) {
-        const ext = path.extname(file); // .csv
+        const ext = path.extname(file);
         const baseName = path.basename(file, ext);
+        if (/-\d+$/.test(baseName)) continue; // 이미 채번된 건 스킵
 
-        // 이미 -n 붙어있는 건 건너뜀
-        if (/-\d+$/.test(baseName)) continue;
-
-        // 즉, Output_1022.csv 같은 기본 이름이면 → 채번 이동
         let newIndex = 1;
         let newFileName = `${baseName}-${newIndex}${ext}`;
         while (fs.existsSync(path.join(workingDir, newFileName))) {
           newIndex++;
           newFileName = `${baseName}-${newIndex}${ext}`;
         }
-
-        const from = path.join(workingDir, file);
-        const to = path.join(workingDir, newFileName);
-        fs.renameSync(from, to);
+        fs.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
         console.log(`📄 새 파일 리네이밍: ${file} → ${newFileName}`);
       }
 
@@ -123,16 +162,14 @@ const store = new Store();
 ipcMain.handle("electron-store-get", (_, key) => {
   return store.get(key);
 });
-
 ipcMain.handle("electron-store-set", (_, key, value) => {
   store.set(key, value);
 });
-
 ipcMain.handle("electron-store-delete", (_, key) => {
   store.delete(key);
 });
 
-// 📦 저장 백업 로직 추가
+// 📦 저장 백업 로직
 ipcMain.on("save-project-backup", (_event, data, fileName) => {
   const backupPath = path.join(app.getPath("userData"), `${fileName}.json`);
   try {
@@ -143,24 +180,11 @@ ipcMain.on("save-project-backup", (_event, data, fileName) => {
   }
 });
 
-createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-process.env.APP_ROOT = path.join(__dirname, "..");
-
-export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-  ? path.join(process.env.APP_ROOT, "public")
-  : RENDERER_DIST;
-
 let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path.join(process.env.VITE_PUBLIC!, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
     },
@@ -187,9 +211,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 app.whenReady().then(createWindow);
