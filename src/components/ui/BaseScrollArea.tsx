@@ -24,10 +24,10 @@ const BaseScrollArea = ({
 			<>
 				<ScrollArea.Viewport className="ScrollAreaViewport">
 					<div className="bg-gray-700 text-stone-300 px-2 py-1  ">
-						{items.map((item, index) => (
-							<div
-								key={index}
-								onClick={() => onItemClick?.(item)}
+                                                {items.map((item, index) => (
+                                                        <div
+                                                                key={item.id ?? index}
+                                                                onClick={() => onItemClick?.(item)}
 								className={clsx(
 									"Tag cursor-pointer px-2 py-2  transition ",
 									item.id === selectedId

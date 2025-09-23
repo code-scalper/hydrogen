@@ -155,13 +155,12 @@ export const FolderItem = ({
 		}
 	};
 
-	const handleItemDoubleClick = () => {
-		if (data.type === "device") {
-			console.log(data, "data!!!");
-			setDeviceOpen(true);
-			setSelectedDevice(data as DeviceInterface);
-		}
-	};
+        const handleItemDoubleClick = () => {
+                if (data.type === "device") {
+                        setDeviceOpen(true);
+                        setSelectedDevice(data as DeviceInterface);
+                }
+        };
 
 	useEffect(() => {
 		if (shouldOpenProjectId === data.id) {
@@ -232,11 +231,11 @@ export const FolderItem = ({
 				)}
 			</div>
 
-			{open &&
-				data.children?.map((child, idx) => (
-					<FolderItem
-						key={idx}
-						data={child}
+                        {open &&
+                                data.children?.map((child, idx) => (
+                                        <FolderItem
+                                                key={child.id ?? idx}
+                                                data={child}
 						level={level + 1}
 						shouldOpenProjectId=""
 					/>

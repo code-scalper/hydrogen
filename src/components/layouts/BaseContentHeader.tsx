@@ -29,9 +29,7 @@ const BaseContentHeader = () => {
   const type = "A";
   const [displayExtraTool] = useState(false);
 
-  const handleCreate = () => {
-    console.log("handle create");
-  };
+  const handleCreate = () => {};
   const [progress, setProgress] = useState(0);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,8 +85,7 @@ const BaseContentHeader = () => {
     try {
       await window.electronAPI.runExe();
       stopProgress();
-    } catch (e) {
-      console.error("실행 실패", e);
+    } catch {
       setRunning(false);
     }
   };

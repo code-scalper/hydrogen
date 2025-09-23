@@ -81,7 +81,7 @@ const SelectBox = ({
 							{/* <Select.Label className="SelectLabel">Fruits</Select.Label> */}
                                                         {selectItems.map((item, index) => (
                                                                 <SelectItem
-                                                                        key={index}
+                                                                        key={item.key ?? index}
                                                                         value={item.key}
                                                                         className={item.className}
                                                                         disabled={item.disabled}

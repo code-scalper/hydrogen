@@ -58,16 +58,16 @@ export const WhatIf = ({
 
           {/* 변수 입력 그리드 */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-            {fields.map((f, i) => (
+            {fields.map((f) => (
               <div
-                key={i}
+                key={f.label}
                 className="grid grid-cols-[1fr_100px_40px] items-center gap-2"
               >
                 <label className="truncate">{f.label}</label>
                 {f.options ? (
                   <select className="bg-gray-700 border border-gray-600 px-2 py-1 text-slate-200">
                     {f.options.map((opt, index) => (
-                      <option value={opt.key} key={index}>
+                      <option value={opt.key} key={opt.key ?? index}>
                         {opt.label}
                       </option>
                     ))}
