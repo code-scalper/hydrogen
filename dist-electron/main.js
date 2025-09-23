@@ -15682,6 +15682,9 @@ const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 function getThirdPartyDir() {
+  console.log(app$1.isPackaged, "is packaged");
+  console.log(process.resourcesPath, "@@@");
+  console.log(__dirname, "@@@@");
   return app$1.isPackaged ? path.join(process.resourcesPath, "third-party") : path.join(__dirname, "..", "third-party");
 }
 function getBaseOutputDir() {
@@ -15722,7 +15725,10 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
       newIndex++;
       newFileName = `${baseName}-${newIndex}${ext}`;
     }
-    fs$1.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
+    fs$1.renameSync(
+      path.join(workingDir, file),
+      path.join(workingDir, newFileName)
+    );
     console.log(`📁 백업됨: ${file} → ${newFileName}`);
   }
   try {
@@ -15736,6 +15742,18 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
   } catch (error2) {
     console.error("❌ Excel 업데이트 실패:", error2);
     throw error2;
+  }
+  try {
+    const srcXlsx = path.join(thirdPartyDir, "Input_Total.xlsx");
+    const dstXlsx = path.join(workingDir, "Input_Total.xlsx");
+    if (!fs$1.existsSync(srcXlsx)) {
+      throw new Error(`Input_Total.xlsx 원본이 없습니다: ${srcXlsx}`);
+    }
+    fs$1.copyFileSync(srcXlsx, dstXlsx);
+    console.log("📄 엑셀 복사 완료:", dstXlsx);
+  } catch (err) {
+    console.error("❌ 엑셀 복사 실패:", err);
+    throw err;
   }
   return new Promise((resolve2, reject) => {
     console.log("🟡 실행 시작:", exePath);
@@ -15760,7 +15778,10 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
           newIndex++;
           newFileName = `${baseName}-${newIndex}${ext}`;
         }
-        fs$1.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
+        fs$1.renameSync(
+          path.join(workingDir, file),
+          path.join(workingDir, newFileName)
+        );
         console.log(`📄 새 파일 리네이밍: ${file} → ${newFileName}`);
       }
       resolve2("실행 완료");

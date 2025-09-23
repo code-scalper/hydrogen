@@ -30,6 +30,9 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 // ✅ 공통 경로 헬퍼
 //
 function getThirdPartyDir() {
+  console.log(app.isPackaged, "is packaged");
+  console.log(process.resourcesPath, "@@@");
+  console.log(__dirname, "@@@@");
   return app.isPackaged
     ? path.join(process.resourcesPath, "third-party")
     : path.join(__dirname, "..", "third-party");
@@ -55,9 +58,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   // ✅ 플랫폼 분기: .exe는 Windows 전용
   if (process.platform !== "win32") {
     const msg =
-      "이 기능은 Windows에서만 실행됩니다. (현재 OS: " +
-      process.platform +
-      ")";
+      "이 기능은 Windows에서만 실행됩니다. (현재 OS: " + process.platform + ")";
     console.warn("[run-exe] " + msg);
     dialog.showErrorBox("Unsupported platform", msg);
     throw new Error(msg);
@@ -98,7 +99,10 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
       newIndex++;
       newFileName = `${baseName}-${newIndex}${ext}`;
     }
-    fs.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
+    fs.renameSync(
+      path.join(workingDir, file),
+      path.join(workingDir, newFileName)
+    );
     console.log(`📁 백업됨: ${file} → ${newFileName}`);
   }
 
@@ -114,6 +118,23 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   } catch (error) {
     console.error("❌ Excel 업데이트 실패:", error);
     throw error;
+  }
+
+  // ✅ 2-1) 수정된 Excel을 workingDir로 복사 (EXE가 CWD에서 찾음)
+  try {
+    const srcXlsx = path.join(thirdPartyDir, "Input_Total.xlsx");
+    const dstXlsx = path.join(workingDir, "Input_Total.xlsx");
+
+    if (!fs.existsSync(srcXlsx)) {
+      throw new Error(`Input_Total.xlsx 원본이 없습니다: ${srcXlsx}`);
+    }
+
+    // 동일 파일/잠금 이슈 최소화를 위해 덮어쓰기
+    fs.copyFileSync(srcXlsx, dstXlsx);
+    console.log("📄 엑셀 복사 완료:", dstXlsx);
+  } catch (err) {
+    console.error("❌ 엑셀 복사 실패:", err);
+    throw err;
   }
 
   // ✅ 3) EXE 실행
@@ -149,7 +170,10 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
           newIndex++;
           newFileName = `${baseName}-${newIndex}${ext}`;
         }
-        fs.renameSync(path.join(workingDir, file), path.join(workingDir, newFileName));
+        fs.renameSync(
+          path.join(workingDir, file),
+          path.join(workingDir, newFileName)
+        );
         console.log(`📄 새 파일 리네이밍: ${file} → ${newFileName}`);
       }
 
