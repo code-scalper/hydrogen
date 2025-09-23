@@ -25,7 +25,8 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   // ...
 });
 contextBridge.exposeInMainWorld("electronAPI", {
-  runExe: () => ipcRenderer.invoke("run-exe"),
+  runExe: (payload?: { sfc?: string | null; values?: Record<string, string> }) =>
+    ipcRenderer.invoke("run-exe", payload),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {
