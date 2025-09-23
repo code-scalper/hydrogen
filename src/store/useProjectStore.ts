@@ -1,5 +1,6 @@
 import type {
   DeviceInterface,
+  DeviceProperty,
   ProjectInterface,
   ScenarioInterface,
 } from "@/types";
@@ -182,37 +183,68 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       updateInputValue: (pointId, newValue) => {
-        console.log(pointId, newValue);
         const state = get();
-        const projectId = state.selectedScenario?.parentId || "";
-        const scenarioId = state.selectedScenario?.id || "";
+        const projectId = state.selectedScenario?.parentId;
+        const scenarioId = state.selectedScenario?.id;
+
+        if (!projectId || !scenarioId) return;
 
         const updatedFolderList = state.folderList.map((project) => {
-          if (project.id !== projectId) return project;
+          if (project.id !== projectId || !project.children) return project;
 
-          const updatedChildren = project.children?.map((scenario) => {
+          const updatedScenarios = project.children.map((scenario) => {
             if (scenario.id !== scenarioId) return scenario;
 
-            // const updatedInputPoints = scenario.inputPoints?.map((input) => {
-            //   if (input.id === pointId) {
-            //     return { ...input, value: newValue };
-            //   }
-            //   return input;
-            // });
+            const updatedChildren = scenario.children?.map((device) => {
+              let touched = false;
+
+              const updatedProps = device.props?.map((prop) => {
+                if (prop.key === pointId) {
+                  touched = true;
+                  return { ...prop, value: newValue };
+                }
+                return prop;
+              });
+
+              const updatedOutputProps = device.outputProps?.map((prop) => {
+                if (prop.key === pointId) {
+                  touched = true;
+                  return { ...prop, value: newValue };
+                }
+                return prop;
+              });
+
+              if (!touched) {
+                return device;
+              }
+
+              return {
+                ...device,
+                props: updatedProps ?? device.props,
+                outputProps: updatedOutputProps ?? device.outputProps,
+              };
+            });
 
             return {
               ...scenario,
-              inputPoints: {},
+              children: updatedChildren,
             };
           });
 
           return {
             ...project,
-            children: updatedChildren,
+            children: updatedScenarios,
           };
         });
 
-        set({ folderList: updatedFolderList });
+        const updatedProject = updatedFolderList.find(
+          (project) => project.id === projectId,
+        );
+        const updatedScenario =
+          updatedProject?.children?.find((scenario) => scenario.id === scenarioId) ??
+          null;
+
+        set({ folderList: updatedFolderList, selectedScenario: updatedScenario });
       },
 
       updateDevicePropValue: (device, propKey, newValue) => {
@@ -282,20 +314,94 @@ export const useProjectStore = create<ProjectState>()(
           const updatedChildren = project.children?.map((scenario) => {
             if (scenario.id !== scenarioId) return scenario;
 
-            const updatedBaseData = scenario.baseData?.map((item) =>
-              item.key === key ? { ...item, value: newValue } : item
+            const targetBaseData = scenario.baseData?.find(
+              (item) => item.key === key,
             );
+
+            const normalizedPropKey = targetBaseData?.altName
+              ?.replace(/[()]/g, "")
+              .trim() || targetBaseData?.key || key;
+
+            const updatedBaseData = scenario.baseData?.map((item) =>
+              item.key === key ? { ...item, value: newValue } : item,
+            );
+
+            let updatedScenarioChildren = scenario.children;
+
+            if (normalizedPropKey) {
+              updatedScenarioChildren = scenario.children?.map((device) => {
+                if (
+                  !device ||
+                  (device.id !== "Basic_Da" && device.engName !== "Basic_Da")
+                ) {
+                  return device;
+                }
+
+                let changed = false;
+
+                const syncProps = (props?: DeviceProperty[]) => {
+                  if (!props) return props;
+                  let propsChanged = false;
+                  const nextProps = props.map((prop) => {
+                    if (prop.key !== normalizedPropKey) return prop;
+
+                    const currentValue =
+                      prop.value === undefined || prop.value === null
+                        ? ""
+                        : `${prop.value}`;
+
+                    if (currentValue === `${newValue}`) {
+                      return prop;
+                    }
+
+                    propsChanged = true;
+                    return { ...prop, value: newValue };
+                  });
+
+                  if (!propsChanged) {
+                    return props;
+                  }
+
+                  changed = true;
+                  return nextProps;
+                };
+
+                const nextProps = syncProps(device.props);
+                const nextOutputProps = syncProps(device.outputProps);
+
+                if (!changed) {
+                  return device;
+                }
+
+                return {
+                  ...device,
+                  props: nextProps ?? device.props,
+                  outputProps: nextOutputProps ?? device.outputProps,
+                };
+              });
+            }
 
             return {
               ...scenario,
               baseData: updatedBaseData,
+              children: updatedScenarioChildren,
             };
           });
 
           return { ...project, children: updatedChildren };
         });
 
-        set({ folderList: updatedFolderList });
+        const updatedProject = updatedFolderList.find(
+          (project) => project.id === parentId,
+        );
+        const updatedScenario =
+          updatedProject?.children?.find((scenario) => scenario.id === scenarioId) ??
+          null;
+
+        set({
+          folderList: updatedFolderList,
+          selectedScenario: updatedScenario,
+        });
       },
     }),
     {

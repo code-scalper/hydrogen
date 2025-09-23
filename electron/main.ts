@@ -6,8 +6,18 @@ import fs from "fs"; // ✅ 파일 저장용 모듈
 import Store from "electron-store";
 import { execFile } from "child_process";
 
+import {
+  ensureInputTotalWorkbook,
+  updateInputTotalWorkbook,
+} from "./utils/xlsx";
+
+interface RunExePayload {
+  sfc?: string | null;
+  values?: Record<string, string>;
+}
+
 // 계산모듈실행
-ipcMain.handle("run-exe", async () => {
+ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   const isDev = !app.isPackaged;
   const exePath = isDev
     ? path.join(__dirname, "..", "third-party", "MHySIM_HRS_Run.exe")
@@ -45,6 +55,22 @@ ipcMain.handle("run-exe", async () => {
     const to = path.join(workingDir, newFileName);
     fs.renameSync(from, to);
     console.log(`📁 백업됨: ${file} → ${newFileName}`);
+  }
+
+  // ✅ Excel 업데이트
+  try {
+    const values = payload?.values ?? {};
+    const sfc = payload?.sfc ?? null;
+    if (Object.keys(values).length > 0 || sfc) {
+      const workbookBaseDir = isDev
+        ? path.join(__dirname, "..", "third-party")
+        : path.join(process.resourcesPath, "third-party");
+      const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
+      updateInputTotalWorkbook(workbookPath, values, sfc);
+    }
+  } catch (error) {
+    console.error("❌ Excel 업데이트 실패:", error);
+    throw error;
   }
 
   // ✅ 2. EXE 실행
