@@ -20,14 +20,14 @@ export function generateCustomId(keyword: string): string {
 	return `${keyword}_${randomString}_${formattedDate}`;
 }
 
-export function saveLocalStore(key: string, data: any): void {
+export function saveLocalStore(key: string, data: unknown): void {
 	window.electronStore.set(key, data);
 }
 
 let lastBackupAt = 0;
 const BACKUP_INTERVAL = 1000 * 10; // 10초 간격
 
-export const throttledBackup = (data: any, fileName = "backup") => {
+export const throttledBackup = (data: unknown, fileName = "backup") => {
 	const now = Date.now();
 	if (now - lastBackupAt >= BACKUP_INTERVAL) {
 		lastBackupAt = now;

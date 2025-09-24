@@ -14,6 +14,8 @@ export const CreateProjectModal = ({
 }: CreateProjectModalProps) => {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
+	const nameInputId = "create-project-name";
+	const descriptionInputId = "create-project-description";
 
 	if (!isOpen) return null;
 
@@ -26,6 +28,7 @@ export const CreateProjectModal = ({
 						프로젝트 생성
 					</h2>
 					<button
+						type="button"
 						onClick={onClose}
 						className="text-slate-300 hover:text-black text-sm"
 					>
@@ -36,8 +39,14 @@ export const CreateProjectModal = ({
 				{/* Content */}
 				<div className="p-4 space-y-2">
 					<div className=" flex items-center flex-start gap-2">
-						<label className="text-xs text-slate-200 mr-3">프로젝트 이름</label>
+						<label
+							htmlFor={nameInputId}
+							className="text-xs text-slate-200 mr-3"
+						>
+							프로젝트 이름
+						</label>
 						<input
+							id={nameInputId}
 							type="text"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
@@ -53,8 +62,14 @@ export const CreateProjectModal = ({
 					</div>
 
 					<div className="flex items-start flex-start gap-2">
-						<label className="text-xs text-slate-200 mr-3">프로젝트 설명</label>
+						<label
+							htmlFor={descriptionInputId}
+							className="text-xs text-slate-200 mr-3"
+						>
+							프로젝트 설명
+						</label>
 						<TextArea
+							id={descriptionInputId}
 							placeholder=""
 							onChange={(e) => setDescription(e.target.value)}
 							size="1" // 1 = small, 2 = default, 3 = large
@@ -87,12 +102,14 @@ export const CreateProjectModal = ({
 				{/* Footer */}
 				<div className="flex justify-end gap-2 px-4 py-3">
 					<button
+						type="button"
 						onClick={onClose}
 						className="text-xs px-4 py-1  bg-gray-500 text-gray-200 hover:bg-gray-600"
 					>
 						취소
 					</button>
 					<button
+						type="button"
 						onClick={() => {
 							onCreate(name, description);
 							setName("");

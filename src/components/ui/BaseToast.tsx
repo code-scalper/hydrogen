@@ -36,7 +36,9 @@ const BaseToast = ({
 				asChild
 				altText="Goto schedule to undo"
 			>
-				<button className="Button small green">close</button>
+				<button type="button" className="Button small green">
+					close
+				</button>
 			</Toast.Action>
 		</Toast.Root>
 	);

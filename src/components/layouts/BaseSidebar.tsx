@@ -2,6 +2,7 @@ import { FolderItem } from "@/components/ui/specific/FolderItem";
 import { useEffect, useRef, useState } from "react";
 import SidebarHeader from "./SidebarHeader";
 
+import { ProjectInterface } from "@/types";
 import { useProjectStore } from "@/store/useProjectStore";
 
 import { KEYS } from "@/constants";
@@ -14,19 +15,20 @@ const BaseSidebar = () => {
 
   const mounted = useRef(false);
   useEffect(() => {
-    window.electronStore.delete(KEYS.PROJECT);
-    if (!mounted.current) {
-      (async () => {
-        if (folders.length === 0) {
-          const items = await window.electronStore.get(KEYS.PROJECT);
-          if (items.length > 0) {
-            setFolderList(items);
-          }
-        }
-      })();
-      mounted.current = true;
+    if (mounted.current) {
+      return;
     }
-  }, []);
+    mounted.current = true;
+    window.electronStore.delete(KEYS.PROJECT);
+    (async () => {
+      if (folders.length === 0) {
+        const items = await window.electronStore.get(KEYS.PROJECT);
+        if (Array.isArray(items) && items.length > 0) {
+          setFolderList(items as ProjectInterface[]);
+        }
+      }
+    })();
+  }, [folders.length, setFolderList]);
 
   const handleProjectOpen = (id: string) => {
     setShouldOpenProjectId(id);

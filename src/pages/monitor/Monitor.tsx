@@ -1,18 +1,17 @@
 import LOGO_SRC from "@/assets/logo.png";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FlowInputOverlay from "./FlowInputOverlay";
 import FlowOutputOverlay from "./FlowOutputOverlay";
 
-import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import type { ScenarioInterface } from "@/types";
 
 import BaseToast from "@/components/ui/BaseToast";
 
 const images = import.meta.glob("@/assets/diagram/*", {
-  eager: true,
-  as: "url",
+	eager: true,
+	as: "url",
 });
 
 const BASE_IMAGE_WIDTH = 1920; // 원본 기준 너비
@@ -20,233 +19,246 @@ const BASE_IMAGE_HEIGHT = 1500; // 원본 기준 높이
 const BASE_INPUT_HEIGHT = 24;
 
 const getFixedWidth = (windowWidth: number) => {
-  if (windowWidth < 1100) return 1000;
-  if (windowWidth < 1400) return 1250;
-  if (windowWidth < 1650) return 1500;
-  if (windowWidth < 1850) return 1750;
-  return 1920;
+	if (windowWidth < 1100) return 1000;
+	if (windowWidth < 1400) return 1250;
+	if (windowWidth < 1650) return 1500;
+	if (windowWidth < 1850) return 1750;
+	return 1920;
 };
 
 // const TARGET = SCENARIOS[0];
 // console.log(TARGET);
 
 const Monitor = () => {
-  // store
-  const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);
-  const setDeviceOpen = useInteractionStore((state) => state.setDeviceOpen);
-  const updateInputValue = useProjectStore((state) => state.updateInputValue);
-  const selectedScenario = useProjectStore(
-    (state) => state.selectedScenario
-  ) as ScenarioInterface | null;
+	// store
+	const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);
+	const setDeviceOpen = useInteractionStore((state) => state.setDeviceOpen);
+	const updateInputValue = useProjectStore((state) => state.updateInputValue);
+	const setInputValidity = useInteractionStore(
+		(state) => state.setInputValidity,
+	);
+	const selectedScenario = useProjectStore(
+		(state) => state.selectedScenario,
+	) as ScenarioInterface | null;
 
-  // const selectedScenario = useMemo(() => {
-  //   return TARGET;
-  // }, [SCENARIOS]);
+	const handleValidityChange = useCallback(
+		(inputId: string, isValid: boolean) => {
+			setInputValidity(inputId, isValid);
+		},
+		[setInputValidity],
+	);
 
-  // useEffect(() => {
-  //   const filtered = selectedScenario?.children?.filter((f) => {
-  //     return f.x === 0.1 && f.displayOnDiagram;
-  //   });
-  //   // console.log(filtered, "filtered");
-  // }, [selectedScenario]);
+	// const selectedScenario = useMemo(() => {
+	//   return TARGET;
+	// }, [SCENARIOS]);
 
-  // toast
-  const [open, setOpen] = useState(false);
-  const [toastMessage, _] = useState("");
+	// useEffect(() => {
+	//   const filtered = selectedScenario?.children?.filter((f) => {
+	//     return f.x === 0.1 && f.displayOnDiagram;
+	//   });
+	//   // console.log(filtered, "filtered");
+	// }, [selectedScenario]);
 
-  // refs
-  const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+	// toast
+	const [open, setOpen] = useState(false);
+	const [toastMessage, _] = useState("");
 
-  // 이미지 크기 고정 단계
-  const [fixedWidth, setFixedWidth] = useState(
-    getFixedWidth(window.innerWidth)
-  );
-  useEffect(() => {
-    const handleResize = () => {
-      setFixedWidth(getFixedWidth(window.innerWidth));
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+	// refs
+	const imageRef = useRef<HTMLImageElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
 
-  // ✅ min/max 제한 적용
-  const boundedWidth = useMemo(() => {
-    return Math.min(Math.max(fixedWidth, 1000), 1920);
-    // 최소 1000px, 최대 1920px
-  }, [fixedWidth]);
+	// 이미지 크기 고정 단계
+	const [fixedWidth, setFixedWidth] = useState(
+		getFixedWidth(window.innerWidth),
+	);
+	useEffect(() => {
+		const handleResize = () => {
+			setFixedWidth(getFixedWidth(window.innerWidth));
+		};
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
-  const boundedHeight = useMemo(() => {
-    return (boundedWidth * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH;
-  }, [boundedWidth]);
+	// ✅ min/max 제한 적용
+	const boundedWidth = useMemo(() => {
+		return Math.min(Math.max(fixedWidth, 1000), 1920);
+		// 최소 1000px, 최대 1920px
+	}, [fixedWidth]);
 
-  // 비율 유지
-  const fixedHeight = useMemo(
-    () => (fixedWidth * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH,
-    [fixedWidth]
-  );
+	const boundedHeight = useMemo(() => {
+		return (boundedWidth * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH;
+	}, [boundedWidth]);
 
-  const scale = useMemo(() => boundedWidth / BASE_IMAGE_WIDTH, [boundedWidth]);
-  const inputHeight = useMemo(() => BASE_INPUT_HEIGHT * scale, [scale]);
-  const getInputWidth = (fixedWidth: number) => {
-    if (fixedWidth <= 1000) return 30;
-    if (fixedWidth <= 1250) return 40;
-    if (fixedWidth <= 1500) return 60;
-    if (fixedWidth <= 1750) return 70;
-    return 110;
-  };
-  const inputWidth = useMemo(() => getInputWidth(fixedWidth), [fixedWidth]);
+	// 비율 유지
+	const fixedHeight = useMemo(
+		() => (fixedWidth * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH,
+		[fixedWidth],
+	);
 
-  const debouncedUpdate = useDebouncedCallback((id: string, value: string) => {
-    if (selectedScenario?.id) {
-      updateInputValue(id, value);
-    }
-  }, 500);
+	const scale = useMemo(() => boundedWidth / BASE_IMAGE_WIDTH, [boundedWidth]);
+	const inputHeight = useMemo(() => BASE_INPUT_HEIGHT * scale, [scale]);
+	const getInputWidth = (fixedWidth: number) => {
+		if (fixedWidth <= 1000) return 30;
+		if (fixedWidth <= 1250) return 40;
+		if (fixedWidth <= 1500) return 60;
+		if (fixedWidth <= 1750) return 70;
+		return 110;
+	};
+	const inputWidth = getInputWidth(fixedWidth);
 
-  const imageUrl = useMemo(() => {
-    return selectedScenario
-      ? images[`/src/assets/diagram/${selectedScenario.src}`]
-      : images[`/src/assets/diagram/SFC_1022.jpg`];
-  }, [selectedScenario]);
+	const imageUrl = useMemo(() => {
+		return selectedScenario
+			? images[`/src/assets/diagram/${selectedScenario.src}`]
+			: images[`/src/assets/diagram/SFC_1022.jpg`];
+	}, [selectedScenario]);
 
-  // const inputPoints = useMemo(() => {
-  //   console.log(selectedScenario, "selectedScenario");
-  //   if (!selectedScenario?.children) return [];
-  //   return selectedScenario.children.flatMap((child) =>
-  //     child.props.filter((prop) => prop.displayOnDiagram)
-  //   );
-  // }, [selectedScenario]);
+	// const inputPoints = useMemo(() => {
+	//   console.log(selectedScenario, "selectedScenario");
+	//   if (!selectedScenario?.children) return [];
+	//   return selectedScenario.children.flatMap((child) =>
+	//     child.props.filter((prop) => prop.displayOnDiagram)
+	//   );
+	// }, [selectedScenario]);
 
-  const points: any = useMemo(() => {
-    if (!selectedScenario?.children) return [];
+	type DiagramPoints = {
+		inputs: DeviceProperty[];
+		outputs: DeviceProperty[];
+	};
 
-    const inputs = selectedScenario.children.flatMap((child) =>
-      child.props.filter((prop) => prop.displayOnDiagram)
-    );
-    const outputs = selectedScenario.children.flatMap((child) =>
-      (child?.outputProps ?? []).filter((prop) => prop.displayOnDiagram)
-    );
+	const points: DiagramPoints = useMemo(() => {
+		if (!selectedScenario?.children) {
+			return { inputs: [], outputs: [] };
+		}
 
-    // console.log(selectedScenario, "selected scenario");
+		const inputs = selectedScenario.children.flatMap((child) =>
+			(child.props ?? []).filter((prop) => prop.displayOnDiagram),
+		);
+		const outputs = selectedScenario.children.flatMap((child) =>
+			(child.outputProps ?? []).filter((prop) => prop.displayOnDiagram),
+		);
 
-    return { inputs, outputs };
-  }, [selectedScenario]);
+		return { inputs, outputs };
+	}, [selectedScenario]);
 
-  return (
-    <div className="flex-1 flex justify-start items-center">
-      {selectedScenario ? (
-        <div
-          ref={containerRef}
-          className="relative rounded-lg shadow-inner"
-          style={{
-            width: boundedWidth,
-            height: boundedHeight,
-            minWidth: "1000px", // 하한
-            maxWidth: "1920px", // 상한
-            minHeight: `${(1000 * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH}px`,
-            maxHeight: `${(1920 * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH}px`,
-          }}
-        >
-          <p className="text-white/30 absolute top-0 z-50 p-2 ">
-            {selectedScenario.id}
-          </p>
-          <img
-            ref={imageRef}
-            src={imageUrl}
-            alt="scenario"
-            className="absolute inset-0 w-full h-full object-contain"
-          />
+	return (
+		<div className="flex-1 flex justify-start items-center">
+			{selectedScenario ? (
+				<div
+					ref={containerRef}
+					className="relative rounded-lg shadow-inner"
+					style={{
+						width: boundedWidth,
+						height: boundedHeight,
+						minWidth: "1000px", // 하한
+						maxWidth: "1920px", // 상한
+						minHeight: `${(1000 * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH}px`,
+						maxHeight: `${(1920 * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH}px`,
+					}}
+				>
+					<p className="text-white/30 absolute top-0 z-50 p-2 ">
+						{selectedScenario.id}
+					</p>
+					<img
+						ref={imageRef}
+						src={imageUrl}
+						alt="scenario"
+						className="absolute inset-0 w-full h-full object-contain"
+					/>
 
-          {/* 인풋 포인트 */}
-          {points.inputs?.map((point: any, index: number) => {
-            const left = (point.x || 0) * fixedWidth;
-            const top = (point.y || 0) * fixedHeight;
+					{/* 인풋 포인트 */}
+					{points.inputs.map((point, index) => {
+						const left = (point.x || 0) * fixedWidth;
+						const top = (point.y || 0) * fixedHeight;
 
-            return (
-              <FlowInputOverlay
-                key={point.key ?? point.id ?? index}
-                point={point}
-                scenarioId={selectedScenario.id}
-                onChange={debouncedUpdate}
-                status={"normal"}
-                label={point.key}
-                scale={scale}
-                inputHeight={inputHeight}
-                overlayStyle={{
-                  position: "absolute",
-                  left: `${left}px`,
-                  top: `${top}px`,
-                  transform: "translateY(-50%)", // 👈 수정
-                }}
-                fixedInputWidth={inputWidth} // 👈 추가
-              />
-            );
-          })}
+						return (
+							<FlowInputOverlay
+								key={point.key ?? point.id ?? index}
+								point={point}
+								scenarioId={selectedScenario.id}
+								onChange={updateInputValue}
+								onValidityChange={handleValidityChange}
+								status={"normal"}
+								label={point.key}
+								scale={scale}
+								inputHeight={inputHeight}
+								overlayStyle={{
+									position: "absolute",
+									left: `${left}px`,
+									top: `${top}px`,
+									transform: "translateY(-50%)", // 👈 수정
+								}}
+								fixedInputWidth={inputWidth} // 👈 추가
+							/>
+						);
+					})}
 
-          {/* 아웃풋 포인트 */}
-          {points.outputs?.map((point: any, index: number) => {
-            return (
-              <FlowOutputOverlay
-                key={point.key ?? point.id ?? index}
-                point={point}
-                scenarioId={selectedScenario.id}
-                onChange={debouncedUpdate}
-                status="normal"
-                label={point.key}
-                scale={scale}
-                inputHeight={inputHeight}
-                overlayStyle={{
-                  position: "absolute",
-                  left: `${(point.x || 0) * fixedWidth}px`, // 👈 x = 인풋 오른쪽 끝
-                  top: `${(point.y || 0) * fixedHeight}px`,
-                  transform: "translateX(-100%) translateY(-50%)",
-                  // 👆 X축은 100% 만큼 왼쪽으로 밀어줘서, 기준 좌표가 인풋 오른쪽 끝이 되게 함
-                }}
-                fixedInputWidth={inputWidth}
-              />
-            );
-          })}
+					{/* 아웃풋 포인트 */}
+					{points.outputs.map((point, index) => {
+						return (
+							<FlowOutputOverlay
+								key={point.key ?? point.id ?? index}
+								point={point}
+								scenarioId={selectedScenario.id}
+								onChange={updateInputValue}
+								status="normal"
+								label={point.key}
+								scale={scale}
+								inputHeight={inputHeight}
+								overlayStyle={{
+									position: "absolute",
+									left: `${(point.x || 0) * fixedWidth}px`, // 👈 x = 인풋 오른쪽 끝
+									top: `${(point.y || 0) * fixedHeight}px`,
+									transform: "translateX(-100%) translateY(-50%)",
+									// 👆 X축은 100% 만큼 왼쪽으로 밀어줘서, 기준 좌표가 인풋 오른쪽 끝이 되게 함
+								}}
+								fixedInputWidth={inputWidth}
+							/>
+						);
+					})}
 
-          {/* 디바이스 아이콘 */}
-          {selectedScenario?.children?.map((device, index) => {
-            const left = device.x * fixedWidth;
-            const top = device.y * fixedHeight;
+					{/* 디바이스 아이콘 */}
+					{selectedScenario?.children?.map((device, index) => {
+						const left = device.x * fixedWidth;
+						const top = device.y * fixedHeight;
 
-            // console.log(left, top, device.x, device.y, device.id);
-            return device.displayOnDiagram ? (
-              <div
-                datatype={device.id}
-                key={device.id ?? index}
-                className="absolute text-white transition text-xs px-2 py-1 rounded cursor-pointer hover:bg-blue-600/0 bg-blue-600/0 z-50"
-                style={{
-                  left: `${left}px`,
-                  top: `${top}px`,
-                  transform: "translateY(-50%)",
-                  fontSize: `${Math.max(10, Math.min(12 * scale, 18))}px`,
-                  width: `${Math.max(16, Math.min(device.size * scale, 64))}px`,
-                  height: `${Math.max(
-                    16,
-                    Math.min(device.size * scale, 64)
-                  )}px`,
-                }}
-                onClick={() => {
-                  setDeviceOpen(true);
-                  setSelectedDevice(device);
-                }}
-              ></div>
-            ) : (
-              <></>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex-1 h-[600px] flex items-center justify-center">
-          <img src={LOGO_SRC} width={200} alt="logo" />
-        </div>
-      )}
-      <BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
-    </div>
-  );
+						// console.log(left, top, device.x, device.y, device.id);
+						if (!device.displayOnDiagram) {
+							return null;
+						}
+
+						return (
+							<button
+								type="button"
+								data-device={device.id}
+								key={device.id ?? index}
+								className="absolute z-50 bg-blue-600/0 text-white text-xs px-2 py-1 rounded cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+								style={{
+									left: `${left}px`,
+									top: `${top}px`,
+									transform: "translateY(-50%)",
+									fontSize: `${Math.max(10, Math.min(12 * scale, 18))}px`,
+									width: `${Math.max(16, Math.min(device.size * scale, 64))}px`,
+									height: `${Math.max(
+										16,
+										Math.min(device.size * scale, 64),
+									)}px`,
+								}}
+								onClick={() => {
+									setDeviceOpen(true);
+									setSelectedDevice(device);
+								}}
+							/>
+						);
+					})}
+				</div>
+			) : (
+				<div className="flex-1 h-[600px] flex items-center justify-center">
+					<img src={LOGO_SRC} width={200} alt="logo" />
+				</div>
+			)}
+			<BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
+		</div>
+	);
 };
 
 export default Monitor;

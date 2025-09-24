@@ -142,40 +142,63 @@ export const FolderItem = ({
 	};
 
 	const handleItemClick = () => {
-		toggle();
-
-		// if (data.type === "device") {
-		//   setSelectedDevice(data)
-		//   console.log("device", data);
-		// }
+		if (data.type === "project") {
+			toggle();
+			return;
+		}
 
 		if (data.type === "scenario") {
 			setSelectedScenario(data as unknown as ScenarioInterface);
-			// onScenarioClick(data); // ✅ 커스텀 이벤트 실행
+			return;
+		}
+
+		if (data.children?.length) {
+			toggle();
 		}
 	};
 
-        const handleItemDoubleClick = () => {
-                if (data.type === "device") {
-                        setDeviceOpen(true);
-                        setSelectedDevice(data as DeviceInterface);
-                }
-        };
+	const handleItemDoubleClick = () => {
+		if (data.type === "scenario") {
+			toggle();
+			return;
+		}
+
+		if (data.type === "device") {
+			setDeviceOpen(true);
+			setSelectedDevice(data as DeviceInterface);
+		}
+	};
 
 	useEffect(() => {
 		if (shouldOpenProjectId === data.id) {
 			setOpen(true);
 		}
-	}, [shouldOpenProjectId]);
+	}, [data.id, shouldOpenProjectId]);
 
 	return (
 		<div className="text-white text-xs">
-			<div
-				className="flex items-center cursor-pointer gap-1 mb-1"
+			<button
+				type="button"
+				className="flex w-full items-center cursor-pointer gap-1 mb-1 bg-transparent"
 				style={{ paddingLeft: `${level * 16}px` }}
 				onContextMenu={handleContextMenu}
 				onClick={handleItemClick}
 				onDoubleClick={handleItemDoubleClick}
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						handleItemClick();
+					}
+					if (event.key === "ArrowRight" && data.children?.length && !open) {
+						event.preventDefault();
+						toggle();
+					}
+					if (event.key === "ArrowLeft" && open) {
+						event.preventDefault();
+						toggle();
+					}
+				}}
+				aria-expanded={data.children?.length ? open : undefined}
 			>
 				{data?.children?.length ? (
 					open ? (
@@ -199,7 +222,6 @@ export const FolderItem = ({
 						ref={inputRef}
 						className="bg-slate-700 text-white text-xs p-1 rounded outline-none border border-slate-600"
 						value={nameInput}
-						autoFocus
 						onChange={(e) => setNameInput(e.target.value)}
 						onBlur={handleRenameFinish}
 						onKeyDown={(e) => {
@@ -229,13 +251,13 @@ export const FolderItem = ({
 						)}
 					</Tooltip.Root>
 				)}
-			</div>
+			</button>
 
-                        {open &&
-                                data.children?.map((child, idx) => (
-                                        <FolderItem
-                                                key={child.id ?? idx}
-                                                data={child}
+			{open &&
+				data.children?.map((child, idx) => (
+					<FolderItem
+						key={child.id ?? idx}
+						data={child}
 						level={level + 1}
 						shouldOpenProjectId=""
 					/>

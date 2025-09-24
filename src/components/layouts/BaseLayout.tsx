@@ -2,7 +2,7 @@ const BaseLayout = () => {
 	return (
 		<div className="bg-gray-950 w-screen h-screen flex flex-col items-center justify-center gap-5 p-5">
 			<div className="flex flex-col items-center gap-3">
-				<h1 className="text-3xl text-slate-200"></h1>
+				<h1 className="text-3xl text-slate-200">Hydrogen Simulator</h1>
 				<span className="text-xl text-slate-300">
 					Edit file src/app.tsx to start!
 				</span>

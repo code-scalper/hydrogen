@@ -3,46 +3,46 @@ import { DropdownMenu } from "radix-ui";
 import "@/css/dropdown.css";
 
 interface FolderContextInterface {
-  open: boolean;
-  setOpen: (arg1: boolean) => void;
-  top: number;
-  left: number;
-  onRename?: () => void; // ✨ 이름 바꾸기 콜백
-  type: string;
-  onDelete: () => void;
-  onScenarioOpen: () => void;
-  onDeviceOpen: () => void;
+	open: boolean;
+	setOpen: (arg1: boolean) => void;
+	top: number;
+	left: number;
+	onRename?: () => void; // ✨ 이름 바꾸기 콜백
+	type: string;
+	onDelete: () => void;
+	onScenarioOpen: () => void;
+	onDeviceOpen: () => void;
 }
 
 const FolderContext = ({
-  open,
-  setOpen,
-  onRename,
-  top,
-  left,
-  type = "project",
-  onDelete,
-  onScenarioOpen,
+	open,
+	setOpen,
+	onRename,
+	top,
+	left,
+	type = "project",
+	onDelete,
+	onScenarioOpen,
 }: FolderContextInterface) => {
-  return (
-    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
-      {/* <DropdownMenu.Trigger asChild>
+	return (
+		<DropdownMenu.Root open={open} onOpenChange={setOpen}>
+			{/* <DropdownMenu.Trigger asChild>
         <button className="IconButton" aria-label="Customise options">
           <HamburgerMenuIcon />
         </button>
       </DropdownMenu.Trigger> */}
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          className="DropdownMenuContent"
-          sideOffset={5}
-          style={{
-            position: "fixed",
-            top,
-            left,
-          }}
-        >
-          {/* <DropdownMenu.Item
+			<DropdownMenu.Portal>
+				<DropdownMenu.Content
+					className="DropdownMenuContent"
+					sideOffset={5}
+					style={{
+						position: "fixed",
+						top,
+						left,
+					}}
+				>
+					{/* <DropdownMenu.Item
             className="DropdownMenuItem"
             onClick={() => {
               onDeviceOpen();
@@ -50,68 +50,65 @@ const FolderContext = ({
           >
             상세보기 <div className="RightSlot">⌘+T</div>
           </DropdownMenu.Item> */}
-          <DropdownMenu.Item className="DropdownMenuItem">
-            새 프로젝트 <div className="RightSlot">⌘+T</div>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            className="DropdownMenuItem"
-            onClick={() => {
-              onScenarioOpen();
-            }}
-          >
-            새 시나리오 <div className="RightSlot">⌘+T</div>
-          </DropdownMenu.Item>
+					<DropdownMenu.Item className="DropdownMenuItem">
+						새 프로젝트 <div className="RightSlot">⌘+T</div>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						className="DropdownMenuItem"
+						onClick={() => {
+							onScenarioOpen();
+						}}
+					>
+						새 시나리오 <div className="RightSlot">⌘+T</div>
+					</DropdownMenu.Item>
 
-          {type === "project" && (
-            <>
-              <DropdownMenu.Item
-                className="DropdownMenuItem"
-                onClick={() => {
-                  onRename?.(); // 부모에서 처리
-                }}
-              >
-                이름 바꾸기 <div className="RightSlot">F2</div>
-              </DropdownMenu.Item>{" "}
-              <DropdownMenu.Item
-                className="DropdownMenuItem text-rose-400"
-                onClick={() => {
-                  setOpen(false);
-                  onDelete(); // 전달된 삭제 콜백 실행
-                }}
-              >
-                삭제하기 <div className="RightSlot">⌘+D</div>
-              </DropdownMenu.Item>
-            </>
-          )}
-          {type === "scenario" && (
-            <>
-              <DropdownMenu.Item
-                className="DropdownMenuItem"
-                onClick={() => {
-                  onRename?.(); // 부모에서 처리
-                }}
-              >
-                이름 바꾸기 <div className="RightSlot">F2</div>
-              </DropdownMenu.Item>{" "}
-              <DropdownMenu.Item
-                className="DropdownMenuItem text-red-500"
-                onClick={() => {
-                  setOpen(false);
-                  onDelete(); // 전달된 삭제 콜백 실행
-                }}
-              >
-                삭제하기 <div className="RightSlot">⌘+D</div>
-              </DropdownMenu.Item>
-            </>
-          )}
+					{type === "project" && (
+						<>
+							<DropdownMenu.Item
+								className="DropdownMenuItem"
+								onClick={() => {
+									onRename?.(); // 부모에서 처리
+								}}
+							>
+								이름 바꾸기 <div className="RightSlot">F2</div>
+							</DropdownMenu.Item>{" "}
+							<DropdownMenu.Item
+								className="DropdownMenuItem text-rose-400"
+								onClick={() => {
+									setOpen(false);
+									onDelete(); // 전달된 삭제 콜백 실행
+								}}
+							>
+								삭제하기 <div className="RightSlot">⌘+D</div>
+							</DropdownMenu.Item>
+						</>
+					)}
+					{type === "scenario" && (
+						<>
+							<DropdownMenu.Item
+								className="DropdownMenuItem"
+								onClick={() => {
+									onRename?.(); // 부모에서 처리
+								}}
+							>
+								이름 바꾸기 <div className="RightSlot">F2</div>
+							</DropdownMenu.Item>{" "}
+							<DropdownMenu.Item
+								className="DropdownMenuItem text-red-500"
+								onClick={() => {
+									setOpen(false);
+									onDelete(); // 전달된 삭제 콜백 실행
+								}}
+							>
+								삭제하기 <div className="RightSlot">⌘+D</div>
+							</DropdownMenu.Item>
+						</>
+					)}
 
-          {type === "device" && <></>}
-          {type === "property" && <></>}
-
-          {/*<DropdownMenu.Item className="DropdownMenuItem" disabled>
+					{/*<DropdownMenu.Item className="DropdownMenuItem" disabled>
             New Private Window <div className="RightSlot">⇧+⌘+N</div>
           </DropdownMenu.Item> */}
-          {/* <DropdownMenu.Sub>
+					{/* <DropdownMenu.Sub>
             <DropdownMenu.SubTrigger className="DropdownMenuSubTrigger">
               더 보기
               <div className="RightSlot">
@@ -141,9 +138,9 @@ const FolderContext = ({
             </DropdownMenu.Portal>
           </DropdownMenu.Sub> */}
 
-          {/* <DropdownMenu.Separator className="DropdownMenuSeparator" /> */}
+					{/* <DropdownMenu.Separator className="DropdownMenuSeparator" /> */}
 
-          {/* <DropdownMenu.CheckboxItem
+					{/* <DropdownMenu.CheckboxItem
             className="DropdownMenuCheckboxItem"
             checked={bookmarksChecked}
             onCheckedChange={setBookmarksChecked}
@@ -190,11 +187,11 @@ const FolderContext = ({
             </DropdownMenu.RadioItem>
           </DropdownMenu.RadioGroup> */}
 
-          <DropdownMenu.Arrow className="DropdownMenuArrow" />
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
-  );
+					<DropdownMenu.Arrow className="DropdownMenuArrow" />
+				</DropdownMenu.Content>
+			</DropdownMenu.Portal>
+		</DropdownMenu.Root>
+	);
 };
 
 export default FolderContext;

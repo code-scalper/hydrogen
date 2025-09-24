@@ -104,7 +104,7 @@ function parseZip(buffer: Buffer): ParsedZip {
     const compressedData = buffer.slice(dataStart, dataEnd);
     const localExtraField = buffer.slice(
       localHeaderOffset + 30 + localFileNameLength,
-      dataStart,
+      dataStart
     );
 
     const entry: ZipEntry = {
@@ -232,9 +232,7 @@ function parseAttributes(raw: string): Record<string, string> {
 function buildAttributeString(attrs: Record<string, string>): string {
   const entries = Object.entries(attrs);
   if (entries.length === 0) return "";
-  return entries
-    .map(([key, value]) => `${key}="${value}"`)
-    .join(" ");
+  return entries.map(([key, value]) => `${key}="${value}"`).join(" ");
 }
 
 function hasMeaningfulValue(value: unknown): boolean {
@@ -248,7 +246,7 @@ function hasMeaningfulValue(value: unknown): boolean {
 function updateSheetXml(
   sheetXml: string,
   sharedStrings: string[],
-  values: Record<string, string>,
+  values: Record<string, string>
 ): string {
   const rowKeyMap = new Map<number, string>();
   const replacements: { start: number; end: number; text: string }[] = [];
@@ -360,7 +358,7 @@ function updateSheetXml(
 
 function rebuildZip(parsed: ParsedZip): Buffer {
   const ordered = [...parsed.entries].sort(
-    (a, b) => a.localHeaderOffset - b.localHeaderOffset,
+    (a, b) => a.localHeaderOffset - b.localHeaderOffset
   );
 
   const chunks: Buffer[] = [];
@@ -381,7 +379,12 @@ function rebuildZip(parsed: ParsedZip): Buffer {
     localHeader.writeUInt16LE(fileNameBuffer.length, 26);
     localHeader.writeUInt16LE(entry.localExtraField.length, 28);
 
-    chunks.push(localHeader, fileNameBuffer, entry.localExtraField, entry.compressedData);
+    chunks.push(
+      localHeader,
+      fileNameBuffer,
+      entry.localExtraField,
+      entry.compressedData
+    );
     entry.newLocalHeaderOffset = offset;
     offset +=
       localHeader.length +
@@ -418,7 +421,7 @@ function rebuildZip(parsed: ParsedZip): Buffer {
       centralHeader,
       fileNameBuffer,
       entry.extraField,
-      entry.fileComment,
+      entry.fileComment
     );
     offset +=
       centralHeader.length +
@@ -443,7 +446,7 @@ function rebuildZip(parsed: ParsedZip): Buffer {
 
 function normalizeValues(
   scenarioValues: Record<string, string>,
-  sfc?: string | null,
+  sfc?: string | null
 ): Record<string, string> {
   const normalized: Record<string, string> = {};
   if (sfc) {
@@ -460,7 +463,7 @@ function normalizeValues(
 export function updateInputTotalWorkbook(
   workbookPath: string,
   scenarioValues: Record<string, string>,
-  sfc?: string | null,
+  sfc?: string | null
 ): void {
   if (!fs.existsSync(workbookPath)) {
     throw new Error(`Workbook not found: ${workbookPath}`);
@@ -484,7 +487,7 @@ export function updateInputTotalWorkbook(
   const updatedSheetXml = updateSheetXml(
     sheetXml,
     sharedStrings,
-    normalizedValues,
+    normalizedValues
   );
 
   if (updatedSheetXml === sheetXml) {

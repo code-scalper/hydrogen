@@ -24,7 +24,8 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // ...
 });
 electron.contextBridge.exposeInMainWorld("electronAPI", {
-  runExe: (payload) => electron.ipcRenderer.invoke("run-exe", payload)
+  runExe: (payload) => electron.ipcRenderer.invoke("run-exe", payload),
+  readRecentLogs: () => electron.ipcRenderer.invoke("read-recent-logs")
 });
 electron.contextBridge.exposeInMainWorld("electronStore", {
   get: (key) => electron.ipcRenderer.invoke("electron-store-get", key),

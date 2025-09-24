@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "fs";
 import Store from "electron-store";
-import { execFile } from "child_process";
 
 import {
   ensureInputTotalWorkbook,
@@ -30,9 +29,6 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 // ✅ 공통 경로 헬퍼
 //
 function getThirdPartyDir() {
-  console.log(app.isPackaged, "is packaged");
-  console.log(process.resourcesPath, "@@@");
-  console.log(__dirname, "@@@@");
   return app.isPackaged
     ? path.join(process.resourcesPath, "third-party")
     : path.join(__dirname, "..", "third-party");
@@ -51,18 +47,31 @@ interface RunExePayload {
   values?: Record<string, string>;
 }
 
+type LogLine = {
+  ts?: string;
+  level?: string;
+  code?: string;
+  desc?: string;
+  solution?: { ko?: string; en?: string };
+};
+
+type RecentLogPayload = {
+  date: string;
+  entries: LogLine[];
+};
+
 // 계산모듈실행
 ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   const isDev = !app.isPackaged;
 
   // ✅ 플랫폼 분기: .exe는 Windows 전용
-  if (process.platform !== "win32") {
-    const msg =
-      "이 기능은 Windows에서만 실행됩니다. (현재 OS: " + process.platform + ")";
-    console.warn("[run-exe] " + msg);
-    dialog.showErrorBox("Unsupported platform", msg);
-    throw new Error(msg);
-  }
+  // if (process.platform !== "win32") {
+  //   const msg =
+  //     "이 기능은 Windows에서만 실행됩니다. (현재 OS: " + process.platform + ")";
+  //   console.warn("[run-exe] " + msg);
+  //   dialog.showErrorBox("Unsupported platform", msg);
+  //   throw new Error(msg);
+  // }
 
   const thirdPartyDir = getThirdPartyDir();
   const exePath = path.join(thirdPartyDir, "MHySIM_HRS_Run.exe");
@@ -120,66 +129,57 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw error;
   }
 
-  // ✅ 2-1) 수정된 Excel을 workingDir로 복사 (EXE가 CWD에서 찾음)
-  try {
-    const srcXlsx = path.join(thirdPartyDir, "Input_Total.xlsx");
-    const dstXlsx = path.join(workingDir, "Input_Total.xlsx");
+  // ✅ 3) EXE 실행은 디버그를 위해 건너뜀
+  console.log("🟡 EXE 실행 생략: Input_Total.xlsx 업데이트만 수행되었습니다.");
+  return "EXE skipped after workbook update";
+});
 
-    if (!fs.existsSync(srcXlsx)) {
-      throw new Error(`Input_Total.xlsx 원본이 없습니다: ${srcXlsx}`);
+function getDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+ipcMain.handle("read-recent-logs", async () => {
+  const baseOutputDir = getBaseOutputDir();
+  const results: RecentLogPayload[] = [];
+  const today = new Date();
+
+  for (let i = 0; i < 5; i += 1) {
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() - i);
+    const displayDate = getDateKey(targetDate);
+    const folderName = displayDate.replace(/-/g, "");
+    const logPath = path.join(baseOutputDir, folderName, "MHySIM.jsonl");
+
+    let entries: LogLine[] = [];
+
+    if (fs.existsSync(logPath)) {
+      try {
+        const contents = fs.readFileSync(logPath, "utf-8");
+        entries = contents
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => {
+            try {
+              return JSON.parse(line) as LogLine;
+            } catch (error) {
+              console.warn("Failed to parse log line", { logPath, line, error });
+              return null;
+            }
+          })
+          .filter((item): item is LogLine => item !== null);
+      } catch (error) {
+        console.error("Failed to read log file", logPath, error);
+      }
     }
 
-    // 동일 파일/잠금 이슈 최소화를 위해 덮어쓰기
-    fs.copyFileSync(srcXlsx, dstXlsx);
-    console.log("📄 엑셀 복사 완료:", dstXlsx);
-  } catch (err) {
-    console.error("❌ 엑셀 복사 실패:", err);
-    throw err;
+    results.push({ date: displayDate, entries });
   }
 
-  // ✅ 3) EXE 실행
-  return new Promise<string>((resolve, reject) => {
-    console.log("🟡 실행 시작:", exePath);
-    console.log("📁 작업 디렉토리:", workingDir);
-
-    // 필요하면 timeout, maxBuffer 등 옵션을 더 줄 수 있음
-    execFile(exePath, { cwd: workingDir }, (error, stdout, stderr) => {
-      if (error) {
-        console.error("❌ 실행 실패:", error);
-        if (stderr) console.error("stderr:", stderr);
-        reject(error);
-        return;
-      }
-
-      console.log("✅ 실행 완료");
-      if (stdout) console.log("stdout:", stdout);
-
-      // ✅ 4) 실행 후 새 Output_*.csv 감지 → 기본 이름에만 -n 채번
-      const postFiles = fs
-        .readdirSync(workingDir)
-        .filter((f) => /^Output_\d+\.csv$/i.test(f));
-
-      for (const file of postFiles) {
-        const ext = path.extname(file);
-        const baseName = path.basename(file, ext);
-        if (/-\d+$/.test(baseName)) continue; // 이미 채번된 건 스킵
-
-        let newIndex = 1;
-        let newFileName = `${baseName}-${newIndex}${ext}`;
-        while (fs.existsSync(path.join(workingDir, newFileName))) {
-          newIndex++;
-          newFileName = `${baseName}-${newIndex}${ext}`;
-        }
-        fs.renameSync(
-          path.join(workingDir, file),
-          path.join(workingDir, newFileName)
-        );
-        console.log(`📄 새 파일 리네이밍: ${file} → ${newFileName}`);
-      }
-
-      resolve("실행 완료");
-    });
-  });
+  return results;
 });
 
 const store = new Store();

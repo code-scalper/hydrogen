@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
 contextBridge.exposeInMainWorld("electronAPI", {
   runExe: (payload?: { sfc?: string | null; values?: Record<string, string> }) =>
     ipcRenderer.invoke("run-exe", payload),
+  readRecentLogs: () => ipcRenderer.invoke("read-recent-logs"),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {

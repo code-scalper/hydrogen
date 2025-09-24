@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 
-export const useDebouncedCallback = (
-	callback: (...args: any[]) => void,
+export const useDebouncedCallback = <Args extends unknown[]>(
+	callback: (...args: Args) => void,
 	delay: number,
 ) => {
 	const timer = useRef<NodeJS.Timeout | null>(null);
 
-	const debounced = (...args: any[]) => {
+	const debounced = (...args: Args) => {
 		if (timer.current) {
 			clearTimeout(timer.current);
 		}

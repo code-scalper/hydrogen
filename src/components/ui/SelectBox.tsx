@@ -9,52 +9,53 @@ import * as React from "react";
 import "@/css/select.css";
 import * as RadixSelect from "@radix-ui/react-select";
 
-interface selectItemInterface {
-        key: string;
-        label: React.ReactNode;
-        data?: any;
-        disabled?: boolean;
-        className?: string;
+interface SelectItemInterface<T = unknown> {
+	key: string;
+	label: React.ReactNode;
+	data?: T;
+	disabled?: boolean;
+	className?: string;
 }
-interface SelectBoxInterface {
-        placeholder?: string;
-        selectItems: selectItemInterface[];
-        value?: string; // 추가
-        onValueChange?: (value: string, data?: any) => void; // 추가
+
+interface SelectBoxInterface<T = unknown> {
+	placeholder?: string;
+	selectItems: SelectItemInterface<T>[];
+	value?: string; // 추가
+	onValueChange?: (value: string, data?: T) => void; // 추가
 }
 
 const SelectItem = React.forwardRef<
-        HTMLDivElement,
-        RadixSelect.SelectItemProps & { className?: string }
+	HTMLDivElement,
+	RadixSelect.SelectItemProps & { className?: string }
 >(({ children, className, disabled, ...props }, forwardedRef) => (
-        <RadixSelect.Item
-                className={classnames(
-                        "SelectItem",
-                        className,
-                        disabled ? "opacity-60" : null,
-                )}
-                disabled={disabled}
-                {...props}
-                ref={forwardedRef}
-        >
-                <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
-                <RadixSelect.ItemIndicator className="SelectItemIndicator">
-                        <CheckIcon />
-                </RadixSelect.ItemIndicator>
-        </RadixSelect.Item>
+	<RadixSelect.Item
+		className={classnames(
+			"SelectItem",
+			className,
+			disabled ? "opacity-60" : null,
+		)}
+		disabled={disabled}
+		{...props}
+		ref={forwardedRef}
+	>
+		<RadixSelect.ItemText>{children}</RadixSelect.ItemText>
+		<RadixSelect.ItemIndicator className="SelectItemIndicator">
+			<CheckIcon />
+		</RadixSelect.ItemIndicator>
+	</RadixSelect.Item>
 ));
 
 SelectItem.displayName = "SelectItem"; // ⚠️ forwardRef에는 필수!
-const SelectBox = ({
+const SelectBox = <T,>({
 	placeholder = "Please select!",
 	selectItems,
 	value,
 	onValueChange,
-}: SelectBoxInterface) => {
+}: SelectBoxInterface<T>) => {
 	const handleValueChange = (val: string) => {
 		const foundItem = selectItems.find((item) => item.key === val);
 		if (onValueChange) {
-			onValueChange(val, foundItem?.data); // ✅ key + data 전달
+			onValueChange(val, foundItem?.data);
 		}
 	};
 	return (
@@ -63,7 +64,7 @@ const SelectBox = ({
 				className={classnames("SelectTrigger", "flex-1 bg-gray-700 text-white")}
 				aria-label="Food"
 			>
-				<div></div>
+				<div />
 				<Select.Value placeholder={placeholder} />
 				<Select.Icon className="SelectIcon">
 					<ChevronDownIcon />
@@ -79,16 +80,16 @@ const SelectBox = ({
 					<Select.Viewport className="SelectViewport">
 						<Select.Group>
 							{/* <Select.Label className="SelectLabel">Fruits</Select.Label> */}
-                                                        {selectItems.map((item, index) => (
-                                                                <SelectItem
-                                                                        key={item.key ?? index}
-                                                                        value={item.key}
-                                                                        className={item.className}
-                                                                        disabled={item.disabled}
-                                                                >
-                                                                        {item.label}
-                                                                </SelectItem>
-                                                        ))}
+							{selectItems.map((item, index) => (
+								<SelectItem
+									key={item.key ?? index}
+									value={item.key}
+									className={item.className}
+									disabled={item.disabled}
+								>
+									{item.label}
+								</SelectItem>
+							))}
 						</Select.Group>
 						{/* 
                 <Select.Separator className="SelectSeparator" />
