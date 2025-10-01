@@ -108,8 +108,8 @@ const Manual = () => {
 									{section.description}
 								</p>
 								<ul className="space-y-3 text-sm leading-relaxed text-slate-200">
-								{section.steps.map((step, index) => (
-									<li key={`${section.title}-${step}`} className="flex gap-3">
+									{section.steps.map((step, index) => (
+										<li key={`${section.title}-${step}`} className="flex gap-3">
 											<span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-500/50 bg-sky-500/10 text-xs font-semibold text-sky-300">
 												{index + 1}
 											</span>

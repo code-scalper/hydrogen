@@ -97,11 +97,16 @@ export const LogHistoryModal = ({ isOpen, onClose }: LogHistoryModalProps) => {
 		return (
 			<div className="space-y-4 max-h-[360px] overflow-y-auto pr-1">
 				{logs.map((daily) => (
-					<div key={daily.date} className="rounded-md border border-slate-700 bg-slate-800/80 p-3">
+					<div
+						key={daily.date}
+						className="rounded-md border border-slate-700 bg-slate-800/80 p-3"
+					>
 						<div className="flex items-center justify-between text-xs text-slate-200 font-semibold">
 							<span>{formatDateLabel(daily.date)}</span>
 							<span className="text-slate-400">
-								{daily.entries.length > 0 ? `${daily.entries.length}건` : "데이터 없음"}
+								{daily.entries.length > 0
+									? `${daily.entries.length}건`
+									: "데이터 없음"}
 							</span>
 						</div>
 						<div className="mt-2 space-y-3 text-xs text-slate-200">
@@ -112,7 +117,10 @@ export const LogHistoryModal = ({ isOpen, onClose }: LogHistoryModalProps) => {
 									const time = extractTime(entry.ts);
 									const summary = buildSummary(entry);
 									return (
-										<div key={`${entry.ts ?? index}-${index}`} className="border-l border-slate-600 pl-3">
+										<div
+											key={`${entry.ts ?? index}-${index}`}
+											className="border-l border-slate-600 pl-3"
+										>
 											<p className="font-semibold text-slate-100">
 												{time ? `${time} · ` : ""}
 												{entry.desc ?? "설명 없음"}
@@ -120,9 +128,7 @@ export const LogHistoryModal = ({ isOpen, onClose }: LogHistoryModalProps) => {
 											{entry.solution?.ko && (
 												<p className="text-slate-300">{entry.solution.ko}</p>
 											)}
-											{summary && (
-												<p className="text-slate-500">{summary}</p>
-											)}
+											{summary && <p className="text-slate-500">{summary}</p>}
 										</div>
 									);
 								})

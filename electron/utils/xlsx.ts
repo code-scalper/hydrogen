@@ -235,6 +235,42 @@ function buildAttributeString(attrs: Record<string, string>): string {
   return entries.map(([key, value]) => `${key}="${value}"`).join(" ");
 }
 
+function columnLabelToIndex(label: string): number {
+  let result = 0;
+  for (let i = 0; i < label.length; i++) {
+    const code = label.charCodeAt(i);
+    if (code >= 65 && code <= 90) {
+      result = result * 26 + (code - 64);
+    } else if (code >= 97 && code <= 122) {
+      result = result * 26 + (code - 96);
+    }
+  }
+  return result - 1;
+}
+
+function extractCellValue(
+  content: string,
+  type: string | undefined,
+  sharedStrings: string[]
+): string {
+  if (type === "s") {
+    const match = content.match(/<v>([\s\S]*?)<\/v>/);
+    if (!match) return "";
+    const index = Number.parseInt(match[1], 10);
+    if (Number.isNaN(index)) return "";
+    return sharedStrings[index] ?? "";
+  }
+
+  if (type === "inlineStr") {
+    const match = content.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+    return match ? decodeXml(match[1]) : "";
+  }
+
+  const match = content.match(/<v>([\s\S]*?)<\/v>/);
+  if (!match) return "";
+  return decodeXml(match[1]);
+}
+
 function hasMeaningfulValue(value: unknown): boolean {
   if (value === undefined || value === null) return false;
   if (typeof value === "string") {
@@ -505,6 +541,79 @@ export function updateInputTotalWorkbook(
   const tempPath = `${workbookPath}.tmp`;
   fs.writeFileSync(tempPath, rebuilt);
   fs.renameSync(tempPath, workbookPath);
+}
+
+export function readWorksheetRows(
+  workbookPath: string,
+  sheetFile = "xl/worksheets/sheet1.xml"
+): string[][] {
+  if (!fs.existsSync(workbookPath)) {
+    throw new Error(`Workbook not found: ${workbookPath}`);
+  }
+
+  const buffer = fs.readFileSync(workbookPath);
+  const parsed = parseZip(buffer);
+  const sheetEntry = parsed.entryMap.get(sheetFile);
+  if (!sheetEntry) {
+    throw new Error(`Worksheet not found: ${sheetFile}`);
+  }
+
+  const sharedEntry = parsed.entryMap.get("xl/sharedStrings.xml");
+  const sharedStrings = sharedEntry
+    ? parseSharedStrings(inflateEntry(sharedEntry).toString("utf8"))
+    : [];
+
+  const sheetXml = inflateEntry(sheetEntry).toString("utf8");
+  const rows: string[][] = [];
+
+  const rowRegex = /<row[^>]*>([\s\S]*?)<\/row>/g;
+  let rowMatch: RegExpExecArray | null;
+
+  while ((rowMatch = rowRegex.exec(sheetXml)) !== null) {
+    const rowContent = rowMatch[1];
+    const cells: string[] = [];
+    let maxIndex = -1;
+
+    const cellRegex = /<c([^>]*)>([\s\S]*?)<\/c>/g;
+    let cellMatch: RegExpExecArray | null;
+
+    while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
+      const attrRaw = cellMatch[1];
+      const content = cellMatch[2];
+      const attrs = parseAttributes(attrRaw);
+      const reference = attrs.r;
+      let columnIndex = -1;
+
+      if (reference) {
+        const columnLabel = reference.replace(/\d+/g, "");
+        columnIndex = columnLabelToIndex(columnLabel);
+      } else {
+        columnIndex = cells.length;
+      }
+
+      if (columnIndex < 0) {
+        continue;
+      }
+
+      const value = extractCellValue(content, attrs.t, sharedStrings);
+      cells[columnIndex] = value;
+      if (columnIndex > maxIndex) {
+        maxIndex = columnIndex;
+      }
+    }
+
+    if (maxIndex >= 0) {
+      for (let i = 0; i <= maxIndex; i += 1) {
+        if (cells[i] === undefined) {
+          cells[i] = "";
+        }
+      }
+    }
+
+    rows.push(cells);
+  }
+
+  return rows;
 }
 
 export function ensureInputTotalWorkbook(baseDir: string): string {

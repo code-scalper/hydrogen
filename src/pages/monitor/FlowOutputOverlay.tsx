@@ -1,12 +1,13 @@
 import type { DeviceProperty } from "@/types";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+
+import useSimulationStore from "@/store/useSimulationStore";
 
 interface FlowOutputOverlayProps {
 	point: DeviceProperty;
 	scenarioId: string;
-	onChange: (id: string, value: string) => void;
 	status?: "normal" | "warning" | "error";
 	label: string;
 	overlayStyle?: React.CSSProperties;
@@ -30,7 +31,6 @@ const getArrowColor = (status: "normal" | "warning" | "error") => {
 
 const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
 	point,
-	onChange,
 	status = "normal",
 	label = "sample",
 	overlayStyle = {},
@@ -38,11 +38,16 @@ const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
 	inputHeight,
 	fixedInputWidth = 0,
 }) => {
-	const [inputValue, setInputValue] = useState(point.value);
+	const simulationValue = useSimulationStore(
+		(state) => state.currentValues[point.key ?? ""],
+	);
 
-	useEffect(() => {
-		setInputValue(point.value);
-	}, [point.value]);
+	const displayedValue = useMemo(() => {
+		if (simulationValue === undefined || simulationValue === null) {
+			return point.value ?? "";
+		}
+		return simulationValue;
+	}, [point.value, simulationValue]);
 	return (
 		<div
 			className={clsx(
@@ -55,13 +60,8 @@ const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
 			{/* 인풋 박스 */}
 			<input
 				type="text"
-				value={inputValue}
+				value={displayedValue}
 				readOnly
-				onChange={(e) => {
-					const newVal = e.target.value;
-					setInputValue(newVal);
-					onChange(point.key, newVal);
-				}}
 				className="px-2 text-xs text-white text-right border border-gray-600 bg-black
           focus:outline-none focus:border-blue-500 rounded-sm"
 				style={{

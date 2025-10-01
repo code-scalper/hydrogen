@@ -109,7 +109,7 @@ const Monitor = () => {
 	const imageUrl = useMemo(() => {
 		return selectedScenario
 			? images[`/src/assets/diagram/${selectedScenario.src}`]
-			: images[`/src/assets/diagram/SFC_1022.jpg`];
+			: images["/src/assets/diagram/SFC_1022.jpg"];
 	}, [selectedScenario]);
 
 	// const inputPoints = useMemo(() => {
@@ -199,7 +199,6 @@ const Monitor = () => {
 								key={point.key ?? point.id ?? index}
 								point={point}
 								scenarioId={selectedScenario.id}
-								onChange={updateInputValue}
 								status="normal"
 								label={point.key}
 								scale={scale}

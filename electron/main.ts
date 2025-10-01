@@ -4,10 +4,12 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "fs";
 import Store from "electron-store";
+import { spawn } from "child_process";
 
 import {
   ensureInputTotalWorkbook,
   updateInputTotalWorkbook,
+  readWorksheetRows,
 } from "./utils/xlsx";
 
 //
@@ -60,9 +62,182 @@ type RecentLogPayload = {
   entries: LogLine[];
 };
 
+type SimulationFrame = {
+  time: number;
+  values: Record<string, string>;
+};
+
+type RunExeResult = {
+  status: string;
+  frames: SimulationFrame[];
+};
+
+function runExternalExecutable(executable: string, cwd: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(executable, {
+      cwd,
+      windowsHide: true,
+    });
+
+    child.on("error", (error) => {
+      reject(error);
+    });
+
+    child.stdout?.on("data", (chunk) => {
+      console.log(`[exe stdout] ${chunk}`);
+    });
+
+    child.stderr?.on("data", (chunk) => {
+      console.error(`[exe stderr] ${chunk}`);
+    });
+
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(`Executable exited with code ${code}`));
+    });
+  });
+}
+
+function parseCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      cells.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  cells.push(current);
+  return cells.map((cell) => cell.trim());
+}
+
+function sanitizeFrameValues(row: string[], headers: string[], timeIndex: number): SimulationFrame | null {
+  if (timeIndex < 0 || timeIndex >= headers.length) {
+    return null;
+  }
+
+  const rawTime = row[timeIndex] ?? "";
+  const time = Number.parseFloat(rawTime);
+  if (!Number.isFinite(time)) {
+    return null;
+  }
+
+  const values: Record<string, string> = {};
+  headers.forEach((header, index) => {
+    if (index === timeIndex) return;
+    if (!header) return;
+    const cellValue = row[index];
+    if (cellValue === undefined || cellValue === null) {
+      values[header] = "";
+      return;
+    }
+    values[header] = `${cellValue}`;
+  });
+
+  return { time, values };
+}
+
+function readFramesFromCsv(filePath: string): SimulationFrame[] {
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length === 0) {
+    return [];
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const timeIndex = headers.findIndex(
+    (header) => header.toLowerCase() === "time"
+  );
+  if (timeIndex === -1) {
+    console.warn("Output CSV missing Time column");
+    return [];
+  }
+
+  const frames: SimulationFrame[] = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const row = parseCsvLine(lines[i]);
+    const frame = sanitizeFrameValues(row, headers, timeIndex);
+    if (frame) {
+      frames.push(frame);
+    }
+  }
+
+  return frames;
+}
+
+function readFramesFromWorkbook(filePath: string): SimulationFrame[] {
+  try {
+    const rows = readWorksheetRows(filePath);
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const headers = rows[0].map((cell) => cell.trim());
+    const timeIndex = headers.findIndex(
+      (header) => header.toLowerCase() === "time"
+    );
+
+    if (timeIndex === -1) {
+      console.warn("Workbook missing Time column");
+      return [];
+    }
+
+    const frames: SimulationFrame[] = [];
+    for (let i = 1; i < rows.length; i += 1) {
+      const row = rows[i];
+      const frame = sanitizeFrameValues(row, headers, timeIndex);
+      if (frame) {
+        frames.push(frame);
+      }
+    }
+
+    return frames;
+  } catch (error) {
+    console.error("Failed to read simulation workbook", filePath, error);
+    return [];
+  }
+}
+
+function readSimulationFrames(workingDir: string): SimulationFrame[] {
+  const xlsxPath = path.join(workingDir, "Output_Total.xlsx");
+  if (fs.existsSync(xlsxPath)) {
+    const frames = readFramesFromWorkbook(xlsxPath);
+    if (frames.length > 0) {
+      return frames;
+    }
+  }
+
+  const csvPath = path.join(workingDir, "Output_Total.csv");
+  if (fs.existsSync(csvPath)) {
+    return readFramesFromCsv(csvPath);
+  }
+
+  return [];
+}
+
 // 계산모듈실행
 ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
-  const isDev = !app.isPackaged;
 
   // ✅ 플랫폼 분기: .exe는 Windows 전용
   // if (process.platform !== "win32") {
@@ -129,9 +304,29 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw error;
   }
 
-  // ✅ 3) EXE 실행은 디버그를 위해 건너뜀
-  console.log("🟡 EXE 실행 생략: Input_Total.xlsx 업데이트만 수행되었습니다.");
-  return "EXE skipped after workbook update";
+  let status = "EXE execution skipped: unsupported platform";
+
+  if (process.platform === "win32") {
+    try {
+      await runExternalExecutable(exePath, workingDir);
+      status = "EXE completed successfully";
+    } catch (error) {
+      console.error("❌ EXE 실행 실패:", error);
+      throw error;
+    }
+  } else {
+    console.warn(
+      `run-exe called on unsupported platform (${process.platform}); executable skipped.`,
+    );
+  }
+
+  const frames = readSimulationFrames(workingDir);
+  const result: RunExeResult = {
+    status,
+    frames: frames.sort((a, b) => a.time - b.time),
+  };
+
+  return result;
 });
 
 function getDateKey(date: Date) {

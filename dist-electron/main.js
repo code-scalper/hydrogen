@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var _validator, _encryptionKey, _options, _defaultValues;
-import electron, { ipcMain as ipcMain$1, app as app$1, dialog, BrowserWindow } from "electron";
+import electron, { ipcMain as ipcMain$1, dialog, app as app$1, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -20,6 +20,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import assert from "node:assert";
 import os from "node:os";
+import { spawn } from "child_process";
 import path$1 from "path";
 import zlib from "zlib";
 const isObject = (value) => {
@@ -15458,6 +15459,34 @@ function buildAttributeString(attrs) {
   if (entries.length === 0) return "";
   return entries.map(([key, value]) => `${key}="${value}"`).join(" ");
 }
+function columnLabelToIndex(label) {
+  let result = 0;
+  for (let i = 0; i < label.length; i++) {
+    const code2 = label.charCodeAt(i);
+    if (code2 >= 65 && code2 <= 90) {
+      result = result * 26 + (code2 - 64);
+    } else if (code2 >= 97 && code2 <= 122) {
+      result = result * 26 + (code2 - 96);
+    }
+  }
+  return result - 1;
+}
+function extractCellValue(content2, type2, sharedStrings) {
+  if (type2 === "s") {
+    const match2 = content2.match(/<v>([\s\S]*?)<\/v>/);
+    if (!match2) return "";
+    const index = Number.parseInt(match2[1], 10);
+    if (Number.isNaN(index)) return "";
+    return sharedStrings[index] ?? "";
+  }
+  if (type2 === "inlineStr") {
+    const match2 = content2.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+    return match2 ? decodeXml(match2[1]) : "";
+  }
+  const match = content2.match(/<v>([\s\S]*?)<\/v>/);
+  if (!match) return "";
+  return decodeXml(match[1]);
+}
 function hasMeaningfulValue(value) {
   if (value === void 0 || value === null) return false;
   if (typeof value === "string") {
@@ -15667,6 +15696,60 @@ function updateInputTotalWorkbook(workbookPath, scenarioValues, sfc) {
   fs$1.writeFileSync(tempPath, rebuilt);
   fs$1.renameSync(tempPath, workbookPath);
 }
+function readWorksheetRows(workbookPath, sheetFile = "xl/worksheets/sheet1.xml") {
+  if (!fs$1.existsSync(workbookPath)) {
+    throw new Error(`Workbook not found: ${workbookPath}`);
+  }
+  const buffer = fs$1.readFileSync(workbookPath);
+  const parsed = parseZip(buffer);
+  const sheetEntry = parsed.entryMap.get(sheetFile);
+  if (!sheetEntry) {
+    throw new Error(`Worksheet not found: ${sheetFile}`);
+  }
+  const sharedEntry = parsed.entryMap.get("xl/sharedStrings.xml");
+  const sharedStrings = sharedEntry ? parseSharedStrings(inflateEntry(sharedEntry).toString("utf8")) : [];
+  const sheetXml = inflateEntry(sheetEntry).toString("utf8");
+  const rows = [];
+  const rowRegex = /<row[^>]*>([\s\S]*?)<\/row>/g;
+  let rowMatch;
+  while ((rowMatch = rowRegex.exec(sheetXml)) !== null) {
+    const rowContent = rowMatch[1];
+    const cells = [];
+    let maxIndex = -1;
+    const cellRegex = /<c([^>]*)>([\s\S]*?)<\/c>/g;
+    let cellMatch;
+    while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
+      const attrRaw = cellMatch[1];
+      const content2 = cellMatch[2];
+      const attrs = parseAttributes(attrRaw);
+      const reference = attrs.r;
+      let columnIndex = -1;
+      if (reference) {
+        const columnLabel = reference.replace(/\d+/g, "");
+        columnIndex = columnLabelToIndex(columnLabel);
+      } else {
+        columnIndex = cells.length;
+      }
+      if (columnIndex < 0) {
+        continue;
+      }
+      const value = extractCellValue(content2, attrs.t, sharedStrings);
+      cells[columnIndex] = value;
+      if (columnIndex > maxIndex) {
+        maxIndex = columnIndex;
+      }
+    }
+    if (maxIndex >= 0) {
+      for (let i = 0; i <= maxIndex; i += 1) {
+        if (cells[i] === void 0) {
+          cells[i] = "";
+        }
+      }
+    }
+    rows.push(cells);
+  }
+  return rows;
+}
 function ensureInputTotalWorkbook(baseDir) {
   const workbookPath = path$1.join(baseDir, "Input_Total.xlsx");
   if (!fs$1.existsSync(workbookPath)) {
@@ -15694,8 +15777,145 @@ function getBaseOutputDir() {
 function ensureDir(p) {
   if (!fs$1.existsSync(p)) fs$1.mkdirSync(p, { recursive: true });
 }
+function runExternalExecutable(executable, cwd) {
+  return new Promise((resolve2, reject) => {
+    var _a, _b;
+    const child = spawn(executable, {
+      cwd,
+      windowsHide: true
+    });
+    child.on("error", (error2) => {
+      reject(error2);
+    });
+    (_a = child.stdout) == null ? void 0 : _a.on("data", (chunk) => {
+      console.log(`[exe stdout] ${chunk}`);
+    });
+    (_b = child.stderr) == null ? void 0 : _b.on("data", (chunk) => {
+      console.error(`[exe stderr] ${chunk}`);
+    });
+    child.on("close", (code2) => {
+      if (code2 === 0) {
+        resolve2();
+        return;
+      }
+      reject(new Error(`Executable exited with code ${code2}`));
+    });
+  });
+}
+function parseCsvLine(line) {
+  const cells = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (char === "," && !inQuotes) {
+      cells.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current);
+  return cells.map((cell) => cell.trim());
+}
+function sanitizeFrameValues(row, headers, timeIndex) {
+  if (timeIndex < 0 || timeIndex >= headers.length) {
+    return null;
+  }
+  const rawTime = row[timeIndex] ?? "";
+  const time = Number.parseFloat(rawTime);
+  if (!Number.isFinite(time)) {
+    return null;
+  }
+  const values = {};
+  headers.forEach((header, index) => {
+    if (index === timeIndex) return;
+    if (!header) return;
+    const cellValue = row[index];
+    if (cellValue === void 0 || cellValue === null) {
+      values[header] = "";
+      return;
+    }
+    values[header] = `${cellValue}`;
+  });
+  return { time, values };
+}
+function readFramesFromCsv(filePath) {
+  const raw = fs$1.readFileSync(filePath, "utf-8");
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length === 0) {
+    return [];
+  }
+  const headers = parseCsvLine(lines[0]);
+  const timeIndex = headers.findIndex(
+    (header) => header.toLowerCase() === "time"
+  );
+  if (timeIndex === -1) {
+    console.warn("Output CSV missing Time column");
+    return [];
+  }
+  const frames = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const row = parseCsvLine(lines[i]);
+    const frame = sanitizeFrameValues(row, headers, timeIndex);
+    if (frame) {
+      frames.push(frame);
+    }
+  }
+  return frames;
+}
+function readFramesFromWorkbook(filePath) {
+  try {
+    const rows = readWorksheetRows(filePath);
+    if (rows.length === 0) {
+      return [];
+    }
+    const headers = rows[0].map((cell) => cell.trim());
+    const timeIndex = headers.findIndex(
+      (header) => header.toLowerCase() === "time"
+    );
+    if (timeIndex === -1) {
+      console.warn("Workbook missing Time column");
+      return [];
+    }
+    const frames = [];
+    for (let i = 1; i < rows.length; i += 1) {
+      const row = rows[i];
+      const frame = sanitizeFrameValues(row, headers, timeIndex);
+      if (frame) {
+        frames.push(frame);
+      }
+    }
+    return frames;
+  } catch (error2) {
+    console.error("Failed to read simulation workbook", filePath, error2);
+    return [];
+  }
+}
+function readSimulationFrames(workingDir) {
+  const xlsxPath = path.join(workingDir, "Output_Total.xlsx");
+  if (fs$1.existsSync(xlsxPath)) {
+    const frames = readFramesFromWorkbook(xlsxPath);
+    if (frames.length > 0) {
+      return frames;
+    }
+  }
+  const csvPath = path.join(workingDir, "Output_Total.csv");
+  if (fs$1.existsSync(csvPath)) {
+    return readFramesFromCsv(csvPath);
+  }
+  return [];
+}
 ipcMain$1.handle("run-exe", async (_event, payload) => {
-  !app$1.isPackaged;
   const thirdPartyDir = getThirdPartyDir();
   const exePath = path.join(thirdPartyDir, "MHySIM_HRS_Run.exe");
   if (!fs$1.existsSync(exePath)) {
@@ -15738,8 +15958,26 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
     console.error("❌ Excel 업데이트 실패:", error2);
     throw error2;
   }
-  console.log("🟡 EXE 실행 생략: Input_Total.xlsx 업데이트만 수행되었습니다.");
-  return "EXE skipped after workbook update";
+  let status = "EXE execution skipped: unsupported platform";
+  if (process.platform === "win32") {
+    try {
+      await runExternalExecutable(exePath, workingDir);
+      status = "EXE completed successfully";
+    } catch (error2) {
+      console.error("❌ EXE 실행 실패:", error2);
+      throw error2;
+    }
+  } else {
+    console.warn(
+      `run-exe called on unsupported platform (${process.platform}); executable skipped.`
+    );
+  }
+  const frames = readSimulationFrames(workingDir);
+  const result = {
+    status,
+    frames: frames.sort((a, b) => a.time - b.time)
+  };
+  return result;
 });
 function getDateKey(date) {
   const year = date.getFullYear();

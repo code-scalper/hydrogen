@@ -1,10 +1,11 @@
 import SFC4500 from "@/assets/sfc/sfc_4500.png";
 import { DEVICES } from "@/constants/devices";
+import { usePsvSimulation } from "@/hooks/usePsvSimulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import type { DeviceProperty, ScenarioInterface } from "@/types";
-import { type FC, useState } from "react";
-import ChartModal from "../charts/ChartModal"; // ✅ ChartModal import
-import { multiData, variableDefs } from "../charts/sample-data";
+import { type FC, useMemo, useState } from "react";
+
+import ChartModal from "../charts/ChartModal";
 import PsvButtons from "./PsvButtons";
 import PsvInput from "./PsvInput";
 import { PsvInputGroup } from "./PsvInputGroup";
@@ -13,31 +14,99 @@ interface PsvCalculatorModalProps {
 	onCreate?: (projectId: string, scenario: ScenarioInterface) => void;
 }
 
-const INPUT_ITEMS: Array<{
+type GroupKind = "input" | "output";
+
+type GroupDefinition = {
 	title: string;
 	items?: DeviceProperty[];
 	x: number;
 	y: number;
-}> = [
-	{ title: "자동차 용기 입력 변수", items: DEVICES.Lq_Tk.props, x: 40, y: 20 },
+	kind: GroupKind;
+};
+
+const GROUPS: GroupDefinition[] = [
 	{
-		title: "자동차 용기 출력 변수",
-		items: DEVICES.Lq_Tk.outputProps,
-		x: 800,
+		title: "탱크 입력 변수",
+		items: DEVICES.Lq_Tk.props,
+		x: 60,
 		y: 20,
+		kind: "input",
+	},
+	{
+		title: "탱크 출력 변수",
+		items: DEVICES.Lq_Tk.outputProps,
+		x: 760,
+		y: 20,
+		kind: "output",
 	},
 ];
+
+const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>
+	groups
+		.filter((group) => group.kind === kind)
+		.flatMap((group) => group.items ?? []);
 
 export const PsvModal_4500: FC<PsvCalculatorModalProps> = () => {
 	const psvOpen = useInteractionStore((s) => s.psvOpen);
 	const setPsvOpen = useInteractionStore((s) => s.setPsvOpen);
 	const [chartOpen, setChartOpen] = useState(false);
+
+	const inputProps = useMemo(() => flattenProps(GROUPS, "input"), []);
+	const outputProps = useMemo(() => flattenProps(GROUPS, "output"), []);
+
+	const { inputs, outputs, chartData, running, runSimulation, setInputValue } =
+		usePsvSimulation({
+			sfc: "4500",
+			inputProps,
+			outputProps,
+		});
+
+	const chartVariables = useMemo(() => {
+		return GROUPS.filter((group) => group.kind === "output").flatMap(
+			(group) => {
+				const collected: Array<{
+					key: string;
+					name: string;
+					unit: string;
+					plotId: string;
+				}> = [];
+
+				for (const prop of group.items ?? []) {
+					if (!prop?.key) continue;
+					collected.push({
+						key: prop.key,
+						name: prop.name ?? prop.key,
+						unit: prop.unit ?? "-",
+						plotId: group.title,
+					});
+				}
+
+				return collected;
+			},
+		);
+	}, []);
+
+	const handleOpenChart = () => {
+		if (chartData.length === 0) return;
+		setChartOpen(true);
+	};
+
+	const handleRun = () => {
+		void runSimulation().catch((error) => {
+			console.error("PSV 4500 simulation failed", error);
+		});
+	};
+
+	const getValueForProp = (kind: GroupKind, key?: string) => {
+		if (!key) return "";
+		return kind === "input" ? (inputs[key] ?? "") : (outputs[key] ?? "");
+	};
+
 	if (!psvOpen) return null;
 
 	return (
 		<div className="fixed inset-0 bg-stone-600 bg-opacity-40 flex items-center justify-center z-50 text-xs">
-			<div className="bg-gray-800 w-[96%] h-[90%] shadow-lg border border-stone-600 flex flex-col">
-				{/* Header */}
+			<div className="relative bg-gray-800 w-[96%] h-[90%] shadow-lg border border-stone-600 flex flex-col">
 				<div className="flex justify-between items-center p-2 bg-gray-900">
 					<h2 className="text-xs text-slate-200 font-semibold">
 						시나리오 생성
@@ -51,20 +120,16 @@ export const PsvModal_4500: FC<PsvCalculatorModalProps> = () => {
 					</button>
 				</div>
 
-				{/* Content */}
 				<div className="relative flex-1 p-4 overflow-auto h-full">
-					{/* 배경 이미지 (컨테이너 폭 안에서만 표시) */}
 					<div className="absolute inset-x-0 top-0 p-5 overflow-hidden h-full">
 						<img
 							src={SFC4500}
-							alt="psv1"
+							alt="psv4500"
 							className="block ml-auto max-w-full h-auto relative left-[-50px] top-[150px]"
 						/>
 					</div>
 
-					{/* === 여기부터 INPUT_ITEMS 렌더 (x,y에 따라 배치) === */}
-
-					{INPUT_ITEMS.map((group) => (
+					{GROUPS.map((group) => (
 						<PsvInputGroup
 							key={group.title}
 							title={group.title}
@@ -76,33 +141,42 @@ export const PsvModal_4500: FC<PsvCalculatorModalProps> = () => {
 									<PsvInput
 										key={prop.key ?? `${group.title}-${prop.name}`}
 										label={prop.name}
-										value={prop.value}
+										value={getValueForProp(group.kind, prop.key)}
 										unit={prop.unit ?? "-"}
-										onChange={() => {
-											// TODO: 상태/스토어에 맞춰 업데이트 로직 작성
-											// 예) updateDeviceProp(group.title, prop.key, v)
+										disabled={group.kind === "output"}
+										onChange={(value) => {
+											if (group.kind === "input" && prop.key) {
+												setInputValue(prop.key, value);
+											}
 										}}
 									/>
 								))}
 							</div>
 						</PsvInputGroup>
 					))}
-					<PsvInputGroup title="[On/Off Switch]" x={420} y={20}>
-						<div>Hello</div>
-					</PsvInputGroup>
-					{/* === INPUT_ITEMS 렌더 끝 === */}
 				</div>
 
-				{/* Footer */}
-				<PsvButtons setPsvOpen={setPsvOpen} setChartOpen={setChartOpen} />
-				{/* ✅ ChartModal 호출 */}
+				<PsvButtons
+					onClose={() => setPsvOpen(false)}
+					onRun={handleRun}
+					onOpenChart={handleOpenChart}
+					disabled={running}
+					chartDisabled={chartData.length === 0}
+				/>
+
+				{running && (
+					<div className="absolute inset-0 bg-black/40 flex items-center justify-center text-sm text-white">
+						계산을 실행 중입니다...
+					</div>
+				)}
+
 				<ChartModal
 					open={chartOpen}
 					onClose={() => setChartOpen(false)}
 					type="multi"
-					data={multiData}
-					variables={variableDefs}
-					showTable={true}
+					data={chartData}
+					variables={chartVariables}
+					showTable={false}
 				/>
 			</div>
 		</div>

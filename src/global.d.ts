@@ -6,7 +6,13 @@ declare global {
 			runExe: (payload?: {
 				sfc?: string | null;
 				values?: Record<string, string>;
-			}) => Promise<string>;
+			}) => Promise<{
+				status: string;
+				frames: Array<{
+					time: number;
+					values: Record<string, string>;
+				}>;
+			}>;
 			readRecentLogs: () => Promise<
 				Array<{
 					date: string;

@@ -1,20 +1,21 @@
-import { Progress } from "radix-ui";
-import * as React from "react";
+import * as Progress from "@radix-ui/react-progress";
+
 import "@/css/progress-bar.css";
 
-const ProgressBar = () => {
-	const [progress, setProgress] = React.useState(13);
+import useSimulationStore from "@/store/useSimulationStore";
 
-	React.useEffect(() => {
-		const timer = setTimeout(() => setProgress(66), 500);
-		return () => clearTimeout(timer);
-	}, []);
+const ProgressBar = () => {
+	const currentTime = useSimulationStore((state) => state.currentTime);
+	const totalDuration = useSimulationStore((state) => state.totalDuration);
+
+	const progress = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+	const clamped = Math.min(100, Math.max(0, progress));
 
 	return (
-		<Progress.Root className="ProgressRoot" value={progress}>
+		<Progress.Root className="ProgressRoot" value={clamped}>
 			<Progress.Indicator
 				className="ProgressIndicator"
-				style={{ transform: `translateX(-${100 - progress}%)` }}
+				style={{ transform: `translateX(-${100 - clamped}%)` }}
 			/>
 		</Progress.Root>
 	);

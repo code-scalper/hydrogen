@@ -24,6 +24,7 @@ import {
 import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
+import useSimulationStore from "@/store/useSimulationStore";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
@@ -112,6 +113,9 @@ const BaseHeader = () => {
 	);
 	const setSelectedPsvKey = useProjectStore((state) => state.setSelectedPsvKey);
 	const selectedScenario = useProjectStore((state) => state.selectedScenario);
+	const setSimulationFrames = useSimulationStore((state) => state.setFrames);
+	const playSimulation = useSimulationStore((state) => state.playFromStart);
+	const stopSimulationPlayback = useSimulationStore((state) => state.stop);
 
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 	const [ActiveChildComp, setActiveChildComp] = useState<ComponentType | null>(
@@ -139,7 +143,18 @@ const BaseHeader = () => {
 		}
 
 		try {
-			await window.electronAPI.runExe(payload);
+			stopSimulationPlayback();
+			const result = await window.electronAPI.runExe(payload);
+			if (
+				result &&
+				typeof result === "object" &&
+				Array.isArray(result.frames)
+			) {
+				setSimulationFrames(result.frames);
+				if (result.frames.length > 0) {
+					playSimulation();
+				}
+			}
 		} catch (error) {
 			console.error("실행 실패", error);
 		}
