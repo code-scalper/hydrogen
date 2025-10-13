@@ -103,43 +103,76 @@ export const useProjectStore = create<ProjectState>()(
 
 			updateItemName: (id, newName, type, parentId) =>
 				set((state) => {
-					const updateChildren = (
-						children?: ProjectTreeNode[],
-					): ProjectTreeNode[] | undefined => {
-						if (!children) {
-							return children;
-						}
-
-						return children.map((item) => {
-							if (item.id === id && item.type === type) {
-								return { ...item, name: newName };
+					const renameDevices = (
+						devices?: DeviceInterface[],
+					): DeviceInterface[] | undefined => {
+						if (!devices) return devices;
+						let mutated = false;
+						const nextDevices = devices.map((device) => {
+							let current = device;
+							if (
+								(type === "device" || type === "module") &&
+								device.id === id
+							) {
+								current = { ...device, name: newName };
+								mutated = true;
 							}
 
-							if ("children" in item && Array.isArray(item.children)) {
-								return {
-									...item,
-									children: updateChildren(
-										item.children as ProjectTreeNode[],
-									) as typeof item.children,
-								};
+							if (device.children) {
+								const updatedChildren = renameDevices(device.children);
+								if (updatedChildren !== device.children) {
+									current = { ...current, children: updatedChildren };
+									mutated = true;
+								}
 							}
 
-							return item;
+							return current;
 						});
+
+						return mutated ? nextDevices : devices;
 					};
+
+					const renameScenarios = (
+						scenarios?: ScenarioInterface[],
+					): ScenarioInterface[] | undefined => {
+						if (!scenarios) return scenarios;
+						let mutated = false;
+						const nextScenarios = scenarios.map((scenario) => {
+							let current = scenario;
+							if (type === "scenario" && scenario.id === id) {
+								current = { ...scenario, name: newName };
+								mutated = true;
+							}
+
+							const updatedDevices = renameDevices(scenario.children);
+							if (updatedDevices !== scenario.children) {
+								current = { ...current, children: updatedDevices };
+								mutated = true;
+							}
+
+							return current;
+						});
+
+						return mutated ? nextScenarios : scenarios;
+					};
+
+					const shouldProcessProject = (projectId: string) =>
+						parentId ? projectId === parentId : true;
 
 					const updatedFolderList = state.folderList.map((project) => {
 						if (type === "project" && project.id === id) {
 							return { ...project, name: newName };
 						}
 
-						if (type !== "project" && project.id === parentId) {
-							return {
-								...project,
-								children: updateChildren(
-									project.children as ProjectTreeNode[],
-								) as typeof project.children,
-							};
+						if (type === "scenario" || type === "device" || type === "module") {
+							if (!shouldProcessProject(project.id)) {
+								return project;
+							}
+
+							const updatedChildren = renameScenarios(project.children);
+							if (updatedChildren !== project.children) {
+								return { ...project, children: updatedChildren };
+							}
 						}
 
 						return project;
@@ -149,46 +182,80 @@ export const useProjectStore = create<ProjectState>()(
 				}),
 			deleteItem: (id, type, parentId) =>
 				set((state) => {
-					const deleteFromChildren = (
-						children?: ProjectTreeNode[],
-					): ProjectTreeNode[] | undefined => {
-						if (!children) {
-							return children;
+					const removeDevices = (
+						devices?: DeviceInterface[],
+					): DeviceInterface[] | undefined => {
+						if (!devices) return devices;
+						let mutated = false;
+						const nextDevices: DeviceInterface[] = [];
+
+						for (const device of devices) {
+							if (
+								(type === "device" || type === "module") &&
+								device.id === id
+							) {
+								mutated = true;
+								continue;
+							}
+
+							let current = device;
+							if (device.children) {
+								const updatedChildren = removeDevices(device.children);
+								if (updatedChildren !== device.children) {
+									current = { ...current, children: updatedChildren };
+									mutated = true;
+								}
+							}
+
+							nextDevices.push(current);
 						}
 
-						const filtered = children
-							.filter((item) => !(item.id === id && item.type === type))
-							.map((item) => {
-								if ("children" in item && Array.isArray(item.children)) {
-									return {
-										...item,
-										children: deleteFromChildren(
-											item.children as ProjectTreeNode[],
-										) as typeof item.children,
-									};
-								}
+						return mutated ? nextDevices : devices;
+					};
 
-								return item;
-							});
+					const removeScenarios = (
+						scenarios?: ScenarioInterface[],
+					): ScenarioInterface[] | undefined => {
+						if (!scenarios) return scenarios;
+						let mutated = false;
+						const nextScenarios: ScenarioInterface[] = [];
 
-						return filtered;
+						for (const scenario of scenarios) {
+							if (type === "scenario" && scenario.id === id) {
+								mutated = true;
+								continue;
+							}
+
+							let current = scenario;
+							const updatedDevices = removeDevices(scenario.children);
+							if (updatedDevices !== scenario.children) {
+								current = { ...current, children: updatedDevices };
+								mutated = true;
+							}
+
+							nextScenarios.push(current);
+						}
+
+						return mutated ? nextScenarios : scenarios;
 					};
 
 					let updatedFolderList = [...state.folderList];
 
 					if (type === "project") {
 						updatedFolderList = updatedFolderList.filter(
-							(item) => item.id !== id,
+							(project) => project.id !== id,
 						);
 					} else {
 						updatedFolderList = updatedFolderList.map((project) => {
-							const nextChildren = deleteFromChildren(
-								project.children as ProjectTreeNode[],
-							) as typeof project.children;
-							return {
-								...project,
-								children: nextChildren,
-							};
+							if (parentId && project.id !== parentId) {
+								return project;
+							}
+
+							const updatedChildren = removeScenarios(project.children);
+							if (updatedChildren !== project.children) {
+								return { ...project, children: updatedChildren };
+							}
+							return project;
 						});
 					}
 

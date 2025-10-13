@@ -5,7 +5,7 @@ import clsx from "clsx";
 type ScrollItem = {
 	id?: string;
 	engName?: string;
-} & Record<string, unknown>;
+};
 
 interface BaseScrollAreaProps<T extends ScrollItem> {
 	items: T[];

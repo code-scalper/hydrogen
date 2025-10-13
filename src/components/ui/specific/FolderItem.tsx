@@ -37,14 +37,10 @@ export const FolderItem = ({
 		(state) => state.setSelectedScenario,
 	);
 	const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);
-	const setSelectedProperty = useProjectStore(
-		(state) => state.setSelectedProperty,
-	);
 
 	const selectedProject = useProjectStore((state) => state.selectedProject);
 	const selectedScenario = useProjectStore((state) => state.selectedScenario);
 	const selectedDevice = useProjectStore((state) => state.selectedDevice);
-	const selectedProperty = useProjectStore((state) => state.selectedProperty);
 
 	const folderList = useProjectStore((state) => state.folderList);
 	const updateItemName = useProjectStore((state) => state.updateItemName);
@@ -109,12 +105,9 @@ export const FolderItem = ({
 
 				break;
 			case "device":
+			case "module":
 				if (selectedDevice?.id !== data.id)
 					setSelectedDevice(data as DeviceInterface);
-				break;
-			case "property":
-				if (selectedProperty?.id !== data.id)
-					setSelectedProperty(data as ProjectInterface); // 또는 PropertyInterface로 바꿔야 할 수도 있음
 				break;
 		}
 	};
@@ -163,7 +156,7 @@ export const FolderItem = ({
 			return;
 		}
 
-		if (data.type === "device") {
+		if (data.type === "device" || data.type === "module") {
 			setDeviceOpen(true);
 			setSelectedDevice(data as DeviceInterface);
 		}

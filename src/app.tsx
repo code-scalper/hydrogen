@@ -8,8 +8,8 @@ import BaseFooter from "./components/layouts/BaseFooter";
 // import Monitor from "./pages/monitor/Monitor";
 import BaseHeader from "./components/layouts/BaseHeader";
 import BaseSideBar from "./components/layouts/BaseSidebar";
-import MainRouter from "./router/MainRouter";
 import SimulationResultModal from "./components/ui/specific/SimulationResultModal";
+import MainRouter from "./router/MainRouter";
 export default function App() {
 	// const introductionPhrases = [
 	//   "Build modern apps with Electron and React!",

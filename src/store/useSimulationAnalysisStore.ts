@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 import {
-	buildSimulationAnalysis,
 	type SimulationAnalysisSummary,
+	buildSimulationAnalysis,
 } from "@/lib/simulationAnalysis";
 import type { SimulationFrame } from "@/store/useSimulationStore";
 
@@ -16,14 +16,16 @@ interface SimulationAnalysisState {
 	close: () => void;
 }
 
-export const useSimulationAnalysisStore = create<SimulationAnalysisState>((set) => ({
-	isOpen: false,
-	analysis: null,
-	openWithResult: (result) => {
-		const analysis = buildSimulationAnalysis(result ?? {});
-		set({ analysis, isOpen: true });
-	},
-	close: () => set({ isOpen: false }),
-}));
+export const useSimulationAnalysisStore = create<SimulationAnalysisState>(
+	(set) => ({
+		isOpen: false,
+		analysis: null,
+		openWithResult: (result) => {
+			const analysis = buildSimulationAnalysis(result ?? {});
+			set({ analysis, isOpen: true });
+		},
+		close: () => set({ isOpen: false }),
+	}),
+);
 
 export default useSimulationAnalysisStore;

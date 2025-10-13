@@ -9,7 +9,7 @@ import {
 	YAxis,
 } from "recharts";
 
-type MultiChartData = {
+export type MultiChartData = {
 	time: number;
 	[key: string]: number | undefined;
 };

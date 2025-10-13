@@ -48,7 +48,11 @@ const formatNumber = (value: number | undefined | null): string => {
 	if (abs >= 10) {
 		return value.toFixed(2);
 	}
-	return value.toFixed(3).replace(/\.0+$/, ".0").replace(/0+$/, "").replace(/\.$/, "");
+	return value
+		.toFixed(3)
+		.replace(/\.0+$/, ".0")
+		.replace(/0+$/, "")
+		.replace(/\.$/, "");
 };
 
 const formatSeconds = (value: number | undefined): string => {
@@ -103,7 +107,9 @@ const describeTrend = (first: number | null, last: number | null) => {
 	};
 };
 
-export const sanitizeFrames = (frames: SimulationFrame[]): SimulationFrame[] => {
+export const sanitizeFrames = (
+	frames: SimulationFrame[],
+): SimulationFrame[] => {
 	return frames
 		.filter((frame) => frame && Number.isFinite(frame.time))
 		.sort((a, b) => a.time - b.time)
@@ -113,19 +119,18 @@ export const sanitizeFrames = (frames: SimulationFrame[]): SimulationFrame[] => 
 		}));
 };
 
-export const buildSimulationAnalysis = (
-	result: {
-		status?: string;
-		frames?: SimulationFrame[] | null;
-	},
-): SimulationAnalysisSummary => {
+export const buildSimulationAnalysis = (result: {
+	status?: string;
+	frames?: SimulationFrame[] | null;
+}): SimulationAnalysisSummary => {
 	const safeFrames = Array.isArray(result?.frames)
 		? sanitizeFrames(result.frames)
 		: [];
 
 	const totalFrames = safeFrames.length;
 	const startTime = totalFrames > 0 ? safeFrames[0]?.time : undefined;
-	const endTime = totalFrames > 0 ? safeFrames[totalFrames - 1]?.time : undefined;
+	const endTime =
+		totalFrames > 0 ? safeFrames[totalFrames - 1]?.time : undefined;
 	const duration =
 		startTime !== undefined && endTime !== undefined
 			? Math.max(0, endTime - startTime)
@@ -137,16 +142,17 @@ export const buildSimulationAnalysis = (
 		for (const [key, raw] of Object.entries(frame.values ?? {})) {
 			const numericValue = toNumber(raw);
 			if (numericValue === null) continue;
-			if (!metrics.has(key)) {
-				metrics.set(key, {
+			let metric = metrics.get(key);
+			if (metric === undefined) {
+				metric = {
 					first: null,
 					last: null,
 					min: null,
 					max: null,
 					count: 0,
-				});
+				};
+				metrics.set(key, metric);
 			}
-			const metric = metrics.get(key)!;
 			upsertMetric(metric, numericValue);
 		}
 	}
@@ -162,7 +168,10 @@ export const buildSimulationAnalysis = (
 			min: data.min,
 			max: data.max,
 			range,
-			diff: data.first !== null && data.last !== null ? data.last - data.first : undefined,
+			diff:
+				data.first !== null && data.last !== null
+					? data.last - data.first
+					: undefined,
 			trend,
 		};
 	});

@@ -4,7 +4,7 @@ export interface ProjectInterface {
 	name: string;
 	description?: string;
 
-	type: "project" | "scenario" | "device" | "property" | "module" | "input";
+	type: "project";
 	children?: ScenarioInterface[] | undefined;
 	isExpanded?: boolean;
 	src?: string;
@@ -54,7 +54,7 @@ export interface DeviceBaseInterface {
 	id: string;
 	name: string;
 	engName?: string;
-	type: "project" | "scenario" | "device" | "property" | "module" | "input";
+	type: "device" | "module";
 	src?: string;
 	projectId?: string;
 	scenarioId?: string;

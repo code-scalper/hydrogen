@@ -31,8 +31,8 @@ const SimulationResultModal = () => {
 				</div>
 				<div className="px-5 py-4 text-sm text-slate-200">
 					<div className="space-y-2">
-						{analysis.notes.map((note, index) => (
-							<p key={`${note}-${index}`} className="text-slate-200">
+						{analysis.notes.map((note) => (
+							<p key={note} className="text-slate-200">
 								{note}
 							</p>
 						))}
@@ -55,12 +55,16 @@ const SimulationResultModal = () => {
 										<div className="mt-1 grid gap-1 text-xs text-slate-200 md:grid-cols-[minmax(0,_1fr)_minmax(0,_1fr)]">
 											<div>
 												<span className="text-slate-400">최종값</span>
-												<span className="ml-2 text-slate-100">{item.finalValue}</span>
+												<span className="ml-2 text-slate-100">
+													{item.finalValue}
+												</span>
 											</div>
 											{item.changeText ? (
 												<div>
 													<span className="text-slate-400">변화량</span>
-													<span className="ml-2 text-slate-100">{item.changeText}</span>
+													<span className="ml-2 text-slate-100">
+														{item.changeText}
+													</span>
 												</div>
 											) : (
 												<div className="text-slate-400">변화 데이터 부족</div>
@@ -69,7 +73,9 @@ const SimulationResultModal = () => {
 												{item.rangeText ? (
 													<p>
 														<span className="text-slate-400">관측 범위</span>
-														<span className="ml-2 text-slate-100">{item.rangeText}</span>
+														<span className="ml-2 text-slate-100">
+															{item.rangeText}
+														</span>
 													</p>
 												) : (
 													<p className="text-slate-400">범위 데이터 부족</p>

@@ -24,8 +24,8 @@ import {
 import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
-import useSimulationStore from "@/store/useSimulationStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
+import useSimulationStore from "@/store/useSimulationStore";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";

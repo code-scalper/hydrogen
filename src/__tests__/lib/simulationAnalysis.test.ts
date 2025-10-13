@@ -12,7 +12,9 @@ describe("buildSimulationAnalysis", () => {
 
 		expect(summary.totalFrames).toBe(0);
 		expect(summary.highlights).toHaveLength(0);
-		expect(summary.notes.some((note) => note.includes("출력 데이터"))).toBe(true);
+		expect(summary.notes.some((note) => note.includes("출력 데이터"))).toBe(
+			true,
+		);
 	});
 
 	it("summarizes numeric metrics and trends", () => {
@@ -41,6 +43,8 @@ describe("buildSimulationAnalysis", () => {
 		expect(map.Pressure?.rangeText).toBe("1 ~ 3");
 
 		expect(summary.notes[0]).toContain("실행 상태");
-		expect(summary.notes.some((note) => note.includes("총 3개 프레임"))).toBe(true);
+		expect(summary.notes.some((note) => note.includes("총 3개 프레임"))).toBe(
+			true,
+		);
 	});
 });

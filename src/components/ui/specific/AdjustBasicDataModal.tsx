@@ -139,7 +139,9 @@ export const AdjustBasicDataModal = ({
 											name={input.key}
 											unit={input.unit}
 											description={input.description}
-											options={input.options}
+											options={
+												input.options?.map((option) => ({ ...option })) ?? []
+											}
 											value={formState[input.key] || ""}
 											onChange={handleChange}
 										/>
@@ -167,7 +169,9 @@ export const AdjustBasicDataModal = ({
 											name={input.key}
 											unit={input.unit}
 											description={input.description}
-											options={input.options}
+											options={
+												input.options?.map((option) => ({ ...option })) ?? []
+											}
 											value={formState[input.key] || ""}
 											onChange={handleChange}
 										/>
