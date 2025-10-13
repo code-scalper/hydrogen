@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
+import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import type { DeviceProperty } from "@/types";
 
 export type SimulationFrame = {
@@ -54,6 +55,9 @@ export const usePsvSimulation = ({
 	const [frames, setFrames] = useState<SimulationFrame[]>([]);
 	const [status, setStatus] = useState<string>("");
 	const [running, setRunning] = useState(false);
+	const openAnalysisModal = useSimulationAnalysisStore(
+		(state) => state.openWithResult,
+	);
 
 	const chartData = useMemo(() => {
 		if (frames.length === 0)
@@ -120,6 +124,7 @@ export const usePsvSimulation = ({
 					});
 				}
 			}
+			openAnalysisModal(result);
 		} catch (error) {
 			console.error("PSV simulation failed", error);
 			setStatus("simulation failed");
@@ -127,7 +132,7 @@ export const usePsvSimulation = ({
 		} finally {
 			setRunning(false);
 		}
-	}, [inputKeys, inputs, outputKeys, sfc]);
+	}, [inputKeys, inputs, openAnalysisModal, outputKeys, sfc]);
 
 	return {
 		inputs,

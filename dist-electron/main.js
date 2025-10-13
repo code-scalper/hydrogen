@@ -16003,7 +16003,11 @@ ipcMain$1.handle("read-recent-logs", async () => {
           try {
             return JSON.parse(line);
           } catch (error2) {
-            console.warn("Failed to parse log line", { logPath, line, error: error2 });
+            console.warn("Failed to parse log line", {
+              logPath,
+              line,
+              error: error2
+            });
             return null;
           }
         }).filter((item) => item !== null);

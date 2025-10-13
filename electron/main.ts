@@ -132,7 +132,11 @@ function parseCsvLine(line: string): string[] {
   return cells.map((cell) => cell.trim());
 }
 
-function sanitizeFrameValues(row: string[], headers: string[], timeIndex: number): SimulationFrame | null {
+function sanitizeFrameValues(
+  row: string[],
+  headers: string[],
+  timeIndex: number
+): SimulationFrame | null {
   if (timeIndex < 0 || timeIndex >= headers.length) {
     return null;
   }
@@ -238,7 +242,6 @@ function readSimulationFrames(workingDir: string): SimulationFrame[] {
 
 // 계산모듈실행
 ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
-
   // ✅ 플랫폼 분기: .exe는 Windows 전용
   // if (process.platform !== "win32") {
   //   const msg =
@@ -316,7 +319,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     }
   } else {
     console.warn(
-      `run-exe called on unsupported platform (${process.platform}); executable skipped.`,
+      `run-exe called on unsupported platform (${process.platform}); executable skipped.`
     );
   }
 
@@ -361,7 +364,11 @@ ipcMain.handle("read-recent-logs", async () => {
             try {
               return JSON.parse(line) as LogLine;
             } catch (error) {
-              console.warn("Failed to parse log line", { logPath, line, error });
+              console.warn("Failed to parse log line", {
+                logPath,
+                line,
+                error,
+              });
               return null;
             }
           })

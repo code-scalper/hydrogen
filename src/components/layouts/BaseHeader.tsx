@@ -25,6 +25,7 @@ import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import useSimulationStore from "@/store/useSimulationStore";
+import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
@@ -116,6 +117,9 @@ const BaseHeader = () => {
 	const setSimulationFrames = useSimulationStore((state) => state.setFrames);
 	const playSimulation = useSimulationStore((state) => state.playFromStart);
 	const stopSimulationPlayback = useSimulationStore((state) => state.stop);
+	const openAnalysisModal = useSimulationAnalysisStore(
+		(state) => state.openWithResult,
+	);
 
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 	const [ActiveChildComp, setActiveChildComp] = useState<ComponentType | null>(
@@ -155,6 +159,7 @@ const BaseHeader = () => {
 					playSimulation();
 				}
 			}
+			openAnalysisModal(result);
 		} catch (error) {
 			console.error("실행 실패", error);
 		}
