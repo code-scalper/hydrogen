@@ -17,3 +17,7 @@
 {"ts":"2025-09-23 16:35:25","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
 {"ts":"2025-09-23 16:35:25","level":"PRG","code":"PRG0901","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
 {"ts":"2025-09-23 16:35:25","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-01 09:43:53","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-01 09:43:53","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-01 09:43:58","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-01 09:43:58","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
