@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import FlowInputOverlay from "./FlowInputOverlay";
 import FlowOutputOverlay from "./FlowOutputOverlay";
 
-import type { ScenarioInterface } from "@/types";
+import type { DeviceProperty, ScenarioInterface } from "@/types";
 
 import BaseToast from "@/components/ui/BaseToast";
 
@@ -167,12 +167,13 @@ const Monitor = () => {
 
 					{/* 인풋 포인트 */}
 					{points.inputs.map((point, index) => {
+						const pointKey = point.key ?? `${point.name ?? "input"}-${index}`;
 						const left = (point.x || 0) * fixedWidth;
 						const top = (point.y || 0) * fixedHeight;
 
 						return (
 							<FlowInputOverlay
-								key={point.key ?? point.id ?? index}
+								key={pointKey}
 								point={point}
 								scenarioId={selectedScenario.id}
 								onChange={updateInputValue}
@@ -194,9 +195,10 @@ const Monitor = () => {
 
 					{/* 아웃풋 포인트 */}
 					{points.outputs.map((point, index) => {
+						const pointKey = point.key ?? `${point.name ?? "output"}-${index}`;
 						return (
 							<FlowOutputOverlay
-								key={point.key ?? point.id ?? index}
+								key={pointKey}
 								point={point}
 								scenarioId={selectedScenario.id}
 								status="normal"

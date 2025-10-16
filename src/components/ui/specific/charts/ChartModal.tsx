@@ -3,15 +3,12 @@ import type { FC } from "react";
 import ChartArea from "./ChartArea";
 import ChartBar from "./ChartBar";
 import ChartLine from "./ChartLine";
-import ChartMulti from "./ChartMulti";
+import ChartMulti, { type MultiChartData } from "./ChartMulti";
 import ChartVariableTable from "./ChartVariableTable";
 
 type ChartType = "line" | "bar" | "area" | "multi";
 
-type ChartDatum = {
-	time: number;
-	[key: string]: number | string | undefined;
-};
+type ChartDatum = MultiChartData;
 
 type VariableDefinition = {
 	key: string;

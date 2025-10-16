@@ -8,6 +8,7 @@ import BaseFooter from "./components/layouts/BaseFooter";
 // import Monitor from "./pages/monitor/Monitor";
 import BaseHeader from "./components/layouts/BaseHeader";
 import BaseSideBar from "./components/layouts/BaseSidebar";
+import SimulationResultModal from "./components/ui/specific/SimulationResultModal";
 import MainRouter from "./router/MainRouter";
 export default function App() {
 	// const introductionPhrases = [
@@ -43,6 +44,7 @@ export default function App() {
 					<div className="flex p-10 text-white bg-zinc-700 overflow-auto">
 						<div className="h-full  border-gray-800  bg-red-800 relative">
 							<MainRouter />
+							<SimulationResultModal />
 							{/* <img src={Map} alt="map" /> */}
 							{/* <Text>제작중!!!!</Text> */}
 							{/* <Text>Hello from Radix Themes :)</Text>

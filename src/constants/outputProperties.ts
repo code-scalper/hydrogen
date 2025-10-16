@@ -1353,7 +1353,7 @@ export const OUTPUT_PROPERTIES = {
 		order: 153,
 	},
 	n_TkH: {
-		key: "n_TkM",
+		key: "n_TkH",
 		name: "",
 		unit: "℃",
 		description: "탱크 온도",
@@ -1361,6 +1361,17 @@ export const OUTPUT_PROPERTIES = {
 		displayOnDiagram: true,
 		x: 0.9,
 		y: 0.885,
+		order: 153,
+	},
+	n_TkM: {
+		key: "n_TkM",
+		name: "",
+		unit: "℃",
+		description: "탱크 온도",
+		type: "output",
+		displayOnDiagram: true,
+		x: 0.634,
+		y: 0.51,
 		order: 153,
 	},
 	n_TkL: {

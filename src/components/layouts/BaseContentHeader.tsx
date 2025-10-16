@@ -16,6 +16,7 @@ import { AdjustBasicDataModal } from "../ui/specific/AdjustBasicDataModal";
 import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
+import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import useSimulationStore from "@/store/useSimulationStore";
 import CircularProgress from "../ui/CircularProgress";
 import SimulationTimeline from "../ui/SimulationTimeline";
@@ -41,6 +42,9 @@ const BaseContentHeader = () => {
 	const setSimulationFrames = useSimulationStore((state) => state.setFrames);
 	const playSimulation = useSimulationStore((state) => state.playFromStart);
 	const stopSimulationPlayback = useSimulationStore((state) => state.stop);
+	const openAnalysisModal = useSimulationAnalysisStore(
+		(state) => state.openWithResult,
+	);
 
 	const handleCreate = () => {};
 
@@ -71,6 +75,7 @@ const BaseContentHeader = () => {
 					playSimulation();
 				}
 			}
+			openAnalysisModal(result);
 		} catch (error) {
 			console.error("실행 실패", error);
 		} finally {
