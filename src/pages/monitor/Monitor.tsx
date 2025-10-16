@@ -1,7 +1,12 @@
 import LOGO_SRC from "@/assets/logo.png";
+import {
+	DEFAULT_SCENARIO_VALUES,
+	type ScenarioDefaultValue,
+} from "@/constants/defaultValue";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import FlowInputOverlay from "./FlowInputOverlay";
 import FlowOutputOverlay from "./FlowOutputOverlay";
 
@@ -11,8 +16,9 @@ import BaseToast from "@/components/ui/BaseToast";
 
 const images = import.meta.glob("@/assets/diagram/*", {
 	eager: true,
-	as: "url",
-});
+	query: "?url",
+	import: "default",
+}) as Record<string, string>;
 
 const BASE_IMAGE_WIDTH = 1920; // 원본 기준 너비
 const BASE_IMAGE_HEIGHT = 1500; // 원본 기준 높이
@@ -130,15 +136,137 @@ const Monitor = () => {
 			return { inputs: [], outputs: [] };
 		}
 
-		const inputs = selectedScenario.children.flatMap((child) =>
-			(child.props ?? []).filter((prop) => prop.displayOnDiagram),
-		);
-		const outputs = selectedScenario.children.flatMap((child) =>
-			(child.outputProps ?? []).filter((prop) => prop.displayOnDiagram),
-		);
+		const scenarioDefaults: ScenarioDefaultValue | undefined = (() => {
+			if (!selectedScenario.sfcName) return undefined;
+			const scenarioKey =
+				`SFC${selectedScenario.sfcName}` as keyof typeof DEFAULT_SCENARIO_VALUES;
+			if (!(scenarioKey in DEFAULT_SCENARIO_VALUES)) {
+				return undefined;
+			}
+			const entry = DEFAULT_SCENARIO_VALUES[scenarioKey];
+			const optionKey = selectedScenario.optionKey;
+			if (optionKey && Object.prototype.hasOwnProperty.call(entry, optionKey)) {
+				return entry[optionKey as keyof typeof entry];
+			}
+			return entry.type1;
+		})();
+
+		const normalizeKey = (key?: string, fallbackName?: string) => {
+			const raw = key ?? fallbackName ?? "";
+			return raw.trim();
+		};
+		const getDefaultValue = (key?: string, name?: string) => {
+			const map = scenarioDefaults;
+
+			if (!map) return "0";
+			const normalized = normalizeKey(key, name);
+
+			if (!normalized) return "0";
+			const raw = map[normalized];
+			if (raw === undefined || raw === null) {
+				return "0";
+			}
+			if (typeof raw === "boolean") {
+				return raw ? "true" : "false";
+			}
+			return `${raw}`;
+		};
+
+		const ensureValue = (prop: DeviceProperty): DeviceProperty => {
+			const existing = prop.value;
+
+			if (
+				existing !== undefined &&
+				existing !== "0" &&
+				`${existing}`.trim() !== ""
+			) {
+				return prop;
+			}
+			return {
+				...prop,
+				value: getDefaultValue(prop.key, prop.name),
+			};
+		};
+
+		const inputs = selectedScenario.children
+			.flatMap((child) =>
+				(child.props ?? []).filter((prop) => prop.displayOnDiagram),
+			)
+			.map(ensureValue);
+		const outputs = selectedScenario.children
+			.flatMap((child) =>
+				(child.outputProps ?? []).filter((prop) => prop.displayOnDiagram),
+			)
+			.map(ensureValue);
 
 		return { inputs, outputs };
 	}, [selectedScenario]);
+
+	const diagramInputs = points.inputs;
+	const diagramOutputs = points.outputs;
+
+	const labelForPoint = useCallback(
+		(point: DeviceProperty, fallbackId: string) => {
+			const candidates = [point.key, point.name, fallbackId];
+			for (const candidate of candidates) {
+				if (!candidate) continue;
+				const trimmed = `${candidate}`.trim();
+				if (trimmed.length > 0) {
+					return trimmed;
+				}
+			}
+			return fallbackId;
+		},
+		[],
+	);
+
+	const inputOverlays = useMemo(() => {
+		const counts = new Map<string, number>();
+		return diagramInputs.map((point, index) => {
+			const base = labelForPoint(point, `input-${index}`);
+			const seen = counts.get(base) ?? 0;
+			counts.set(base, seen + 1);
+			const renderKey = seen === 0 ? base : `${base}-${seen}`;
+			const left = (point.x || 0) * fixedWidth;
+			const top = (point.y || 0) * fixedHeight;
+			const overlayStyle: CSSProperties = {
+				position: "absolute",
+				left: `${left}px`,
+				top: `${top}px`,
+				transform: "translateY(-50%)",
+			};
+			return {
+				point,
+				renderKey,
+				overlayStyle,
+				label: base,
+			};
+		});
+	}, [diagramInputs, fixedHeight, fixedWidth, labelForPoint]);
+
+	const outputOverlays = useMemo(() => {
+		const counts = new Map<string, number>();
+		return diagramOutputs.map((point, index) => {
+			const base = labelForPoint(point, `output-${index}`);
+			const seen = counts.get(base) ?? 0;
+			counts.set(base, seen + 1);
+			const renderKey = seen === 0 ? base : `${base}-${seen}`;
+			const left = (point.x || 0) * fixedWidth;
+			const top = (point.y || 0) * fixedHeight;
+			const overlayStyle: CSSProperties = {
+				position: "absolute",
+				left: `${left}px`,
+				top: `${top}px`,
+				transform: "translateX(-100%) translateY(-50%)",
+			};
+			return {
+				point,
+				renderKey,
+				overlayStyle,
+				label: base,
+			};
+		});
+	}, [diagramOutputs, fixedHeight, fixedWidth, labelForPoint]);
 
 	return (
 		<div className="flex-1 flex justify-start items-center">
@@ -155,8 +283,14 @@ const Monitor = () => {
 						maxHeight: `${(1920 * BASE_IMAGE_HEIGHT) / BASE_IMAGE_WIDTH}px`,
 					}}
 				>
-					<p className="text-white/30 absolute top-0 z-50 p-2 ">
-						{selectedScenario.id}
+					<p className="text-white/30 absolute top-0 z-50 p-2">
+						{selectedScenario.sfcName ?? selectedScenario.templateId}
+						{selectedScenario.sfcName
+							? ` · SFC${selectedScenario.sfcName}`
+							: ""}
+						{selectedScenario.optionLabel
+							? ` #${selectedScenario.optionLabel}`
+							: ""}
 					</p>
 					<img
 						ref={imageRef}
@@ -165,57 +299,35 @@ const Monitor = () => {
 						className="absolute inset-0 w-full h-full object-contain"
 					/>
 
-					{/* 인풋 포인트 */}
-					{points.inputs.map((point, index) => {
-						const pointKey = point.key ?? `${point.name ?? "input"}-${index}`;
-						const left = (point.x || 0) * fixedWidth;
-						const top = (point.y || 0) * fixedHeight;
+					{inputOverlays.map(({ point, renderKey, overlayStyle, label }) => (
+						<FlowInputOverlay
+							key={renderKey}
+							point={point}
+							scenarioId={selectedScenario.id}
+							onChange={updateInputValue}
+							onValidityChange={handleValidityChange}
+							status="normal"
+							label={label}
+							scale={scale}
+							inputHeight={inputHeight}
+							overlayStyle={overlayStyle}
+							fixedInputWidth={inputWidth}
+						/>
+					))}
 
-						return (
-							<FlowInputOverlay
-								key={pointKey}
-								point={point}
-								scenarioId={selectedScenario.id}
-								onChange={updateInputValue}
-								onValidityChange={handleValidityChange}
-								status={"normal"}
-								label={point.key}
-								scale={scale}
-								inputHeight={inputHeight}
-								overlayStyle={{
-									position: "absolute",
-									left: `${left}px`,
-									top: `${top}px`,
-									transform: "translateY(-50%)", // 👈 수정
-								}}
-								fixedInputWidth={inputWidth} // 👈 추가
-							/>
-						);
-					})}
-
-					{/* 아웃풋 포인트 */}
-					{points.outputs.map((point, index) => {
-						const pointKey = point.key ?? `${point.name ?? "output"}-${index}`;
-						return (
-							<FlowOutputOverlay
-								key={pointKey}
-								point={point}
-								scenarioId={selectedScenario.id}
-								status="normal"
-								label={point.key}
-								scale={scale}
-								inputHeight={inputHeight}
-								overlayStyle={{
-									position: "absolute",
-									left: `${(point.x || 0) * fixedWidth}px`, // 👈 x = 인풋 오른쪽 끝
-									top: `${(point.y || 0) * fixedHeight}px`,
-									transform: "translateX(-100%) translateY(-50%)",
-									// 👆 X축은 100% 만큼 왼쪽으로 밀어줘서, 기준 좌표가 인풋 오른쪽 끝이 되게 함
-								}}
-								fixedInputWidth={inputWidth}
-							/>
-						);
-					})}
+					{outputOverlays.map(({ point, renderKey, overlayStyle, label }) => (
+						<FlowOutputOverlay
+							key={renderKey}
+							point={point}
+							scenarioId={selectedScenario.id}
+							status="normal"
+							label={label}
+							scale={scale}
+							inputHeight={inputHeight}
+							overlayStyle={overlayStyle}
+							fixedInputWidth={inputWidth}
+						/>
+					))}
 
 					{/* 디바이스 아이콘 */}
 					{selectedScenario?.children?.map((device, index) => {

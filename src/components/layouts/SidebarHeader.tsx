@@ -8,10 +8,11 @@ import { generateCustomId } from "@/lib/utils";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 
-import type { DeviceInterface, ScenarioInterface } from "@/types";
+import type { ScenarioInterface } from "@/types";
 
 // constants
 import { SCENARIO_BASE_DATA } from "@/constants";
+import cloneDeep from "lodash/cloneDeep";
 
 interface SidebarHeaderProps {
 	handleProjectOpen: (arg: string) => void;
@@ -44,24 +45,23 @@ const SidebarHeader = ({ handleProjectOpen }: SidebarHeaderProps) => {
 	const handleCreateScenario = (
 		projectId: string,
 		scenario: ScenarioInterface,
+		optionKey?: string,
 	) => {
 		setScenarioOpen(false);
 
-		if (scenario.children) {
-			scenario.children = scenario.children.map((sc: DeviceInterface) => {
-				return { ...sc, projectId, scenarioId: scenario.id };
-			});
-		}
-
-		const baseData = SCENARIO_BASE_DATA;
-
-		addScenario(projectId, {
-			...scenario,
+		const scenarioPayload: ScenarioInterface = {
+			...cloneDeep(scenario),
 			type: "scenario",
 			isExpanded: true,
 			parentId: projectId,
-			baseData, // ✅ optional Scenario-specific data
-		});
+			baseData: cloneDeep(SCENARIO_BASE_DATA),
+		};
+
+		if (optionKey) {
+			scenarioPayload.optionKey = optionKey;
+		}
+
+		addScenario(projectId, scenarioPayload, optionKey);
 
 		// ✅ 프로젝트 폴더 펼침 상태 강제
 		handleProjectOpen(projectId);

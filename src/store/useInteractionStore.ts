@@ -13,6 +13,8 @@ interface InteractionState {
 	invalidInputKeys: Record<string, true>;
 	setInputValidity: (key: string, isValid: boolean) => void;
 	clearInvalidInputs: () => void;
+	skipRunExe: boolean;
+	setSkipRunExe: (skip: boolean) => void;
 }
 
 export const useInteractionStore = create<InteractionState>((set) => ({
@@ -45,4 +47,6 @@ export const useInteractionStore = create<InteractionState>((set) => ({
 			return { invalidInputKeys: next };
 		}),
 	clearInvalidInputs: () => set({ invalidInputKeys: {} }),
+	skipRunExe: false,
+	setSkipRunExe: (skip) => set({ skipRunExe: skip }),
 }));

@@ -16,10 +16,15 @@ import SFC2022 from "@/assets/sfc/sfc_2022.jpg";
 import SFC2050 from "@/assets/sfc/sfc_2050.jpg";
 import SFC3012 from "@/assets/sfc/sfc_3012.jpg";
 import SFC3022 from "@/assets/sfc/sfc_3022.jpg";
+import { SCENARIO_OPTIONS } from "@/constants/scenarioOptions";
 interface CreateScenarioModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onCreate: (projectId: string, scenario: ScenarioInterface) => void;
+	onCreate: (
+		projectId: string,
+		scenario: ScenarioInterface,
+		optionKey?: string,
+	) => void;
 }
 
 const IMAGES: Record<string, string> = {
@@ -52,6 +57,7 @@ export const CreateScenarioModal = ({
 	const [selectedScenarioId, setSelectedScenarioId] = useState("");
 	const [selectedScenario, setSelectedScenario] =
 		useState<ScenarioInterface | null>(null);
+	const [selectedOptionKey, setSelectedOptionKey] = useState<string>("");
 	// const setSelectedProject = useProjectStore(
 	//   (state) => state.setSelectedProject
 	// );
@@ -66,34 +72,23 @@ export const CreateScenarioModal = ({
 		return items ? items : [];
 	}, [folders]);
 
-	const existingScenarioIds = useMemo(() => {
-		if (!selectedProjectId) {
-			return new Set<string>();
-		}
-
-		const project = folders.find((folder) => folder.id === selectedProjectId);
-		const ids = project?.children?.map((child) => child.id) || [];
-
-		return new Set(ids);
-	}, [folders, selectedProjectId]);
-
 	const selectScenarioItems = useMemo(() => {
 		const items =
-			scenarios.map((scenario) => {
-				const isExisting = existingScenarioIds.has(scenario.id);
-
-				return {
-					label: isExisting
-						? `${scenario.sfcName} (이미 추가됨)`
-						: scenario.sfcName,
-					key: scenario.id,
-					data: scenario,
-					disabled: isExisting,
-					className: isExisting ? "text-gray-400" : undefined,
-				};
-			}) || [];
+			scenarios.map((scenario) => ({
+				label: scenario.sfcName,
+				key: scenario.id,
+				data: scenario,
+			})) || [];
 		return items ? items : [];
-	}, [scenarios, existingScenarioIds]);
+	}, [scenarios]);
+
+	const scenarioOptions = useMemo(() => {
+		if (!selectedScenarioId) return [] as { key: string; name: string }[];
+		return (
+			SCENARIO_OPTIONS[selectedScenarioId as keyof typeof SCENARIO_OPTIONS] ??
+			[]
+		);
+	}, [selectedScenarioId]);
 
 	useEffect(() => {
 		if (selectedProject) {
@@ -107,25 +102,29 @@ export const CreateScenarioModal = ({
 			setSelectedScenario(null);
 			setName("");
 			setTyped(false);
+			setSelectedOptionKey("");
 		}
 	}, [isOpen]);
 
 	useEffect(() => {
-		if (selectedScenarioId && existingScenarioIds.has(selectedScenarioId)) {
-			setSelectedScenarioId("");
-			setSelectedScenario(null);
-			setName("");
-			setTyped(false);
+		if (!isOpen) {
+			return;
 		}
-	}, [existingScenarioIds, selectedScenarioId]);
 
-	const isScenarioAlreadyInProject = useMemo(() => {
-		if (!selectedScenarioId) return false;
-		return existingScenarioIds.has(selectedScenarioId);
-	}, [existingScenarioIds, selectedScenarioId]);
+		const options = scenarioOptions;
+		const firstOption = options[0];
+		if (firstOption) {
+			setSelectedOptionKey(firstOption.key);
+		} else {
+			setSelectedOptionKey("");
+		}
+	}, [scenarioOptions, isOpen]);
 
+	const requiresOptionSelection = scenarioOptions.length > 0;
 	const isCreateDisabled =
-		!selectedProjectId || !selectedScenario || isScenarioAlreadyInProject;
+		!selectedProjectId ||
+		!selectedScenario ||
+		(requiresOptionSelection && !selectedOptionKey);
 
 	const selectedScenarioImage = useMemo(() => {
 		const src = IMAGES[selectedScenarioId];
@@ -169,6 +168,7 @@ export const CreateScenarioModal = ({
 								value={selectedScenarioId}
 								onValueChange={(val, data) => {
 									setSelectedScenarioId(val);
+									setSelectedOptionKey("");
 									const scenarioData =
 										(data as ScenarioInterface | undefined) ?? null;
 									setSelectedScenario(scenarioData);
@@ -179,6 +179,34 @@ export const CreateScenarioModal = ({
 								}}
 							/>
 						</div>
+						{scenarioOptions.length > 0 && (
+							<div className="flex items-center gap-3 text-slate-200">
+								<span className="text-xs whitespace-nowrap">시나리오 옵션</span>
+								<div className="flex flex-wrap gap-3 ml-2">
+									{scenarioOptions.map((option) => {
+										const radioId = `scenario-option-${selectedScenarioId}-${option.key}`;
+										return (
+											<label
+												key={option.key}
+												htmlFor={radioId}
+												className="flex items-center gap-2 rounded-full border border-slate-500 bg-slate-700/40 px-3 py-1 text-xs text-slate-200 transition-colors hover:border-blue-400 hover:text-white"
+											>
+												<input
+													id={radioId}
+													type="radio"
+													name={`scenario-option-group-${selectedScenarioId}`}
+													value={option.key}
+													checked={selectedOptionKey === option.key}
+													onChange={() => setSelectedOptionKey(option.key)}
+													className="h-3.5 w-3.5 accent-blue-500"
+												/>
+												<span className="text-xs">{option.name}</span>
+											</label>
+										);
+									})}
+								</div>
+							</div>
+						)}
 						<div className=" flex items-center flex-start gap-2">
 							<label
 								htmlFor={scenarioNameInputId}
@@ -242,7 +270,11 @@ export const CreateScenarioModal = ({
 						onClick={() => {
 							if (isCreateDisabled) return;
 							if (!selectedScenario) return;
-							onCreate(selectedProjectId, { ...selectedScenario, name });
+							onCreate(
+								selectedProjectId,
+								{ ...selectedScenario, name },
+								selectedOptionKey || undefined,
+							);
 							setName("");
 							onClose();
 						}}

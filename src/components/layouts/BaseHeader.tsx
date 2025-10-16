@@ -25,6 +25,7 @@ import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
+import useSimulationOutputStore from "@/store/useSimulationOutputStore";
 import useSimulationStore from "@/store/useSimulationStore";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
@@ -112,6 +113,8 @@ const BaseHeader = () => {
 	const hasInvalidInputs = useInteractionStore(
 		(state) => Object.keys(state.invalidInputKeys).length > 0,
 	);
+	const skipRunExe = useInteractionStore((state) => state.skipRunExe);
+	const setSkipRunExe = useInteractionStore((state) => state.setSkipRunExe);
 	const setSelectedPsvKey = useProjectStore((state) => state.setSelectedPsvKey);
 	const selectedScenario = useProjectStore((state) => state.selectedScenario);
 	const setSimulationFrames = useSimulationStore((state) => state.setFrames);
@@ -120,6 +123,7 @@ const BaseHeader = () => {
 	const openAnalysisModal = useSimulationAnalysisStore(
 		(state) => state.openWithResult,
 	);
+	const setOutputData = useSimulationOutputStore((state) => state.setOutput);
 
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 	const [ActiveChildComp, setActiveChildComp] = useState<ComponentType | null>(
@@ -148,13 +152,19 @@ const BaseHeader = () => {
 
 		try {
 			stopSimulationPlayback();
-			const result = await window.electronAPI.runExe(payload);
+			const result = await window.electronAPI.runExe({
+				...payload,
+				skipExe: skipRunExe,
+			});
 			if (
 				result &&
 				typeof result === "object" &&
 				Array.isArray(result.frames)
 			) {
 				setSimulationFrames(result.frames);
+				setOutputData(result.frames, {
+					sourceDate: result.outputDate ?? null,
+				});
 				if (result.frames.length > 0) {
 					playSimulation();
 				}
@@ -229,72 +239,96 @@ const BaseHeader = () => {
 					<span className="text-white font-normal ml-1">Simulator</span>
 				</h1>
 			</div>
-			<nav className="relative flex gap-x-1 justify-end p-3">
-				{NAVI_ITEMS.map((navi, index) => {
-					const navKey = String(navi.key ?? navi.to ?? navi.name ?? index);
-					const isRunSimulation = navi.key === "run-simulation";
-					const disabled = isRunSimulation && hasInvalidInputs;
-					const hasMenu = hasChildren(navi);
-					const baseClasses =
-						"relative text-white flex justify-center flex-col items-center w-16 focus:outline-none transition-opacity";
-					const commonContent = (
-						<>
-							{navi.icon}
-							<span className="text-slate-400 text-[10px] mt-0.5">
-								{navi.name}
-							</span>
-						</>
-					);
+			<nav className="relative flex items-center gap-4 justify-end p-3">
+				<div className="flex gap-x-1">
+					{NAVI_ITEMS.map((navi, index) => {
+						const navKey = String(navi.key ?? navi.to ?? navi.name ?? index);
+						const isRunSimulation = navi.key === "run-simulation";
+						const disabled = isRunSimulation && hasInvalidInputs;
+						const hasMenu = hasChildren(navi);
+						const baseClasses =
+							"relative text-white flex justify-center flex-col items-center w-16 focus:outline-none transition-opacity";
+						const commonContent = (
+							<>
+								{navi.icon}
+								<span className="text-slate-400 text-[10px] mt-0.5">
+									{navi.name}
+								</span>
+							</>
+						);
 
-					return (
-						<div key={navKey} className="relative">
-							{navi.to ? (
-								<Link to={navi.to} className="no-underline">
-									<div className={`${baseClasses} cursor-pointer`}>
+						return (
+							<div key={navKey} className="relative">
+								{navi.to ? (
+									<Link to={navi.to} className="no-underline">
+										<div className={`${baseClasses} cursor-pointer`}>
+											{commonContent}
+										</div>
+									</Link>
+								) : (
+									<button
+										type="button"
+										className={clsx(
+											baseClasses,
+											disabled
+												? "cursor-not-allowed opacity-40"
+												: "cursor-pointer",
+										)}
+										onClick={() => {
+											if (disabled) return;
+											handleNavigation(navi, index);
+										}}
+										onKeyDown={(event) => {
+											if (event.key === "Escape") {
+												setOpenIndex(null);
+											}
+										}}
+										disabled={disabled}
+									>
 										{commonContent}
-									</div>
-								</Link>
-							) : (
-								<button
-									type="button"
-									className={clsx(
-										baseClasses,
-										disabled
-											? "cursor-not-allowed opacity-40"
-											: "cursor-pointer",
-									)}
-									onClick={() => {
-										if (disabled) return;
-										handleNavigation(navi, index);
-									}}
-									onKeyDown={(event) => {
-										if (event.key === "Escape") {
-											setOpenIndex(null);
-										}
-									}}
-									disabled={disabled}
-								>
-									{commonContent}
-								</button>
+									</button>
+								)}
+								{hasMenu && openIndex === index && (
+									<ul className="absolute top-12 left-1/2 -translate-x-1/2 z-[99] w-56 rounded-2xl border border-slate-700 bg-slate-800/95 shadow-xl backdrop-blur p-1">
+										{navi.children.map((child) => (
+											<li key={child.key}>
+												<button
+													type="button"
+													className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-700/60 focus:bg-slate-700/60 focus:outline-none"
+													onClick={() => handleChildSelect(child)}
+												>
+													<span className="truncate">{child.name}</span>
+												</button>
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+						);
+					})}
+				</div>
+				<label className="flex items-center gap-2 text-[11px] text-slate-200 cursor-pointer select-none">
+					<input
+						className="sr-only"
+						type="checkbox"
+						checked={skipRunExe}
+						onChange={(event) => setSkipRunExe(event.target.checked)}
+					/>
+					<span
+						className={clsx(
+							"relative inline-flex h-4 w-8 items-center rounded-full transition-colors",
+							skipRunExe ? "bg-rose-500" : "bg-emerald-600",
+						)}
+					>
+						<span
+							className={clsx(
+								"inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
+								skipRunExe ? "translate-x-4" : "translate-x-1",
 							)}
-							{hasMenu && openIndex === index && (
-								<ul className="absolute top-12 left-1/2 -translate-x-1/2 z-[99] w-56 rounded-2xl border border-slate-700 bg-slate-800/95 shadow-xl backdrop-blur p-1">
-									{navi.children.map((child) => (
-										<li key={child.key}>
-											<button
-												type="button"
-												className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-700/60 focus:bg-slate-700/60 focus:outline-none"
-												onClick={() => handleChildSelect(child)}
-											>
-												<span className="truncate">{child.name}</span>
-											</button>
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
-					);
-				})}
+						/>
+					</span>
+					<span>{skipRunExe ? "모듈 스킵" : "모듈 실행"}</span>
+				</label>
 			</nav>
 
 			<WhatIfAnalisys
