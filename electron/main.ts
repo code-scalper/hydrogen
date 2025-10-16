@@ -47,6 +47,7 @@ function ensureDir(p: string) {
 interface RunExePayload {
   sfc?: string | null;
   values?: Record<string, string>;
+  skipExe?: boolean;
 }
 
 type LogLine = {
@@ -70,6 +71,8 @@ type SimulationFrame = {
 type RunExeResult = {
   status: string;
   frames: SimulationFrame[];
+  outputDate: string;
+  outputDir: string;
 };
 
 function runExternalExecutable(executable: string, cwd: string): Promise<void> {
@@ -271,6 +274,8 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   ensureDir(datedOutputDir);
 
   const workingDir = datedOutputDir;
+  const shouldSkipExe = payload?.skipExe ?? false;
+  const outputDate = today;
 
   // ✅ 1) 실행 전 백업 (Output_*.csv → -n 채번)
   const filesBefore = fs
@@ -307,9 +312,12 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw error;
   }
 
-  let status = "EXE execution skipped: unsupported platform";
+  let status: string;
 
-  if (process.platform === "win32") {
+  if (shouldSkipExe) {
+    status = "EXE skipped by user toggle";
+    console.info("[run-exe] Execution skipped by user toggle");
+  } else if (process.platform === "win32") {
     try {
       await runExternalExecutable(exePath, workingDir);
       status = "EXE completed successfully";
@@ -318,6 +326,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
       throw error;
     }
   } else {
+    status = `EXE execution skipped: unsupported platform (${process.platform})`;
     console.warn(
       `run-exe called on unsupported platform (${process.platform}); executable skipped.`
     );
@@ -327,10 +336,68 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   const result: RunExeResult = {
     status,
     frames: frames.sort((a, b) => a.time - b.time),
+    outputDate,
+    outputDir: workingDir,
   };
 
   return result;
 });
+
+ipcMain.handle(
+  "read-output-data",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+
+    const normalizeDate = (input?: string) => {
+      if (!input) return null;
+      const digits = input.replace(/[^0-9]/g, "");
+      return digits.length === 8 ? digits : null;
+    };
+
+    const tryResolveDirectory = (date?: string) => {
+      if (!date) return null;
+      const candidate = path.join(baseOutputDir, date);
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        return { dir: candidate, date };
+      }
+      return null;
+    };
+
+    const normalized = normalizeDate(payload?.date);
+    let target = tryResolveDirectory(normalized ?? undefined);
+
+    if (!target) {
+      try {
+        const candidates = fs
+          .readdirSync(baseOutputDir, { withFileTypes: true })
+          .filter((entry) => entry.isDirectory() && /^\d{8}$/.test(entry.name))
+          .map((entry) => entry.name)
+          .sort();
+
+        const latest = candidates.at(-1) ?? null;
+        if (latest) {
+          target = { dir: path.join(baseOutputDir, latest), date: latest };
+        }
+      } catch (error) {
+        console.error("Failed to scan output directory", baseOutputDir, error);
+      }
+    }
+
+    if (!target) {
+      return { frames: [] as SimulationFrame[], date: null };
+    }
+
+    try {
+      const frames = readSimulationFrames(target.dir).sort(
+        (a, b) => a.time - b.time,
+      );
+      return { frames, date: target.date };
+    } catch (error) {
+      console.error("Failed to read output data", target, error);
+      return { frames: [] as SimulationFrame[], date: target.date };
+    }
+  },
+);
 
 function getDateKey(date: Date) {
   const year = date.getFullYear();

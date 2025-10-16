@@ -20,6 +20,7 @@ export interface InputPoint {
 export interface ScenarioInterface {
 	id: string;
 	parentId?: string;
+	templateId?: string;
 	name: string;
 	description?: string;
 	type: "scenario";
@@ -29,6 +30,8 @@ export interface ScenarioInterface {
 	// inputPoints: InputPoint[];
 	children: DeviceInterface[] | undefined;
 	baseData?: BaseDataProps[];
+	optionKey?: string;
+	optionLabel?: string;
 }
 export type DeviceProperty = {
 	key: string;

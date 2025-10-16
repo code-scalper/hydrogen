@@ -6,12 +6,15 @@ declare global {
 			runExe: (payload?: {
 				sfc?: string | null;
 				values?: Record<string, string>;
+				skipExe?: boolean;
 			}) => Promise<{
 				status: string;
 				frames: Array<{
 					time: number;
 					values: Record<string, string>;
 				}>;
+				outputDate: string;
+				outputDir: string;
 			}>;
 			readRecentLogs: () => Promise<
 				Array<{
@@ -25,6 +28,15 @@ declare global {
 					}>;
 				}>
 			>;
+			readOutputData: (payload?: {
+				date?: string;
+			}) => Promise<{
+				date: string | null;
+				frames: Array<{
+					time: number;
+					values: Record<string, string>;
+				}>;
+			}>;
 		};
 		electronStore: {
 			get: (key: string) => Promise<unknown>;

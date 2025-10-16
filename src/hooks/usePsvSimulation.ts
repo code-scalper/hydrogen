@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
+import { useInteractionStore } from "@/store/useInteractionStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import type { DeviceProperty } from "@/types";
 
@@ -55,6 +56,7 @@ export const usePsvSimulation = ({
 	const [frames, setFrames] = useState<SimulationFrame[]>([]);
 	const [status, setStatus] = useState<string>("");
 	const [running, setRunning] = useState(false);
+	const skipRunExe = useInteractionStore((state) => state.skipRunExe);
 	const openAnalysisModal = useSimulationAnalysisStore(
 		(state) => state.openWithResult,
 	);
@@ -101,6 +103,7 @@ export const usePsvSimulation = ({
 			const result = await window.electronAPI.runExe({
 				sfc,
 				values: payloadValues,
+				skipExe: skipRunExe,
 			});
 
 			setStatus(result?.status ?? "");
@@ -132,7 +135,7 @@ export const usePsvSimulation = ({
 		} finally {
 			setRunning(false);
 		}
-	}, [inputKeys, inputs, openAnalysisModal, outputKeys, sfc]);
+	}, [inputKeys, inputs, openAnalysisModal, outputKeys, sfc, skipRunExe]);
 
 	return {
 		inputs,

@@ -1,4 +1,5 @@
 import { PlayIcon, StopIcon } from "@radix-ui/react-icons";
+import clsx from "clsx";
 
 import { useInteractionStore } from "@/store/useInteractionStore";
 import useSimulationStore from "@/store/useSimulationStore";
@@ -27,6 +28,8 @@ const BaseFooter = () => {
 	const hasInvalidInputs = useInteractionStore(
 		(state) => Object.keys(state.invalidInputKeys).length > 0,
 	);
+	const skipRunExe = useInteractionStore((state) => state.skipRunExe);
+	const setSkipRunExe = useInteractionStore((state) => state.setSkipRunExe);
 
 	const playDisabled = hasInvalidInputs;
 
@@ -94,6 +97,28 @@ const BaseFooter = () => {
             <DownloadIcon className="w-4 h-4 text-white" />
           </li> */}
 				</ul>
+				<label className="ml-4 flex items-center gap-2 text-[11px] text-slate-200 cursor-pointer select-none">
+					<input
+						className="sr-only"
+						type="checkbox"
+						checked={skipRunExe}
+						onChange={(event) => setSkipRunExe(event.target.checked)}
+					/>
+					<span
+						className={clsx(
+							"relative inline-flex h-4 w-8 items-center rounded-full transition-colors",
+							skipRunExe ? "bg-rose-500" : "bg-emerald-600",
+						)}
+					>
+						<span
+							className={clsx(
+								"inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
+								skipRunExe ? "translate-x-4" : "translate-x-1",
+							)}
+						/>
+					</span>
+					<span>{skipRunExe ? "모듈 스킵" : "모듈 실행"}</span>
+				</label>
 			</div>
 
 			<div className="flex items-center ">

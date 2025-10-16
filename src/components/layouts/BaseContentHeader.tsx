@@ -7,7 +7,7 @@ import {
 } from "@radix-ui/react-icons";
 import { Button } from "@radix-ui/themes";
 import { Download, Folder, Play, Square } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // custom components
 import { AdjustBasicDataModal } from "../ui/specific/AdjustBasicDataModal";
@@ -17,10 +17,12 @@ import { collectScenarioInputValues } from "@/lib/simulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
+import useSimulationOutputStore from "@/store/useSimulationOutputStore";
 import useSimulationStore from "@/store/useSimulationStore";
 import CircularProgress from "../ui/CircularProgress";
 import SimulationTimeline from "../ui/SimulationTimeline";
 import LogHistoryModal from "../ui/specific/LogHistoryModal";
+import SimulationGraphModal from "../ui/specific/SimulationGraphModal";
 
 const BaseContentHeader = () => {
 	const selectedScenario = useProjectStore((state) => state.selectedScenario);
@@ -33,6 +35,7 @@ const BaseContentHeader = () => {
 	const hasInvalidInputs = useInteractionStore(
 		(state) => Object.keys(state.invalidInputKeys).length > 0,
 	);
+	const skipRunExe = useInteractionStore((state) => state.skipRunExe);
 
 	const type = "A";
 	const [displayExtraTool] = useState(false);
@@ -45,8 +48,29 @@ const BaseContentHeader = () => {
 	const openAnalysisModal = useSimulationAnalysisStore(
 		(state) => state.openWithResult,
 	);
+	const setOutputData = useSimulationOutputStore((state) => state.setOutput);
+	const refreshLatestOutput = useSimulationOutputStore(
+		(state) => state.refreshLatest,
+	);
+	const outputFrames = useSimulationOutputStore((state) => state.frames);
+	const outputSourceDate = useSimulationOutputStore(
+		(state) => state.sourceDate,
+	);
+	const outputLoading = useSimulationOutputStore((state) => state.loading);
+	const outputError = useSimulationOutputStore((state) => state.error);
 
 	const handleCreate = () => {};
+	const hasOutputData = outputFrames.length > 0;
+	const [graphModalOpen, setGraphModalOpen] = useState(false);
+	const graphButtonDisabled = !hasOutputData && !outputLoading;
+	const graphButtonLabel =
+		outputLoading && !hasOutputData ? "불러오는 중..." : "그래프 확인";
+
+	useEffect(() => {
+		if (outputFrames.length === 0) {
+			void refreshLatestOutput();
+		}
+	}, [outputFrames.length, refreshLatestOutput]);
 
 	const handleRun = async () => {
 		if (hasInvalidInputs) {
@@ -64,13 +88,19 @@ const BaseContentHeader = () => {
 		stopSimulationPlayback();
 
 		try {
-			const result = await window.electronAPI.runExe(payload);
+			const result = await window.electronAPI.runExe({
+				...payload,
+				skipExe: skipRunExe,
+			});
 			if (
 				result &&
 				typeof result === "object" &&
 				Array.isArray(result.frames)
 			) {
 				setSimulationFrames(result.frames);
+				setOutputData(result.frames, {
+					sourceDate: result.outputDate ?? null,
+				});
 				if (result.frames.length > 0) {
 					playSimulation();
 				}
@@ -144,6 +174,21 @@ const BaseContentHeader = () => {
 					>
 						로그 확인
 					</Button>
+					<Button
+						variant="solid"
+						radius="none"
+						disabled={graphButtonDisabled}
+						className={`!text-slate-200 ${
+							hasOutputData
+								? "!bg-slate-700 hover:!bg-slate-600"
+								: outputLoading
+									? "!bg-slate-700/70 !cursor-wait"
+									: "!bg-slate-800/60 !text-slate-500 cursor-not-allowed"
+						}`}
+						onClick={() => setGraphModalOpen(true)}
+					>
+						{graphButtonLabel}
+					</Button>
 				</div>
 			</div>
 			<div className="mb-10" />
@@ -156,6 +201,18 @@ const BaseContentHeader = () => {
 			<LogHistoryModal
 				isOpen={logModalOpen}
 				onClose={() => setLogModalOpen(false)}
+			/>
+
+			<SimulationGraphModal
+				isOpen={graphModalOpen}
+				onClose={() => setGraphModalOpen(false)}
+				frames={outputFrames}
+				sourceDate={outputSourceDate}
+				loading={outputLoading}
+				error={outputError}
+				onReload={() => {
+					void refreshLatestOutput();
+				}}
 			/>
 
 			{running && <CircularProgress progress={66} label="실행 중..." />}

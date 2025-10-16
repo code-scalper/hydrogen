@@ -25,9 +25,16 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   // ...
 });
 contextBridge.exposeInMainWorld("electronAPI", {
-  runExe: (payload?: { sfc?: string | null; values?: Record<string, string> }) =>
-    ipcRenderer.invoke("run-exe", payload),
+  runExe: (
+    payload?: {
+      sfc?: string | null;
+      values?: Record<string, string>;
+      skipExe?: boolean;
+    },
+  ) => ipcRenderer.invoke("run-exe", payload),
   readRecentLogs: () => ipcRenderer.invoke("read-recent-logs"),
+  readOutputData: (payload?: { date?: string }) =>
+    ipcRenderer.invoke("read-output-data", payload),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {
