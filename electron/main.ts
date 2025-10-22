@@ -389,14 +389,14 @@ ipcMain.handle(
 
     try {
       const frames = readSimulationFrames(target.dir).sort(
-        (a, b) => a.time - b.time,
+        (a, b) => a.time - b.time
       );
       return { frames, date: target.date };
     } catch (error) {
       console.error("Failed to read output data", target, error);
       return { frames: [] as SimulationFrame[], date: target.date };
     }
-  },
+  }
 );
 
 function getDateKey(date: Date) {

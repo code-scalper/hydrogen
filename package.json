@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder --config electron-builder.json5",
+    "build": "node scripts/build.js",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

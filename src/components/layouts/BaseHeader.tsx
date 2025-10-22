@@ -27,6 +27,7 @@ import { useProjectStore } from "@/store/useProjectStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import useSimulationOutputStore from "@/store/useSimulationOutputStore";
 import useSimulationStore from "@/store/useSimulationStore";
+import useWhatIfStore from "@/store/useWhatIfStore";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
@@ -124,6 +125,8 @@ const BaseHeader = () => {
 		(state) => state.openWithResult,
 	);
 	const setOutputData = useSimulationOutputStore((state) => state.setOutput);
+	const resetWhatIf = useWhatIfStore((state) => state.reset);
+	const clearWhatIfDataset = useWhatIfStore((state) => state.setDataset);
 
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 	const [ActiveChildComp, setActiveChildComp] = useState<ComponentType | null>(
@@ -188,7 +191,10 @@ const BaseHeader = () => {
 			return;
 		}
 		if (navi.key === "what-if") {
-			setShowModal2((prev) => !prev);
+			resetWhatIf();
+			clearWhatIfDataset(null);
+			setShowModal3(false);
+			setShowModal2(true);
 			return;
 		}
 		if (hasChildren(navi)) {
@@ -225,6 +231,11 @@ const BaseHeader = () => {
 		if (key === "whatif") {
 			setShowModal2(false);
 			setShowModal3(true);
+			return;
+		}
+		if (key === "prev") {
+			setShowModal3(false);
+			setShowModal2(true);
 		}
 	};
 
