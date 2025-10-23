@@ -21,12 +21,16 @@ import {
 	// ArchiveBoxArrowDownIcon,
 } from "@heroicons/react/24/solid";
 
+import { parseExecutionLog } from "@/lib/executionProgress";
 import { collectScenarioInputValues } from "@/lib/simulation";
+import useExecutionProgressStore from "@/store/useExecutionProgressStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import useSimulationAnalysisStore from "@/store/useSimulationAnalysisStore";
 import useSimulationOutputStore from "@/store/useSimulationOutputStore";
 import useSimulationStore from "@/store/useSimulationStore";
+import useWhatIfStore from "@/store/useWhatIfStore";
+import ExecutionProgressModal from "../ui/ExecutionProgressModal";
 import { PsvModal_4050 } from "../ui/specific/psv-calculator/PsvModal_4050";
 import { PsvModal_4110 } from "../ui/specific/psv-calculator/PsvModal_4110";
 import { PsvModal_4120 } from "../ui/specific/psv-calculator/PsvModal_4120";
@@ -124,6 +128,16 @@ const BaseHeader = () => {
 		(state) => state.openWithResult,
 	);
 	const setOutputData = useSimulationOutputStore((state) => state.setOutput);
+	const resetWhatIf = useWhatIfStore((state) => state.reset);
+	const clearWhatIfDataset = useWhatIfStore((state) => state.setDataset);
+	const startProgress = useExecutionProgressStore((state) => state.start);
+	const updateProgress = useExecutionProgressStore(
+		(state) => state.updateFromEntries,
+	);
+	const completeProgress = useExecutionProgressStore((state) => state.complete);
+	const failProgress = useExecutionProgressStore((state) => state.fail);
+	const resetProgress = useExecutionProgressStore((state) => state.reset);
+	const closeProgress = useExecutionProgressStore((state) => state.close);
 
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 	const [ActiveChildComp, setActiveChildComp] = useState<ComponentType | null>(
@@ -131,6 +145,24 @@ const BaseHeader = () => {
 	);
 
 	const menuRef = useRef<HTMLDivElement | null>(null);
+	const progressIntervalRef = useRef<number | null>(null);
+	const progressCloseTimeoutRef = useRef<number | null>(null);
+	const progressDateRef = useRef<string | null>(null);
+
+	const stopProgressPolling = () => {
+		if (progressIntervalRef.current !== null) {
+			window.clearInterval(progressIntervalRef.current);
+			progressIntervalRef.current = null;
+		}
+	};
+
+	const clearProgressTimers = () => {
+		stopProgressPolling();
+		if (progressCloseTimeoutRef.current !== null) {
+			window.clearTimeout(progressCloseTimeoutRef.current);
+			progressCloseTimeoutRef.current = null;
+		}
+	};
 
 	const hasChildren = (
 		navi: NavigationItem,
@@ -150,12 +182,43 @@ const BaseHeader = () => {
 			return;
 		}
 
+		const todayKey = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+		progressDateRef.current = todayKey;
+		clearProgressTimers();
+		resetProgress();
+		startProgress(todayKey);
+
+		const pollProgressLog = async () => {
+			try {
+				const dateKey = progressDateRef.current;
+				if (!dateKey) {
+					return;
+				}
+				const response = await window.electronAPI.readProgressLog({
+					date: dateKey,
+				});
+				if (!response.exists || !response.raw) {
+					return;
+				}
+				const entries = parseExecutionLog(response.raw);
+				if (entries.length > 0) {
+					updateProgress(entries);
+				}
+			} catch (error) {
+				console.error("실행 진행률 로그 읽기 실패", error);
+			}
+		};
+
+		await pollProgressLog();
+		progressIntervalRef.current = window.setInterval(pollProgressLog, 1000);
+
 		try {
 			stopSimulationPlayback();
 			const result = await window.electronAPI.runExe({
 				...payload,
 				skipExe: skipRunExe,
 			});
+			await pollProgressLog();
 			if (
 				result &&
 				typeof result === "object" &&
@@ -170,8 +233,22 @@ const BaseHeader = () => {
 				}
 			}
 			openAnalysisModal(result);
+			completeProgress();
+			stopProgressPolling();
+			progressCloseTimeoutRef.current = window.setTimeout(() => {
+				closeProgress();
+				progressCloseTimeoutRef.current = null;
+			}, 1200);
 		} catch (error) {
 			console.error("실행 실패", error);
+			stopProgressPolling();
+			failProgress(
+				error instanceof Error
+					? error.message
+					: "실행 도중 알 수 없는 오류가 발생했습니다.",
+			);
+		} finally {
+			progressDateRef.current = null;
 		}
 	};
 
@@ -188,7 +265,10 @@ const BaseHeader = () => {
 			return;
 		}
 		if (navi.key === "what-if") {
-			setShowModal2((prev) => !prev);
+			resetWhatIf();
+			clearWhatIfDataset(null);
+			setShowModal3(false);
+			setShowModal2(true);
 			return;
 		}
 		if (hasChildren(navi)) {
@@ -221,10 +301,28 @@ const BaseHeader = () => {
 		return () => document.removeEventListener("mousedown", onClickOutside);
 	}, []);
 
+	useEffect(() => {
+		return () => {
+			if (progressIntervalRef.current !== null) {
+				window.clearInterval(progressIntervalRef.current);
+				progressIntervalRef.current = null;
+			}
+			if (progressCloseTimeoutRef.current !== null) {
+				window.clearTimeout(progressCloseTimeoutRef.current);
+				progressCloseTimeoutRef.current = null;
+			}
+		};
+	}, []);
+
 	const handleEvent = (key: string) => {
 		if (key === "whatif") {
 			setShowModal2(false);
 			setShowModal3(true);
+			return;
+		}
+		if (key === "prev") {
+			setShowModal3(false);
+			setShowModal2(true);
 		}
 	};
 
@@ -342,6 +440,8 @@ const BaseHeader = () => {
 				showModal={showModal2}
 				setShowModal={setShowModal2}
 			/>
+
+			<ExecutionProgressModal />
 
 			<EconomicEvaluationWithGraph
 				showModal={showModal1}

@@ -37,6 +37,14 @@ declare global {
 					values: Record<string, string>;
 				}>;
 			}>;
+			readProgressLog: (payload?: {
+				date?: string;
+			}) => Promise<{
+				date: string;
+				exists: boolean;
+				raw: string;
+				updatedAt: number | null;
+			}>;
 		};
 		electronStore: {
 			get: (key: string) => Promise<unknown>;

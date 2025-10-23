@@ -1,145 +1,225 @@
-import Plotly from "plotly.js-dist-min";
-import createPlotlyComponent from "react-plotly.js/factory";
+import PlotlyWrapper from "@/components/ui/PlotlyWrapper";
+import { WHAT_IF_BASIC_FIELDS } from "@/constants/whatIf";
+import useWhatIfStore from "@/store/useWhatIfStore";
 
-const Plot = createPlotlyComponent(Plotly);
-
-interface WhatIfProps {
+interface WhatIfAnalysisProps {
 	showModal: boolean;
-	setShowModal: (arg0: boolean) => void;
-	handleEvent: (arg0: string) => void;
+	setShowModal: (open: boolean) => void;
+	handleEvent: (event: string) => void;
 }
+
+const SummaryRow = ({ label, value }: { label: string; value: string }) => (
+	<div className="flex items-center justify-between border-b border-slate-700 px-3 py-2 text-[12px] text-slate-200">
+		<span className="text-slate-400">{label}</span>
+		<span className="font-semibold">{value}</span>
+	</div>
+);
 
 export const WhatIfAnalisys = ({
 	showModal,
 	setShowModal,
 	handleEvent,
-}: WhatIfProps) => {
-	if (!showModal) return null;
+}: WhatIfAnalysisProps) => {
+	const { dataset, normalized, loading } = useWhatIfStore();
 
-	// 샘플 데이터
-	const data = {
-		x: Array.from({ length: 50 }, () => Math.random() * 40 - 30), // Ambient Temp (-30 ~ 10)
-		y: Array.from({ length: 50 }, () => Math.random() * 700), // Charging Time
-		z: Array.from({ length: 50 }, () => Math.random() * 50 - 40), // Supply Gas Temp
-		c: Array.from({ length: 50 }, () => Math.random() * 100 - 50), // 색상용 값
+	if (!showModal) {
+		return null;
+	}
+
+	const close = () => setShowModal(false);
+
+	const chartData = (): Partial<Plotly.Data>[] => {
+		if (!dataset) {
+			return [];
+		}
+
+		if (dataset.mode === "surface") {
+			return [
+				{
+					type: "surface",
+					x: dataset.xValues,
+					y: dataset.yValues,
+					z: dataset.zMatrix,
+					colorscale: "Viridis",
+					opacity: 0.95,
+					showscale: true,
+					colorbar: { title: { text: dataset.zLabel } },
+					hovertemplate: `<b>${dataset.zLabel}</b><br>${dataset.xLabel}: %{x:.2f}<br>${dataset.yLabel}: %{y:.2f}<br>${dataset.zLabel}: %{z:.2f}<extra></extra>`,
+				} satisfies Partial<Plotly.Data>,
+			];
+		}
+
+		return [
+			{
+				type: "scatter3d",
+				mode: "markers",
+				x: dataset.points.map((point) => point.x),
+				y: dataset.points.map((point) => point.y),
+				z: dataset.points.map((point) => point.z),
+				marker: {
+					size: 4,
+					color: dataset.points.map((point) => point.z),
+					colorscale: "Viridis",
+					colorbar: { title: { text: dataset.zLabel } },
+				},
+				hovertemplate: `<b>${dataset.zLabel}</b><br>${dataset.xLabel}: %{x:.2f}<br>${dataset.yLabel}: %{y:.2f}<br>${dataset.zLabel}: %{z:.2f}<extra></extra>`,
+			} satisfies Partial<Plotly.Data>,
+		];
+	};
+
+	const infoRows = () => {
+		if (!dataset || !normalized) {
+			return null;
+		}
+
+		return (
+			<div className="mt-4 rounded-lg border border-slate-700">
+				<SummaryRow
+					label="데이터 기준 날짜"
+					value={dataset.sourceDate ? dataset.sourceDate : "-"}
+				/>
+				<SummaryRow
+					label="데이터 포인트 수"
+					value={`${dataset.points.length.toLocaleString()} 개`}
+				/>
+				<SummaryRow
+					label="X 축 범위"
+					value={`${dataset.xValues[0]?.toFixed(2) ?? "-"} ~ ${
+						dataset.xValues.at(-1)?.toFixed(2) ?? "-"
+					}`}
+				/>
+				<SummaryRow
+					label="Y 축 범위"
+					value={`${dataset.yValues[0]?.toFixed(2) ?? "-"} ~ ${
+						dataset.yValues.at(-1)?.toFixed(2) ?? "-"
+					}`}
+				/>
+				<SummaryRow label="출력 축" value={dataset.zLabel} />
+			</div>
+		);
 	};
 
 	return (
-		<div className="fixed inset-0 bg-stone-600 bg-opacity-40 flex items-center justify-center z-[999] text-xs text-slate-200">
-			<div className="bg-gray-800 w-[95%] h-[90%] shadow-lg border border-stone-600 flex flex-col overflow-hidden">
-				{/* Header */}
-				<div className="flex justify-between items-center p-2 bg-gray-900">
-					<h2 className="text-sm text-slate-200 font-semibold">
+		<div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/70 text-xs text-slate-200">
+			<div className="flex h-[90%] w-[92%] flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl">
+				<div className="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+					<h2 className="text-sm font-semibold text-slate-100">
 						What-if 분석 결과
 					</h2>
 					<button
 						type="button"
-						onClick={() => setShowModal(false)}
-						className="text-slate-300 hover:text-white text-xs"
+						onClick={close}
+						className="text-slate-300 hover:text-white"
 					>
 						×
 					</button>
 				</div>
 
-				{/* Content */}
 				<div className="flex flex-1 overflow-hidden">
-					{/* ① 분석표 영역 */}
-					<div className="w-[40%] bg-gray-700 p-4 flex flex-col overflow-hidden">
-						<table className="w-full border-collapse text-left text-xs">
-							<tbody>
-								<tr>
-									<td className="p-2 border border-gray-600 w-28">시나리오</td>
-									<td className="p-2 border border-gray-600">
-										프로젝트 1 &gt; 시나리오 1
-									</td>
-								</tr>
-								<tr>
-									<td className="p-2 border border-gray-600">외기 온도</td>
-									<td className="p-2 border border-gray-600">
-										-30 ℃ 부터 0 ℃ 까지
-									</td>
-								</tr>
-								<tr>
-									<td className="p-2 border border-gray-600">공급 가스 온도</td>
-									<td className="p-2 border border-gray-600">
-										-40 ℃ 부터 10 ℃ 까지
-									</td>
-								</tr>
-								<tr>
-									<td className="p-2 border border-gray-600">결과 종류</td>
-									<td className="p-2 border border-gray-600">
-										<select className="bg-gray-700 border border-gray-600 px-2 py-1 w-full">
-											<option>충전 중 최고 온도</option>
-											<option>충전 시간</option>
-											<option>안전 거리</option>
-										</select>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-
-						{/* 분석표 아래 영역 - 스크롤 가능 */}
-						<div className="mt-6 flex-1 flex flex-col overflow-y-auto">
-							<div className="text-center text-gray-400 mb-2">
-								시뮬레이션 분석표 표시 창
+					<div className="w-[320px] shrink-0 border-r border-slate-800 bg-slate-950/60 p-4">
+						<div className="space-y-4">
+							<div>
+								<h3 className="text-[13px] font-semibold text-slate-100">
+									입력 요약
+								</h3>
+								<p className="mt-1 text-[11px] text-slate-400">
+									사용자가 지정한 범위와 출력 설정을 요약합니다.
+								</p>
 							</div>
-							<div className="w-full flex-1 bg-red-500 min-h-[200px]" />
+							<div className="space-y-2 text-[12px] text-slate-200">
+								<p>
+									<span className="text-slate-400">입력 조합</span>
+									<br />
+									<span className="font-semibold">
+										{normalized
+											? (WHAT_IF_BASIC_FIELDS.find(
+													(field) => field.key === "N_InSelec",
+												)?.options?.find(
+													(opt) =>
+														opt.value === normalized.N_InSelec.toString(),
+												)?.label ?? "-")
+											: "-"}
+									</span>
+								</p>
+								<p>
+									<span className="text-slate-400">출력 선택</span>
+									<br />
+									<span className="font-semibold">
+										{dataset?.zLabel ?? "-"}
+									</span>
+								</p>
+							</div>
+							<div className="space-y-1 text-[11px] text-slate-300">
+								<p>
+									외기 온도: {normalized?.T_AmbC_Min ?? "-"} ℃ ~{" "}
+									{normalized?.T_AmbC_Max ?? "-"} ℃
+								</p>
+								<p>
+									Bank 온도: {normalized?.T_BaC_Min ?? "-"} ℃ ~{" "}
+									{normalized?.T_BaC_Max ?? "-"} ℃
+								</p>
+								<p>
+									탱크 초기 압력: {normalized?.P_Tk0C_Min ?? "-"} MPa ~{" "}
+									{normalized?.P_Tk0C_Max ?? "-"} MPa
+								</p>
+								<p>반복 계산 횟수: {normalized?.MaxIter ?? "-"}</p>
+							</div>
+
+							{infoRows()}
 						</div>
 					</div>
 
-					{/* ⑤ 그래프 영역 */}
-					<div className="flex-1 bg-gray-800 flex items-center justify-center">
-						<Plot
-							data={[
-								{
-									x: data.x,
-									y: data.y,
-									z: data.z,
-									mode: "markers",
-									type: "scatter3d",
-									marker: {
-										size: 5,
-										color: data.c,
-										colorscale: "Jet",
-										showscale: true,
-										colorbar: { title: "℃" },
-									},
-								} as Partial<Plotly.Data>,
-							]}
-							layout={{
-								autosize: true,
-								margin: { l: 0, r: 0, b: 0, t: 20 },
-								scene: {
-									xaxis: { title: { text: "Ambient Temp." } },
-									yaxis: { title: { text: "Charging Time" } },
-									zaxis: { title: { text: "Supply Gas Temp." } },
-								},
-							}}
-							style={{ width: "100%", height: "100%" }}
-						/>
+					<div className="flex flex-1 flex-col bg-slate-900/60">
+						{dataset ? (
+							<PlotlyWrapper>
+								{({ Plot, plotEvents }) => (
+									<Plot
+										data={chartData()}
+										layout={{
+											autosize: true,
+											margin: { l: 40, r: 20, b: 60, t: 40 },
+											scene: {
+												xaxis: { title: { text: dataset.xLabel } },
+												yaxis: { title: { text: dataset.yLabel } },
+												zaxis: { title: { text: dataset.zLabel } },
+												camera: { eye: { x: 1.6, y: 1.8, z: 1.2 } },
+											},
+											paper_bgcolor: "rgba(15, 23, 42, 0.8)",
+											plot_bgcolor: "rgba(15, 23, 42, 0.8)",
+										}}
+										config={{ responsive: true, displaylogo: false }}
+										onInitialized={plotEvents.onInitialized}
+										onUpdate={plotEvents.onUpdate}
+										style={{ width: "100%", height: "100%" }}
+									/>
+								)}
+							</PlotlyWrapper>
+						) : (
+							<div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm text-slate-300">
+								{loading ? (
+									<span>그래프 데이터를 준비 중입니다...</span>
+								) : (
+									<span>
+										표시할 What-if 결과가 없습니다. 입력 값을 확인해 주세요.
+									</span>
+								)}
+							</div>
+						)}
 					</div>
 				</div>
 
-				{/* Footer */}
-				<div className="flex justify-center gap-4 px-4 py-3 border-t border-stone-700 bg-gray-900">
+				<div className="flex justify-end gap-3 border-t border-slate-700 bg-slate-900 px-6 py-3 text-[12px]">
 					<button
 						type="button"
 						onClick={() => handleEvent("prev")}
-						className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-xs text-white"
+						className="rounded bg-slate-700 px-4 py-2 text-slate-200 hover:bg-slate-600"
 					>
-						이전
+						입력 수정
 					</button>
 					<button
 						type="button"
-						onClick={() => handleEvent("save")}
-						className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-xs text-white"
-					>
-						저장
-					</button>
-					<button
-						type="button"
-						onClick={() => setShowModal(false)}
-						className="px-6 py-2 bg-blue-700 hover:bg-blue-800 text-xs text-white"
+						onClick={close}
+						className="rounded bg-emerald-500 px-4 py-2 font-semibold text-emerald-950 hover:bg-emerald-400"
 					>
 						닫기
 					</button>

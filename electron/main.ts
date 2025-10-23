@@ -389,14 +389,60 @@ ipcMain.handle(
 
     try {
       const frames = readSimulationFrames(target.dir).sort(
-        (a, b) => a.time - b.time,
+        (a, b) => a.time - b.time
       );
       return { frames, date: target.date };
     } catch (error) {
       console.error("Failed to read output data", target, error);
       return { frames: [] as SimulationFrame[], date: target.date };
     }
-  },
+  }
+);
+
+ipcMain.handle(
+  "read-progress-log",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+
+    const normalizeDate = (input?: string) => {
+      if (!input) return null;
+      const digits = input.replace(/[^0-9]/g, "");
+      return digits.length === 8 ? digits : null;
+    };
+
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const targetDate = normalizeDate(payload?.date) ?? today;
+    const folderPath = path.join(baseOutputDir, targetDate);
+    const logPath = path.join(folderPath, "MHySIM.log");
+
+    if (!fs.existsSync(logPath)) {
+      return {
+        date: targetDate,
+        exists: false,
+        raw: "",
+        updatedAt: null as number | null,
+      };
+    }
+
+    try {
+      const raw = fs.readFileSync(logPath, "utf-8");
+      const stats = fs.statSync(logPath);
+      return {
+        date: targetDate,
+        exists: true,
+        raw,
+        updatedAt: stats.mtimeMs,
+      };
+    } catch (error) {
+      console.error("Failed to read progress log", { logPath, error });
+      return {
+        date: targetDate,
+        exists: false,
+        raw: "",
+        updatedAt: null as number | null,
+      };
+    }
+  }
 );
 
 function getDateKey(date: Date) {
