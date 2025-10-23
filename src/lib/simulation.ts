@@ -16,19 +16,26 @@ const extractDeviceValues = (
 	device: DeviceInterface,
 	accumulator: Record<string, string>,
 ) => {
-	const collect = (props?: DeviceProperty[]) => {
+	const collectProps = (props?: DeviceProperty[]) => {
 		if (!props) return;
 		for (const prop of props) {
 			if (!prop?.key) continue;
-			const value = prop.value;
-			if (hasValue(value)) {
-				accumulator[prop.key] = `${value}`;
+			const rawValue = prop.value;
+			if (hasValue(rawValue)) {
+				accumulator[prop.key] = `${rawValue}`;
 			}
 		}
 	};
 
-	collect(device.props);
-	collect(device.outputProps);
+	collectProps(device.props);
+	collectProps(device.outputProps);
+
+	if (Array.isArray(device.children)) {
+		for (const child of device.children) {
+			if (!child) continue;
+			extractDeviceValues(child as DeviceInterface, accumulator);
+		}
+	}
 };
 
 const extractScenarioBaseValues = (
@@ -36,12 +43,27 @@ const extractScenarioBaseValues = (
 	accumulator: Record<string, string>,
 ) => {
 	if (!scenario.baseData) return;
+
+	const addValue = (
+		key: string | undefined,
+		value: string | number | boolean,
+	) => {
+		if (!key) return;
+		if (!hasValue(value)) return;
+		accumulator[key] = `${value}`;
+	};
+
 	for (const item of scenario.baseData) {
-		const key = item.altName?.replace(/[()]/g, "").trim() || item.key;
-		if (!key) continue;
-		if (hasValue(item.value)) {
-			accumulator[key] = `${item.value}`;
+		const normalizedAltName = item.altName?.replace(/[()]/g, "").trim();
+		const rawAltName = item.altName?.trim();
+		const rawKey = item.key?.trim();
+		const value = item.value;
+
+		addValue(normalizedAltName, value);
+		if (rawAltName && rawAltName !== normalizedAltName) {
+			addValue(rawAltName, value);
 		}
+		addValue(rawKey, value);
 	}
 };
 
