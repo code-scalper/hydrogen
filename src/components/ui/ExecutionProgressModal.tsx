@@ -56,6 +56,7 @@ const ExecutionProgressModal = () => {
 	const total = EXECUTION_PROGRESS_STEPS.length;
 	const percent = Math.min(100, Math.round((completedCount / total) * 100));
 	const remaining = total - completedCount;
+	const isCompleted = completedCount >= total;
 
 	const lastUpdateText = useMemo(() => {
 		if (!startedAt) {
@@ -179,9 +180,15 @@ const ExecutionProgressModal = () => {
 						<span className="text-[12px] text-rose-300/80">{error}</span>
 					</p>
 				) : (
-					<p className="mt-6 text-[11px] text-slate-500">
+					<p
+						className={`mt-6 rounded-md px-3 py-2 text-[12px] ${
+							isCompleted
+								? "bg-emerald-500/10 text-emerald-300 font-semibold animate-pulse"
+								: "text-slate-500"
+						}`}
+					>
 						실행이 완료되면 창이 자동으로 닫힙니다.
-						{activeIndex >= 0 && remaining > 0
+						{!isCompleted && activeIndex >= 0 && remaining > 0
 							? ` 현재 단계 (${activeIndex + 1}/${total}) 진행 중...`
 							: ""}
 					</p>
