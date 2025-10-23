@@ -10,6 +10,7 @@ import {
   ensureInputTotalWorkbook,
   updateInputTotalWorkbook,
   readWorksheetRows,
+  copyWorkbookWithoutSheet,
 } from "./utils/xlsx";
 
 //
@@ -48,6 +49,16 @@ function normalizeOutputDate(input?: string | null) {
   if (!input) return null;
   const digits = input.replace(/[^0-9]/g, "");
   return digits.length === 8 ? digits : null;
+}
+
+function formatOutputDateKey(timeZone = "Asia/Seoul") {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date()).replace(/-/g, "");
 }
 
 function resolveOutputDirectory(
@@ -401,7 +412,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw new Error(msg);
   }
 
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const today = formatOutputDateKey();
   const baseOutputDir = getBaseOutputDir();
   ensureDir(baseOutputDir);
   const datedOutputDir = path.join(baseOutputDir, today);
@@ -442,7 +453,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
       updateInputTotalWorkbook(workbookPath, values, sfc);
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
-        fs.copyFileSync(workbookPath, targetWorkbookPath);
+        copyWorkbookWithoutSheet(workbookPath, targetWorkbookPath, "Meta");
         console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
       } catch (copyError) {
         console.error("⚠️ Failed to copy Input_Total workbook", copyError);
