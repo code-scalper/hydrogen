@@ -142,9 +142,7 @@ export const useExecutionProgressStore = create<ExecutionProgressState>(
 			});
 		},
 		close: () => {
-			set({
-				isOpen: false,
-			});
+			set({ ...INITIAL_STATE });
 		},
 		reset: () => set({ ...INITIAL_STATE }),
 	}),
