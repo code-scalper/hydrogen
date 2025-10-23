@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { EXECUTION_PROGRESS_STEPS } from "@/constants/executionProgress";
 import useExecutionProgressStore, {
@@ -24,10 +24,26 @@ const ExecutionProgressModal = () => {
 	) as ExecutionProgressStepState[];
 	const error = useExecutionProgressStore((state) => state.error);
 	const startedAt = useExecutionProgressStore((state) => state.startedAt);
-	const lastUpdatedAt = useExecutionProgressStore(
-		(state) => state.lastUpdatedAt,
-	);
 	const close = useExecutionProgressStore((state) => state.close);
+	const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+	useEffect(() => {
+		if (!isOpen || !startedAt) {
+			setElapsedSeconds(0);
+			return;
+		}
+
+		const updateElapsed = () => {
+			const diff = Math.max(0, Date.now() - startedAt);
+			setElapsedSeconds(Math.floor(diff / 1000));
+		};
+
+		updateElapsed();
+		const id = window.setInterval(updateElapsed, 1000);
+		return () => {
+			window.clearInterval(id);
+		};
+	}, [isOpen, startedAt]);
 
 	const { completedCount, activeIndex } = useMemo(() => {
 		const completed = steps.filter((step) => step.status === "complete").length;
@@ -65,14 +81,8 @@ const ExecutionProgressModal = () => {
 		if (!startedAt) {
 			return null;
 		}
-		const started = new Date(startedAt);
-		const updated = lastUpdatedAt ? new Date(lastUpdatedAt) : new Date();
-		const elapsedSeconds = Math.max(
-			0,
-			Math.round((updated.getTime() - started.getTime()) / 1000),
-		);
 		return `${elapsedSeconds}초 경과`;
-	}, [startedAt, lastUpdatedAt]);
+	}, [startedAt, elapsedSeconds]);
 
 	if (!isOpen) {
 		return null;

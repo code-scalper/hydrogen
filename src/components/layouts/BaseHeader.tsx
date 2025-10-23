@@ -209,7 +209,6 @@ const BaseHeader = () => {
 			}
 		};
 
-		await pollProgressLog();
 		progressIntervalRef.current = window.setInterval(pollProgressLog, 1000);
 
 		try {

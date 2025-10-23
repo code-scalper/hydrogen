@@ -1,0 +1,126 @@
+{"ts":"2025-10-23 12:24:35","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:24:45","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:24:45","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:24:47","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:24:47","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:24:53","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:24:53","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:24:53","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:24:53","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:25:06","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:25:09","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-10-23 12:25:09","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:25:09","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:25:09","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:26:03","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:26:08","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:26:08","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:26:09","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:26:09","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:26:11","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:26:11","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:26:11","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:26:11","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:26:17","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:26:19","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-10-23 12:26:19","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:26:19","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:26:19","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:32:45","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:32:51","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:32:51","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:32:53","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:32:53","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:32:55","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:32:55","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:32:55","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:32:55","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:33:02","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:33:04","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:33:04","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:33:04","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:33:04","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:36:49","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:36:56","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:36:56","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:36:58","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:36:58","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:37:00","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:37:00","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:37:00","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:37:00","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:37:08","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:37:09","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:37:09","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:37:09","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:37:10","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:40:59","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:41:05","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:41:05","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:41:07","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:41:07","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:41:10","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:41:10","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:41:10","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:41:10","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:41:17","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:41:18","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:41:18","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:41:19","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:41:19","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:41:45","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:41:50","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:41:50","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:41:52","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:41:52","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:41:53","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:41:54","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:41:54","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:41:54","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:42:00","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:42:01","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:42:01","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:42:01","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:42:01","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:44:57","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:45:03","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:45:03","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:45:06","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:45:06","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:45:08","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:45:08","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:45:08","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:45:08","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:45:16","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:45:17","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:45:17","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:45:17","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:45:17","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:45:57","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:46:02","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:46:02","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:46:04","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:46:04","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:46:06","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:46:06","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:46:06","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:46:06","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:46:12","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:46:13","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:46:13","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:46:13","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:46:13","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 12:51:06","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 12:51:12","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-23 12:51:12","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-23 12:51:15","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-23 12:51:15","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-23 12:51:17","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-23 12:51:17","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-23 12:51:17","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-23 12:51:17","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-23 12:51:25","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-23 12:51:26","level":"ERR","code":"ERR0831","desc":"결과 저장 실패","solution":{"ko":"경로/권한/디스크 공간을 확인하고 다시 시도하세요.","en":"Verify path/permissions/disk space and retry."}}
+{"ts":"2025-10-23 12:51:26","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-23 12:51:26","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-23 12:51:26","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
