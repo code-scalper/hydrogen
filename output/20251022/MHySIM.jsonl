@@ -1,0 +1,35 @@
+{"ts":"2025-09-23 16:26:06","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-09-23 16:26:06","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-09-23 16:29:09","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-09-23 16:29:09","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-09-23 16:30:45","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-09-23 16:30:45","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-09-23 16:34:57","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-09-23 16:34:57","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-09-23 16:35:05","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-09-23 16:35:05","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-09-23 16:35:10","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-09-23 16:35:10","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-09-23 16:35:11","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-09-23 16:35:11","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-09-23 16:35:22","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-09-23 16:35:25","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-09-23 16:35:25","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-09-23 16:35:25","level":"PRG","code":"PRG0901","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-09-23 16:35:25","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-10-23 07:55:42","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 07:55:42","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 07:56:46","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 07:56:47","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:13:07","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:13:07","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:37:57","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:37:57","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:49:35","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:49:35","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:52:46","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:52:46","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:55:58","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:55:58","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 08:56:55","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 08:56:55","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}

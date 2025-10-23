@@ -1,0 +1,4 @@
+{"ts":"2025-10-23 09:08:57","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 09:09:02","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
+{"ts":"2025-10-23 09:09:16","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-23 09:09:16","level":"ERR","code":"ERR0151","desc":"패스워드 검증 실패","solution":{"ko":"패스워드 검증에 실패했습니다.","en":"Password verification failed."}}
