@@ -31,9 +31,27 @@ const ExecutionProgressModal = () => {
 
 	const { completedCount, activeIndex } = useMemo(() => {
 		const completed = steps.filter((step) => step.status === "complete").length;
-		const active = steps.findIndex((step) => step.status === "active");
+		let active = steps.findIndex((step) => step.status === "active");
+		if (active === -1 && steps.length > 0) {
+			active = completed > 0 ? Math.min(completed, steps.length - 1) : 0;
+		}
 		return { completedCount: completed, activeIndex: active };
 	}, [steps]);
+
+	const visibleSteps = useMemo(() => {
+		if (steps.length <= 3) {
+			return steps;
+		}
+		let startIndex = activeIndex - 1;
+		if (startIndex < 0) {
+			startIndex = 0;
+		}
+		const maxStart = steps.length - 3;
+		if (startIndex > maxStart) {
+			startIndex = maxStart;
+		}
+		return steps.slice(startIndex, startIndex + 3);
+	}, [steps, activeIndex]);
 
 	const total = EXECUTION_PROGRESS_STEPS.length;
 	const percent = Math.min(100, Math.round((completedCount / total) * 100));
@@ -100,13 +118,14 @@ const ExecutionProgressModal = () => {
 				</div>
 
 				<ol className="mt-6 space-y-3 text-sm">
-					{steps.map((step, index) => {
+					{visibleSteps.map((step, index) => {
+						const globalIndex = steps.indexOf(step);
 						const badgeClass = statusColors[step.status];
 						const dotClass = statusDotColors[step.status];
 						const isActive = step.status === "active";
 						return (
 							<li
-								key={step.code}
+								key={`${step.code}-${globalIndex}`}
 								className={`rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-3 shadow-sm transition ${
 									isActive ? "ring-1 ring-amber-400/60" : ""
 								}`}
@@ -116,7 +135,7 @@ const ExecutionProgressModal = () => {
 										<span
 											className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${badgeClass}`}
 										>
-											{index + 1}
+											{globalIndex + 1}
 										</span>
 										<span
 											className={`h-2 w-2 rounded-full ${dotClass} ${
