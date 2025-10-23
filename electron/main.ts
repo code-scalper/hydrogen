@@ -319,6 +319,16 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     throw error;
   }
 
+  // ✅ 3) 진행 로그 초기화
+  try {
+    const logPath = path.join(workingDir, "MHySIM.log");
+    if (fs.existsSync(logPath)) {
+      fs.writeFileSync(logPath, "");
+    }
+  } catch (error) {
+    console.warn("⚠️ 진행 로그 초기화 실패", error);
+  }
+
   let status: string;
 
   if (shouldSkipExe) {
