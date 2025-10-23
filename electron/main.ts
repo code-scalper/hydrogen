@@ -306,6 +306,13 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
       const workbookBaseDir = thirdPartyDir;
       const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
       updateInputTotalWorkbook(workbookPath, values, sfc);
+      try {
+        const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
+        fs.copyFileSync(workbookPath, targetWorkbookPath);
+        console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
+      } catch (copyError) {
+        console.error("⚠️ Failed to copy Input_Total workbook", copyError);
+      }
     }
   } catch (error) {
     console.error("❌ Excel 업데이트 실패:", error);
