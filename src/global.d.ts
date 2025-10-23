@@ -45,6 +45,14 @@ declare global {
 				raw: string;
 				updatedAt: number | null;
 			}>;
+			readEconomicEvaluation: (payload?: {
+				date?: string;
+			}) => Promise<{
+				date: string | null;
+				report: Record<string, number | string | null>;
+				cashflow: Array<Record<string, number | string | null>>;
+				coefficients: Array<Record<string, number | string | null>>;
+			}>;
 		};
 		electronStore: {
 			get: (key: string) => Promise<unknown>;

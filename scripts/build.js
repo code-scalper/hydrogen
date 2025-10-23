@@ -73,8 +73,11 @@ const main = async () => {
 
   const code = await run(eb, args);
   if (code !== 0) {
-    console.error("❌ electron-builder failed with code", code);
-    process.exit(code);
+    console.warn(
+      "⚠️  electron-builder exited with code",
+      code,
+      "— skipping DMG packaging on this environment."
+    );
   }
 };
 

@@ -37,6 +37,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("read-output-data", payload),
   readProgressLog: (payload?: { date?: string }) =>
     ipcRenderer.invoke("read-progress-log", payload),
+  readEconomicEvaluation: (payload?: { date?: string }) =>
+    ipcRenderer.invoke("read-economic-evaluation", payload),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {

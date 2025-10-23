@@ -44,6 +44,48 @@ function ensureDir(p: string) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
+function normalizeOutputDate(input?: string | null) {
+  if (!input) return null;
+  const digits = input.replace(/[^0-9]/g, "");
+  return digits.length === 8 ? digits : null;
+}
+
+function resolveOutputDirectory(
+  baseOutputDir: string,
+  requestedDate?: string | null
+) {
+  const tryResolve = (date: string | null) => {
+    if (!date) return null;
+    const candidate = path.join(baseOutputDir, date);
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+      return { dir: candidate, date };
+    }
+    return null;
+  };
+
+  const normalized = normalizeOutputDate(requestedDate);
+  const direct = tryResolve(normalized);
+  if (direct) {
+    return direct;
+  }
+
+  try {
+    const candidates = fs
+      .readdirSync(baseOutputDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && /^\d{8}$/.test(entry.name))
+      .map((entry) => entry.name)
+      .sort();
+    const latest = candidates.at(-1) ?? null;
+    if (!latest) {
+      return null;
+    }
+    return { dir: path.join(baseOutputDir, latest), date: latest };
+  } catch (error) {
+    console.error('Failed to resolve output directory', baseOutputDir, error);
+    return null;
+  }
+}
+
 interface RunExePayload {
   sfc?: string | null;
   values?: Record<string, string>;
@@ -243,6 +285,98 @@ function readSimulationFrames(workingDir: string): SimulationFrame[] {
   return [];
 }
 
+const INVALID_NUMERIC_VALUES = new Set([
+  '-1.#IND',
+  '-1.#QNAN',
+  'NAN',
+  'INF',
+  '+INF',
+  '-INF',
+]);
+
+function parseMaybeNumber(value?: string | null): number | null {
+  if (!value) return null;
+  const normalized = value.replace(/,/g, '').trim();
+  if (!normalized) {
+    return null;
+  }
+  if (INVALID_NUMERIC_VALUES.has(normalized.toUpperCase())) {
+    return null;
+  }
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function readCsvRecords(filePath: string): Array<Record<string, string>> {
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length <= 1) {
+    return [];
+  }
+  const headers = parseCsvLine(lines[0]);
+  const records: Array<Record<string, string>> = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const row = parseCsvLine(lines[i]);
+    const record: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      if (!header) return;
+      record[header] = row[index] ?? "";
+    });
+    records.push(record);
+  }
+  return records;
+}
+
+function convertRecordValues(record: Record<string, string>): Record<string, number | string | null> {
+  const converted: Record<string, number | string | null> = {};
+  for (const [key, raw] of Object.entries(record)) {
+    const numeric = parseMaybeNumber(raw);
+    if (numeric !== null) {
+      converted[key] = numeric;
+      continue;
+    }
+    const trimmed = raw.trim();
+    converted[key] = trimmed.length > 0 ? trimmed : null;
+  }
+  return converted;
+}
+
+function readEconomicEvaluationOutputs(dir: string): {
+  report: Record<string, number | string | null>;
+  cashflow: Array<Record<string, number | string | null>>;
+  coefficients: Array<Record<string, number | string | null>>;
+} {
+  const summaryPath = path.join(dir, 'Output_EE2.csv');
+  const cashflowPath = path.join(dir, 'Output_EE3.csv');
+  const coefficientsPath = path.join(dir, 'Output_EE1.csv');
+
+  const report: Record<string, number | string | null> = {};
+  const summaryRecords = readCsvRecords(summaryPath);
+  for (const record of summaryRecords) {
+    const entries = Object.entries(record);
+    if (entries.length === 0) continue;
+    const [firstKey, firstValue] = entries[0];
+    const variable = (record.Variable ?? record[firstKey] ?? "").trim();
+    if (!variable) continue;
+    let rawValue = "";
+    if ('Value' in record) {
+      rawValue = record.Value ?? "";
+    } else if (entries.length > 1) {
+      rawValue = entries[1][1];
+    }
+    const numeric = parseMaybeNumber(rawValue);
+    report[variable] = numeric !== null ? numeric : rawValue.trim() || null;
+  }
+
+  const cashflow = readCsvRecords(cashflowPath).map(convertRecordValues);
+  const coefficients = readCsvRecords(coefficientsPath).map(convertRecordValues);
+
+  return { report, cashflow, coefficients };
+}
+
 // 계산모듈실행
 ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   // ✅ 플랫폼 분기: .exe는 Windows 전용
@@ -364,41 +498,7 @@ ipcMain.handle(
   "read-output-data",
   async (_event, payload?: { date?: string }) => {
     const baseOutputDir = getBaseOutputDir();
-
-    const normalizeDate = (input?: string) => {
-      if (!input) return null;
-      const digits = input.replace(/[^0-9]/g, "");
-      return digits.length === 8 ? digits : null;
-    };
-
-    const tryResolveDirectory = (date?: string) => {
-      if (!date) return null;
-      const candidate = path.join(baseOutputDir, date);
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
-        return { dir: candidate, date };
-      }
-      return null;
-    };
-
-    const normalized = normalizeDate(payload?.date);
-    let target = tryResolveDirectory(normalized ?? undefined);
-
-    if (!target) {
-      try {
-        const candidates = fs
-          .readdirSync(baseOutputDir, { withFileTypes: true })
-          .filter((entry) => entry.isDirectory() && /^\d{8}$/.test(entry.name))
-          .map((entry) => entry.name)
-          .sort();
-
-        const latest = candidates.at(-1) ?? null;
-        if (latest) {
-          target = { dir: path.join(baseOutputDir, latest), date: latest };
-        }
-      } catch (error) {
-        console.error("Failed to scan output directory", baseOutputDir, error);
-      }
-    }
+    const target = resolveOutputDirectory(baseOutputDir, payload?.date ?? null);
 
     if (!target) {
       return { frames: [] as SimulationFrame[], date: null };
@@ -421,14 +521,9 @@ ipcMain.handle(
   async (_event, payload?: { date?: string }) => {
     const baseOutputDir = getBaseOutputDir();
 
-    const normalizeDate = (input?: string) => {
-      if (!input) return null;
-      const digits = input.replace(/[^0-9]/g, "");
-      return digits.length === 8 ? digits : null;
-    };
-
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const targetDate = normalizeDate(payload?.date) ?? today;
+    const requested = normalizeOutputDate(payload?.date ?? null);
+    const targetDate = requested ?? today;
     const folderPath = path.join(baseOutputDir, targetDate);
     const logPath = path.join(folderPath, "MHySIM.log");
 
@@ -513,6 +608,41 @@ ipcMain.handle("read-recent-logs", async () => {
 
   return results;
 });
+
+ipcMain.handle(
+  "read-economic-evaluation",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, payload?.date ?? null);
+
+    if (!target) {
+      return {
+        date: null,
+        report: {},
+        cashflow: [] as Array<Record<string, number | string | null>>,
+        coefficients: [] as Array<Record<string, number | string | null>>,
+      };
+    }
+
+    try {
+      const outputs = readEconomicEvaluationOutputs(target.dir);
+      return {
+        date: target.date,
+        report: outputs.report,
+        cashflow: outputs.cashflow,
+        coefficients: outputs.coefficients,
+      };
+    } catch (error) {
+      console.error("Failed to read economic evaluation outputs", target, error);
+      return {
+        date: target.date,
+        report: {},
+        cashflow: [] as Array<Record<string, number | string | null>>,
+        coefficients: [] as Array<Record<string, number | string | null>>,
+      };
+    }
+  }
+);
 
 const store = new Store();
 ipcMain.handle("electron-store-get", (_, key) => {
