@@ -16,6 +16,7 @@ import SFC2022 from "@/assets/sfc/sfc_2022.jpg";
 import SFC2050 from "@/assets/sfc/sfc_2050.jpg";
 import SFC3012 from "@/assets/sfc/sfc_3012.jpg";
 import SFC3022 from "@/assets/sfc/sfc_3022.jpg";
+import { DEFAULT_SCENARIO_VALUES } from "@/constants/defaultValue";
 import { SCENARIO_OPTIONS } from "@/constants/scenarioOptions";
 interface CreateScenarioModalProps {
 	isOpen: boolean;
@@ -83,11 +84,29 @@ export const CreateScenarioModal = ({
 	}, [scenarios]);
 
 	const scenarioOptions = useMemo(() => {
-		if (!selectedScenarioId) return [] as { key: string; name: string }[];
-		return (
+		if (!selectedScenarioId) {
+			return [] as Array<{ key: string; name: string }>;
+		}
+		const defaults =
+			DEFAULT_SCENARIO_VALUES[
+				selectedScenarioId as keyof typeof DEFAULT_SCENARIO_VALUES
+			];
+		if (!defaults) {
+			return [];
+		}
+		const override =
 			SCENARIO_OPTIONS[selectedScenarioId as keyof typeof SCENARIO_OPTIONS] ??
-			[]
-		);
+			[];
+		return Object.keys(defaults).map((key) => {
+			const custom = override.find((option) => option.key === key);
+			const fallback = key.startsWith("type")
+				? `타입${key.replace("type", "")}`
+				: key;
+			return {
+				key,
+				name: custom?.name ?? fallback,
+			};
+		});
 	}, [selectedScenarioId]);
 
 	useEffect(() => {
@@ -111,20 +130,29 @@ export const CreateScenarioModal = ({
 			return;
 		}
 
-		const options = scenarioOptions;
-		const firstOption = options[0];
-		if (firstOption) {
-			setSelectedOptionKey(firstOption.key);
-		} else {
+		const firstOption = scenarioOptions[0]?.key;
+		if (!firstOption) {
 			setSelectedOptionKey("");
+			return;
 		}
+
+		setSelectedOptionKey((prev) => {
+			if (prev && scenarioOptions.some((option) => option.key === prev)) {
+				return prev;
+			}
+			return firstOption;
+		});
 	}, [scenarioOptions, isOpen]);
 
-	const requiresOptionSelection = scenarioOptions.length > 0;
+	const requiresOptionSelection = scenarioOptions.length > 1;
+	const resolvedOptionKey =
+		scenarioOptions.length > 0
+			? selectedOptionKey || scenarioOptions[0]?.key || ""
+			: "";
 	const isCreateDisabled =
 		!selectedProjectId ||
 		!selectedScenario ||
-		(requiresOptionSelection && !selectedOptionKey);
+		(requiresOptionSelection && !resolvedOptionKey);
 
 	const selectedScenarioImage = useMemo(() => {
 		const src = IMAGES[selectedScenarioId];
@@ -168,10 +196,17 @@ export const CreateScenarioModal = ({
 								value={selectedScenarioId}
 								onValueChange={(val, data) => {
 									setSelectedScenarioId(val);
-									setSelectedOptionKey("");
 									const scenarioData =
 										(data as ScenarioInterface | undefined) ?? null;
 									setSelectedScenario(scenarioData);
+									const defaults =
+										DEFAULT_SCENARIO_VALUES[
+											val as keyof typeof DEFAULT_SCENARIO_VALUES
+										];
+									const firstKey = defaults
+										? (Object.keys(defaults)[0] ?? "")
+										: "";
+									setSelectedOptionKey(firstKey);
 									if (scenarioData && (!typed || name.trim() === "")) {
 										setName(scenarioData.name);
 										setTyped(false);
@@ -179,7 +214,7 @@ export const CreateScenarioModal = ({
 								}}
 							/>
 						</div>
-						{scenarioOptions.length > 0 && (
+						{scenarioOptions.length > 1 && (
 							<div className="flex items-center gap-3 text-slate-200">
 								<span className="text-xs whitespace-nowrap">시나리오 옵션</span>
 								<div className="flex flex-wrap gap-3 ml-2">
@@ -232,10 +267,11 @@ export const CreateScenarioModal = ({
 										!isCreateDisabled &&
 										selectedScenario
 									) {
-										onCreate(selectedProjectId, {
-											...selectedScenario,
-											name,
-										});
+										onCreate(
+											selectedProjectId,
+											{ ...selectedScenario, name },
+											resolvedOptionKey || undefined,
+										);
 										setTyped(true);
 									}
 								}}
@@ -273,7 +309,7 @@ export const CreateScenarioModal = ({
 							onCreate(
 								selectedProjectId,
 								{ ...selectedScenario, name },
-								selectedOptionKey || undefined,
+								resolvedOptionKey || undefined,
 							);
 							setName("");
 							onClose();
