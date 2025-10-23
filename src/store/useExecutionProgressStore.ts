@@ -30,10 +30,16 @@ interface ExecutionProgressState {
 	reset: () => void;
 }
 
-const withStatus = (
-	steps: ExecutionProgressStep[],
-	status: ExecutionProgressStatus,
-): ExecutionProgressStepState[] => steps.map((step) => ({ ...step, status }));
+const createInitialSteps = (
+	activateFirst = true,
+): ExecutionProgressStepState[] =>
+	EXECUTION_PROGRESS_STEPS.map((step, index) => ({
+		...step,
+		status:
+			activateFirst && index === 0
+				? "active"
+				: ("pending" satisfies ExecutionProgressStatus),
+	}));
 
 const INITIAL_STATE: Omit<
 	ExecutionProgressState,
@@ -41,7 +47,7 @@ const INITIAL_STATE: Omit<
 > = {
 	isOpen: false,
 	dateKey: null,
-	steps: withStatus(EXECUTION_PROGRESS_STEPS, "pending"),
+	steps: createInitialSteps(true),
 	entries: [],
 	error: null,
 	startedAt: null,
@@ -59,12 +65,7 @@ export const useExecutionProgressStore = create<ExecutionProgressState>(
 				error: null,
 				startedAt: Date.now(),
 				lastUpdatedAt: Date.now(),
-				steps: withStatus(EXECUTION_PROGRESS_STEPS, "pending").map(
-					(step, index) => ({
-						...step,
-						status: index === 0 ? "active" : "pending",
-					}),
-				),
+				steps: createInitialSteps(true),
 			});
 		},
 		updateFromEntries: (entries) => {
