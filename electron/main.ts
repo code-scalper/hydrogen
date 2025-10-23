@@ -81,7 +81,7 @@ function resolveOutputDirectory(
     }
     return { dir: path.join(baseOutputDir, latest), date: latest };
   } catch (error) {
-    console.error('Failed to resolve output directory', baseOutputDir, error);
+    console.error("Failed to resolve output directory", baseOutputDir, error);
     return null;
   }
 }
@@ -286,17 +286,17 @@ function readSimulationFrames(workingDir: string): SimulationFrame[] {
 }
 
 const INVALID_NUMERIC_VALUES = new Set([
-  '-1.#IND',
-  '-1.#QNAN',
-  'NAN',
-  'INF',
-  '+INF',
-  '-INF',
+  "-1.#IND",
+  "-1.#QNAN",
+  "NAN",
+  "INF",
+  "+INF",
+  "-INF",
 ]);
 
 function parseMaybeNumber(value?: string | null): number | null {
   if (!value) return null;
-  const normalized = value.replace(/,/g, '').trim();
+  const normalized = value.replace(/,/g, "").trim();
   if (!normalized) {
     return null;
   }
@@ -330,7 +330,9 @@ function readCsvRecords(filePath: string): Array<Record<string, string>> {
   return records;
 }
 
-function convertRecordValues(record: Record<string, string>): Record<string, number | string | null> {
+function convertRecordValues(
+  record: Record<string, string>
+): Record<string, number | string | null> {
   const converted: Record<string, number | string | null> = {};
   for (const [key, raw] of Object.entries(record)) {
     const numeric = parseMaybeNumber(raw);
@@ -349,9 +351,9 @@ function readEconomicEvaluationOutputs(dir: string): {
   cashflow: Array<Record<string, number | string | null>>;
   coefficients: Array<Record<string, number | string | null>>;
 } {
-  const summaryPath = path.join(dir, 'Output_EE2.csv');
-  const cashflowPath = path.join(dir, 'Output_EE3.csv');
-  const coefficientsPath = path.join(dir, 'Output_EE1.csv');
+  const summaryPath = path.join(dir, "Output_EE2.csv");
+  const cashflowPath = path.join(dir, "Output_EE3.csv");
+  const coefficientsPath = path.join(dir, "Output_EE1.csv");
 
   const report: Record<string, number | string | null> = {};
   const summaryRecords = readCsvRecords(summaryPath);
@@ -362,7 +364,7 @@ function readEconomicEvaluationOutputs(dir: string): {
     const variable = (record.Variable ?? record[firstKey] ?? "").trim();
     if (!variable) continue;
     let rawValue = "";
-    if ('Value' in record) {
+    if ("Value" in record) {
       rawValue = record.Value ?? "";
     } else if (entries.length > 1) {
       rawValue = entries[1][1];
@@ -372,7 +374,8 @@ function readEconomicEvaluationOutputs(dir: string): {
   }
 
   const cashflow = readCsvRecords(cashflowPath).map(convertRecordValues);
-  const coefficients = readCsvRecords(coefficientsPath).map(convertRecordValues);
+  const coefficients =
+    readCsvRecords(coefficientsPath).map(convertRecordValues);
 
   return { report, cashflow, coefficients };
 }
@@ -403,9 +406,11 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
 
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const baseOutputDir = getBaseOutputDir();
+  console.log(baseOutputDir, "baseOutputDir");
   ensureDir(baseOutputDir);
   const datedOutputDir = path.join(baseOutputDir, today);
   ensureDir(datedOutputDir);
+  console.log(datedOutputDir, "baseOutputDir");
 
   const workingDir = datedOutputDir;
   const shouldSkipExe = payload?.skipExe ?? false;
@@ -633,7 +638,11 @@ ipcMain.handle(
         coefficients: outputs.coefficients,
       };
     } catch (error) {
-      console.error("Failed to read economic evaluation outputs", target, error);
+      console.error(
+        "Failed to read economic evaluation outputs",
+        target,
+        error
+      );
       return {
         date: target.date,
         report: {},

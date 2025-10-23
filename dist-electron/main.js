@@ -16037,9 +16037,11 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
   }
   const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, "");
   const baseOutputDir = getBaseOutputDir();
+  console.log(baseOutputDir, "baseOutputDir");
   ensureDir(baseOutputDir);
   const datedOutputDir = path.join(baseOutputDir, today);
   ensureDir(datedOutputDir);
+  console.log(datedOutputDir, "baseOutputDir");
   const workingDir = datedOutputDir;
   const shouldSkipExe = (payload == null ? void 0 : payload.skipExe) ?? false;
   const outputDate = today;
@@ -16231,7 +16233,11 @@ ipcMain$1.handle(
         coefficients: outputs.coefficients
       };
     } catch (error2) {
-      console.error("Failed to read economic evaluation outputs", target, error2);
+      console.error(
+        "Failed to read economic evaluation outputs",
+        target,
+        error2
+      );
       return {
         date: target.date,
         report: {},
