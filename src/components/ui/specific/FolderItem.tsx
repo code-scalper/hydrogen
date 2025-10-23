@@ -10,12 +10,17 @@ import FolderContext from "./FolderContext";
 
 import type {
 	DeviceInterface,
+	DeviceProperty,
 	ProjectInterface,
 	ScenarioInterface,
 } from "@/types";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import "@/css/tooltip.css";
 
+import {
+	DEFAULT_SCENARIO_VALUES,
+	type ScenarioDefaultValue,
+} from "@/constants/defaultValue";
 import { useInteractionStore } from "@/store/useInteractionStore";
 
 interface FolderItemProps {
@@ -82,6 +87,80 @@ export const FolderItem = ({
 		);
 	};
 
+	const findScenarioById = (scenarioId: string | undefined | null) => {
+		if (!scenarioId) return undefined;
+		for (const project of folderList) {
+			const candidate = project.children?.find(
+				(child) => child.id === scenarioId && child.type === "scenario",
+			) as ScenarioInterface | undefined;
+			if (candidate) return candidate;
+		}
+		return undefined;
+	};
+
+	const getScenarioDefaults = (
+		scenario?: ScenarioInterface,
+	): ScenarioDefaultValue | undefined => {
+		if (!scenario?.sfcName) return undefined;
+		const scenarioKey =
+			`SFC${scenario.sfcName}` as keyof typeof DEFAULT_SCENARIO_VALUES;
+		if (!(scenarioKey in DEFAULT_SCENARIO_VALUES)) {
+			return undefined;
+		}
+		const entry = DEFAULT_SCENARIO_VALUES[scenarioKey];
+		const optionKey = scenario?.optionKey;
+		if (optionKey && Object.prototype.hasOwnProperty.call(entry, optionKey)) {
+			return entry[optionKey as keyof typeof entry];
+		}
+		return entry.type1;
+	};
+
+	const normalizeKey = (key?: string, fallbackName?: string) => {
+		const raw = (key ?? fallbackName ?? "").replace(/[()]/g, "").trim();
+		return raw;
+	};
+
+	const ensurePropertyValue = (
+		prop: DeviceProperty,
+		defaults?: ScenarioDefaultValue,
+	): DeviceProperty => {
+		const existing = prop.value;
+		if (existing !== undefined && existing !== null) {
+			const str = `${existing}`.trim();
+			if (str.length > 0 && str !== "0") {
+				return prop;
+			}
+		}
+		if (!defaults) {
+			return prop;
+		}
+		const key = normalizeKey(prop.key, prop.name);
+		if (!key) {
+			return prop;
+		}
+		const raw = defaults[key as keyof ScenarioDefaultValue];
+		if (raw === undefined || raw === null) {
+			return prop;
+		}
+		const value =
+			typeof raw === "boolean" ? (raw ? "true" : "false") : `${raw}`;
+		return { ...prop, value };
+	};
+
+	const prepareDeviceSelection = (device: DeviceInterface) => {
+		const scenario = findScenarioById(device.scenarioId);
+		const defaults = getScenarioDefaults(scenario);
+		return {
+			...device,
+			props: (device.props ?? []).map((prop) =>
+				ensurePropertyValue(prop, defaults),
+			),
+			outputProps: (device.outputProps ?? []).map((prop) =>
+				ensurePropertyValue(prop, defaults),
+			),
+		};
+	};
+
 	useEffect(() => {
 		if (isEditing && inputRef.current) {
 			inputRef.current.focus();
@@ -106,8 +185,9 @@ export const FolderItem = ({
 				break;
 			case "device":
 			case "module":
-				if (selectedDevice?.id !== data.id)
-					setSelectedDevice(data as DeviceInterface);
+				if (selectedDevice?.id !== data.id) {
+					setSelectedDevice(prepareDeviceSelection(data as DeviceInterface));
+				}
 				break;
 		}
 	};
@@ -157,8 +237,9 @@ export const FolderItem = ({
 		}
 
 		if (data.type === "device" || data.type === "module") {
+			const prepared = prepareDeviceSelection(data as DeviceInterface);
+			setSelectedDevice(prepared);
 			setDeviceOpen(true);
-			setSelectedDevice(data as DeviceInterface);
 		}
 	};
 

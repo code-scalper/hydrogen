@@ -1,18 +1,22 @@
 import { useProjectStore } from "@/store/useProjectStore";
 
+import {
+	DEFAULT_SCENARIO_VALUES,
+	type ScenarioDefaultValue,
+} from "@/constants/defaultValue";
 import type {
 	DeviceInterface,
+	DeviceProperty,
 	ProjectInterface,
 	ScenarioInterface,
 } from "@/types";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import BaseToast from "../BaseToast";
 
 // components
 import BaseScrollArea from "../BaseScrollArea";
 import DevicePropertyInput from "./DevicePropertyInput";
-
 import ExtraInfoPanel from "./ExtraInfoPanel";
 
 interface CreateDeviceModalProps {
@@ -50,13 +54,70 @@ export const CreateDeviceModal = ({
 
 	const [showExtra, setShowExtra] = useState(false);
 
+	const scenarioDefaults = useMemo<ScenarioDefaultValue | undefined>(() => {
+		if (!selectedDevice) {
+			return undefined;
+		}
+		const parentProject = folders.find(
+			(folder) => folder.id === selectedDevice.projectId,
+		);
+		const scenario = parentProject?.children?.find(
+			(child) =>
+				child.id === selectedDevice.scenarioId && child.type === "scenario",
+		) as ScenarioInterface | undefined;
+		if (!scenario || !scenario.sfcName) {
+			return undefined;
+		}
+		const scenarioKey =
+			`SFC${scenario.sfcName}` as keyof typeof DEFAULT_SCENARIO_VALUES;
+		if (!(scenarioKey in DEFAULT_SCENARIO_VALUES)) {
+			return undefined;
+		}
+		const entry = DEFAULT_SCENARIO_VALUES[scenarioKey];
+		const optionKey = scenario.optionKey;
+		if (optionKey && Object.prototype.hasOwnProperty.call(entry, optionKey)) {
+			return entry[optionKey as keyof typeof entry];
+		}
+		return entry.type1;
+	}, [folders, selectedDevice]);
+
+	const hydrateProps = useCallback(
+		(props?: DeviceProperty[] | null) => {
+			if (!props) return [] as DeviceProperty[];
+			return props.map((prop) => {
+				if (prop.value !== undefined && prop.value !== null) {
+					const value = `${prop.value}`.trim();
+					if (value.length > 0 && value !== "0") {
+						return prop;
+					}
+				}
+				if (!scenarioDefaults) {
+					return prop;
+				}
+				const rawKey = prop.key ?? prop.name ?? "";
+				const normalized = rawKey.replace(/[()]/g, "").trim();
+				if (!normalized) {
+					return prop;
+				}
+				const raw = scenarioDefaults[normalized as keyof ScenarioDefaultValue];
+				if (raw === undefined || raw === null) {
+					return prop;
+				}
+				const value =
+					typeof raw === "boolean" ? (raw ? "true" : "false") : `${raw}`;
+				return { ...prop, value };
+			});
+		},
+		[scenarioDefaults],
+	);
+
 	const [properties1, properties2] = useMemo(() => {
-		const allProps = selectedDevice?.props || [];
+		const allProps = hydrateProps(selectedDevice?.props);
 		const half = Math.ceil(allProps.length / 2);
 		const first = allProps.slice(0, half);
 		const second = allProps.slice(half);
 		return [first, second];
-	}, [selectedDevice]);
+	}, [selectedDevice, hydrateProps]);
 
 	const parentProject = useMemo<ProjectInterface | null>(() => {
 		const target = folders.find(
@@ -116,7 +177,16 @@ export const CreateDeviceModal = ({
 								items={devices}
 								displayProperty="name"
 								selectedId={selectedDevice?.id}
-								onItemClick={(device) => setSelectedDevice(device)}
+								onItemClick={(device) =>
+									setSelectedDevice({
+										...device,
+										props: hydrateProps(device.props),
+										outputProps: hydrateProps(
+											(device.outputProps as DeviceProperty[] | undefined) ??
+												[],
+										),
+									})
+								}
 							/>
 						</div>
 						<div className="space-y-3 flex-1">
@@ -186,7 +256,7 @@ export const CreateDeviceModal = ({
 
 				{/* 추가 정보 영역 */}
 				{showExtra && selectedDevice && (
-					<ExtraInfoPanel props={selectedDevice.props} />
+					<ExtraInfoPanel props={hydrateProps(selectedDevice.props)} />
 				)}
 
 				<BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
@@ -195,3 +265,5 @@ export const CreateDeviceModal = ({
 		</div>
 	);
 };
+
+export default CreateDeviceModal;
