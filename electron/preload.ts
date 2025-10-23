@@ -35,6 +35,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   readRecentLogs: () => ipcRenderer.invoke("read-recent-logs"),
   readOutputData: (payload?: { date?: string }) =>
     ipcRenderer.invoke("read-output-data", payload),
+  readProgressLog: (payload?: { date?: string }) =>
+    ipcRenderer.invoke("read-progress-log", payload),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {
