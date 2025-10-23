@@ -39,6 +39,12 @@ const ExecutionProgressModal = () => {
 	}, [steps]);
 
 	const visibleSteps = useMemo(() => {
+		if (steps.length === 0) {
+			return steps;
+		}
+		if (completedCount >= steps.length) {
+			return steps.slice(0, Math.min(3, steps.length));
+		}
 		if (steps.length <= 3) {
 			return steps;
 		}
@@ -51,7 +57,7 @@ const ExecutionProgressModal = () => {
 			startIndex = maxStart;
 		}
 		return steps.slice(startIndex, startIndex + 3);
-	}, [steps, activeIndex]);
+	}, [steps, activeIndex, completedCount]);
 
 	const total = EXECUTION_PROGRESS_STEPS.length;
 	const percent = Math.min(100, Math.round((completedCount / total) * 100));
@@ -181,9 +187,9 @@ const ExecutionProgressModal = () => {
 					</p>
 				) : (
 					<p
-						className={`mt-6 rounded-md px-3 py-2 text-[12px] ${
+						className={`mt-6 rounded-md px-3 py-2 text-[12px] transition ${
 							isCompleted
-								? "bg-emerald-500/10 text-emerald-300 font-semibold animate-pulse"
+								? "bg-emerald-500/15 text-emerald-300 font-semibold animate-pulse"
 								: "text-slate-500"
 						}`}
 					>
