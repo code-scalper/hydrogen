@@ -42,9 +42,6 @@ const ExecutionProgressModal = () => {
 		if (steps.length === 0) {
 			return steps;
 		}
-		if (completedCount >= steps.length) {
-			return steps.slice(0, Math.min(3, steps.length));
-		}
 		if (steps.length <= 3) {
 			return steps;
 		}
@@ -57,7 +54,7 @@ const ExecutionProgressModal = () => {
 			startIndex = maxStart;
 		}
 		return steps.slice(startIndex, startIndex + 3);
-	}, [steps, activeIndex, completedCount]);
+	}, [steps, activeIndex]);
 
 	const total = EXECUTION_PROGRESS_STEPS.length;
 	const percent = Math.min(100, Math.round((completedCount / total) * 100));
