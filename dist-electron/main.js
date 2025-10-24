@@ -8,7 +8,7 @@ var he = (e, t, r) => ($i(e, t, "read from private field"), r ? r.call(e) : t.ge
 import Jc, { ipcMain as pt, dialog as hd, app as er, BrowserWindow as xc } from "electron";
 import { createRequire as md } from "node:module";
 import { fileURLToPath as pd } from "node:url";
-import q from "node:path";
+import z from "node:path";
 import ce from "fs";
 import _e from "node:process";
 import { promisify as be, isDeepStrictEqual as $d } from "node:util";
@@ -170,33 +170,33 @@ function Ed(e, t) {
   return !0;
 }
 const Pt = ts.homedir(), mo = ts.tmpdir(), { env: mr } = _e, Sd = (e) => {
-  const t = q.join(Pt, "Library");
+  const t = z.join(Pt, "Library");
   return {
-    data: q.join(t, "Application Support", e),
-    config: q.join(t, "Preferences", e),
-    cache: q.join(t, "Caches", e),
-    log: q.join(t, "Logs", e),
-    temp: q.join(mo, e)
+    data: z.join(t, "Application Support", e),
+    config: z.join(t, "Preferences", e),
+    cache: z.join(t, "Caches", e),
+    log: z.join(t, "Logs", e),
+    temp: z.join(mo, e)
   };
 }, bd = (e) => {
-  const t = mr.APPDATA || q.join(Pt, "AppData", "Roaming"), r = mr.LOCALAPPDATA || q.join(Pt, "AppData", "Local");
+  const t = mr.APPDATA || z.join(Pt, "AppData", "Roaming"), r = mr.LOCALAPPDATA || z.join(Pt, "AppData", "Local");
   return {
     // Data/config/cache/log are invented by me as Windows isn't opinionated about this
-    data: q.join(r, e, "Data"),
-    config: q.join(t, e, "Config"),
-    cache: q.join(r, e, "Cache"),
-    log: q.join(r, e, "Log"),
-    temp: q.join(mo, e)
+    data: z.join(r, e, "Data"),
+    config: z.join(t, e, "Config"),
+    cache: z.join(r, e, "Cache"),
+    log: z.join(r, e, "Log"),
+    temp: z.join(mo, e)
   };
 }, Pd = (e) => {
-  const t = q.basename(Pt);
+  const t = z.basename(Pt);
   return {
-    data: q.join(mr.XDG_DATA_HOME || q.join(Pt, ".local", "share"), e),
-    config: q.join(mr.XDG_CONFIG_HOME || q.join(Pt, ".config"), e),
-    cache: q.join(mr.XDG_CACHE_HOME || q.join(Pt, ".cache"), e),
+    data: z.join(mr.XDG_DATA_HOME || z.join(Pt, ".local", "share"), e),
+    config: z.join(mr.XDG_CONFIG_HOME || z.join(Pt, ".config"), e),
+    cache: z.join(mr.XDG_CACHE_HOME || z.join(Pt, ".cache"), e),
     // https://wiki.debian.org/XDGBaseDirectorySpecification#state
-    log: q.join(mr.XDG_STATE_HOME || q.join(Pt, ".local", "state"), e),
-    temp: q.join(mo, t, e)
+    log: z.join(mr.XDG_STATE_HOME || z.join(Pt, ".local", "state"), e),
+    temp: z.join(mo, t, e)
   };
 };
 function Nd(e, { suffix: t = "nodejs" } = {}) {
@@ -380,7 +380,7 @@ const zd = new Ud(), qd = zd.register, Re = {
       Re.purgeSync(e);
   },
   truncate: (e) => {
-    const t = q.basename(e);
+    const t = z.basename(e);
     if (t.length <= vi)
       return e;
     const r = /^(\.?)(.*?)((?:\.[^.]+)?(?:\.tmp-\d{10}[a-f0-9]{6})?)$/.exec(t);
@@ -405,7 +405,7 @@ function el(e, t, r = Ad) {
       h && (r = { ...r }, d && (r.chown = { uid: h.uid, gid: h.gid }), u && (r.mode = h.mode));
     }
     if (!i) {
-      const h = q.dirname(e);
+      const h = z.dirname(e);
       Ie.attempt.mkdirSync(h, {
         mode: kd,
         recursive: !0
@@ -829,7 +829,7 @@ var Bs = {};
       return S.length > 0 ? this : void 0;
     }
     get names() {
-      return this.nodes.reduce((c, f) => z(c, f.names), {});
+      return this.nodes.reduce((c, f) => q(c, f.names), {});
     }
   }
   class v extends _ {
@@ -872,7 +872,7 @@ var Bs = {};
     }
     get names() {
       const c = super.names;
-      return se(c, this.condition), this.else && z(c, this.else.names), c;
+      return se(c, this.condition), this.else && q(c, this.else.names), c;
     }
   }
   m.kind = "if";
@@ -891,7 +891,7 @@ var Bs = {};
         return this.iteration = O(this.iteration, c, f), this;
     }
     get names() {
-      return z(super.names, this.iteration.names);
+      return q(super.names, this.iteration.names);
     }
   }
   class I extends w {
@@ -919,7 +919,7 @@ var Bs = {};
         return this.iterable = O(this.iterable, c, f), this;
     }
     get names() {
-      return z(super.names, this.iterable.names);
+      return q(super.names, this.iterable.names);
     }
   }
   class V extends v {
@@ -952,7 +952,7 @@ var Bs = {};
     }
     get names() {
       const c = super.names;
-      return this.catch && z(c, this.catch.names), this.finally && z(c, this.finally.names), c;
+      return this.catch && q(c, this.catch.names), this.finally && q(c, this.finally.names), c;
     }
   }
   class ie extends v {
@@ -1181,13 +1181,13 @@ var Bs = {};
     }
   }
   e.CodeGen = C;
-  function z(g, c) {
+  function q(g, c) {
     for (const f in c)
       g[f] = (g[f] || 0) + (c[f] || 0);
     return g;
   }
   function se(g, c) {
-    return c instanceof t._CodeOrName ? z(g, c.names) : g;
+    return c instanceof t._CodeOrName ? q(g, c.names) : g;
   }
   function O(g, c, f) {
     if (g instanceof t.Name)
@@ -3093,7 +3093,7 @@ No.default = Gl;
     constructor(p = {}) {
       this.schemas = {}, this.refs = {}, this.formats = {}, this._compilations = /* @__PURE__ */ new Set(), this._loading = {}, this._cache = /* @__PURE__ */ new Map(), p = this.opts = { ...p, ...P(p) };
       const { es5: b, lines: g } = this.opts.code;
-      this.scope = new l.ValueScope({ scope: {}, prefixes: y, es5: b, lines: g }), this.logger = z(p.logger);
+      this.scope = new l.ValueScope({ scope: {}, prefixes: y, es5: b, lines: g }), this.logger = q(p.logger);
       const c = p.validateFormats;
       p.validateFormats = !1, this.RULES = (0, o.getRules)(), R.call(this, $, p, "NOT SUPPORTED"), R.call(this, m, p, "DEPRECATED", "warn"), this._metaOpts = ae.call(this), p.formats && Y.call(this), this._addVocabularies(), this._addDefaultMetaSchema(), p.keywords && ie.call(this, p.keywords), typeof p.meta == "object" && this.addMetaSchema(p.meta), W.call(this), p.validateFormats = c;
     }
@@ -3394,7 +3394,7 @@ No.default = Gl;
   }, warn() {
   }, error() {
   } };
-  function z(N) {
+  function q(N) {
     if (N === !1)
       return C;
     if (N === void 0)
@@ -5290,8 +5290,8 @@ ya.default = kg;
 var Ag = Hs.exports, Qs = { exports: {} }, Ql = {};
 (function(e) {
   Object.defineProperty(e, "__esModule", { value: !0 }), e.formatNames = e.fastFormats = e.fullFormats = void 0;
-  function t(C, z) {
-    return { validate: C, compare: z };
+  function t(C, q) {
+    return { validate: C, compare: q };
   }
   e.fullFormats = {
     // date: http://tools.ietf.org/html/rfc3339#section-5.6
@@ -5359,15 +5359,15 @@ var Ag = Hs.exports, Qs = { exports: {} }, Ql = {};
   }
   const n = /^(\d\d\d\d)-(\d\d)-(\d\d)$/, s = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   function o(C) {
-    const z = n.exec(C);
-    if (!z)
+    const q = n.exec(C);
+    if (!q)
       return !1;
-    const se = +z[1], O = +z[2], k = +z[3];
+    const se = +q[1], O = +q[2], k = +q[3];
     return O >= 1 && O <= 12 && k >= 1 && k <= (O === 2 && r(se) ? 29 : s[O]);
   }
-  function a(C, z) {
-    if (C && z)
-      return C > z ? 1 : C < z ? -1 : 0;
+  function a(C, q) {
+    if (C && q)
+      return C > q ? 1 : C < q ? -1 : 0;
   }
   const l = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
   function i(C) {
@@ -5384,39 +5384,39 @@ var Ag = Hs.exports, Qs = { exports: {} }, Ql = {};
       return (g === 23 || g === -1) && (b === 59 || b === -1) && D < 61;
     };
   }
-  function d(C, z) {
-    if (!(C && z))
+  function d(C, q) {
+    if (!(C && q))
       return;
-    const se = (/* @__PURE__ */ new Date("2020-01-01T" + C)).valueOf(), O = (/* @__PURE__ */ new Date("2020-01-01T" + z)).valueOf();
+    const se = (/* @__PURE__ */ new Date("2020-01-01T" + C)).valueOf(), O = (/* @__PURE__ */ new Date("2020-01-01T" + q)).valueOf();
     if (se && O)
       return se - O;
   }
-  function u(C, z) {
-    if (!(C && z))
+  function u(C, q) {
+    if (!(C && q))
       return;
-    const se = l.exec(C), O = l.exec(z);
+    const se = l.exec(C), O = l.exec(q);
     if (se && O)
-      return C = se[1] + se[2] + se[3], z = O[1] + O[2] + O[3], C > z ? 1 : C < z ? -1 : 0;
+      return C = se[1] + se[2] + se[3], q = O[1] + O[2] + O[3], C > q ? 1 : C < q ? -1 : 0;
   }
   const h = /t|\s/i;
   function E(C) {
-    const z = i(C);
+    const q = i(C);
     return function(O) {
       const k = O.split(h);
-      return k.length === 2 && o(k[0]) && z(k[1]);
+      return k.length === 2 && o(k[0]) && q(k[1]);
     };
   }
-  function _(C, z) {
-    if (!(C && z))
+  function _(C, q) {
+    if (!(C && q))
       return;
-    const se = new Date(C).valueOf(), O = new Date(z).valueOf();
+    const se = new Date(C).valueOf(), O = new Date(q).valueOf();
     if (se && O)
       return se - O;
   }
-  function v(C, z) {
-    if (!(C && z))
+  function v(C, q) {
+    if (!(C && q))
       return;
-    const [se, O] = C.split(h), [k, F] = z.split(h), D = a(se, k);
+    const [se, O] = C.split(h), [k, F] = q.split(h), D = a(se, k);
     if (D !== void 0)
       return D || d(O, F);
   }
@@ -5851,7 +5851,7 @@ var to = {};
       return S.length > 0 ? this : void 0;
     }
     get names() {
-      return this.nodes.reduce((c, f) => z(c, f.names), {});
+      return this.nodes.reduce((c, f) => q(c, f.names), {});
     }
   }
   class v extends _ {
@@ -5894,7 +5894,7 @@ var to = {};
     }
     get names() {
       const c = super.names;
-      return se(c, this.condition), this.else && z(c, this.else.names), c;
+      return se(c, this.condition), this.else && q(c, this.else.names), c;
     }
   }
   m.kind = "if";
@@ -5913,7 +5913,7 @@ var to = {};
         return this.iteration = O(this.iteration, c, f), this;
     }
     get names() {
-      return z(super.names, this.iteration.names);
+      return q(super.names, this.iteration.names);
     }
   }
   class I extends w {
@@ -5941,7 +5941,7 @@ var to = {};
         return this.iterable = O(this.iterable, c, f), this;
     }
     get names() {
-      return z(super.names, this.iterable.names);
+      return q(super.names, this.iterable.names);
     }
   }
   class V extends v {
@@ -5974,7 +5974,7 @@ var to = {};
     }
     get names() {
       const c = super.names;
-      return this.catch && z(c, this.catch.names), this.finally && z(c, this.finally.names), c;
+      return this.catch && q(c, this.catch.names), this.finally && q(c, this.finally.names), c;
     }
   }
   class ie extends v {
@@ -6203,13 +6203,13 @@ var to = {};
     }
   }
   e.CodeGen = C;
-  function z(g, c) {
+  function q(g, c) {
     for (const f in c)
       g[f] = (g[f] || 0) + (c[f] || 0);
     return g;
   }
   function se(g, c) {
-    return c instanceof t._CodeOrName ? z(g, c.names) : g;
+    return c instanceof t._CodeOrName ? q(g, c.names) : g;
   }
   function O(g, c, f) {
     if (g instanceof t.Name)
@@ -7751,7 +7751,7 @@ Ra.default = Au;
     constructor(p = {}) {
       this.schemas = {}, this.refs = {}, this.formats = {}, this._compilations = /* @__PURE__ */ new Set(), this._loading = {}, this._cache = /* @__PURE__ */ new Map(), p = this.opts = { ...p, ...P(p) };
       const { es5: b, lines: g } = this.opts.code;
-      this.scope = new l.ValueScope({ scope: {}, prefixes: y, es5: b, lines: g }), this.logger = z(p.logger);
+      this.scope = new l.ValueScope({ scope: {}, prefixes: y, es5: b, lines: g }), this.logger = q(p.logger);
       const c = p.validateFormats;
       p.validateFormats = !1, this.RULES = (0, o.getRules)(), R.call(this, $, p, "NOT SUPPORTED"), R.call(this, m, p, "DEPRECATED", "warn"), this._metaOpts = ae.call(this), p.formats && Y.call(this), this._addVocabularies(), this._addDefaultMetaSchema(), p.keywords && ie.call(this, p.keywords), typeof p.meta == "object" && this.addMetaSchema(p.meta), W.call(this), p.validateFormats = c;
     }
@@ -8052,7 +8052,7 @@ Ra.default = Au;
   }, warn() {
   }, error() {
   } };
-  function z(N) {
+  function q(N) {
     if (N === !1)
       return C;
     if (N === void 0)
@@ -10068,7 +10068,7 @@ function Ze() {
       if (K)
         return K;
       const M = this.options.loose, N = M ? i[d.HYPHENRANGELOOSE] : i[d.HYPHENRANGE];
-      k = k.replace(N, z(this.options.includePrerelease)), a("hyphen replace", k), k = k.replace(i[d.COMPARATORTRIM], u), a("comparator trim", k), k = k.replace(i[d.TILDETRIM], h), a("tilde trim", k), k = k.replace(i[d.CARETTRIM], E), a("caret trim", k);
+      k = k.replace(N, q(this.options.includePrerelease)), a("hyphen replace", k), k = k.replace(i[d.COMPARATORTRIM], u), a("comparator trim", k), k = k.replace(i[d.TILDETRIM], h), a("tilde trim", k), k = k.replace(i[d.CARETTRIM], E), a("caret trim", k);
       let p = k.split(" ").map((f) => w(f, this.options)).join(" ").split(/\s+/).map((f) => C(f, this.options));
       M && (p = p.filter((f) => (a("loose invalid filter", f, this.options), !!f.match(i[d.COMPARATORLOOSE])))), a("range list", p);
       const b = /* @__PURE__ */ new Map(), g = p.map((f) => new o(f, this.options));
@@ -10139,7 +10139,7 @@ function Ze() {
       const g = P(M), c = g || P(N), f = c || P(p), S = f;
       return K === "=" && S && (K = ""), b = k.includePrerelease ? "-0" : "", g ? K === ">" || K === "<" ? D = "<0.0.0-0" : D = "*" : K && S ? (c && (N = 0), p = 0, K === ">" ? (K = ">=", c ? (M = +M + 1, N = 0, p = 0) : (N = +N + 1, p = 0)) : K === "<=" && (K = "<", c ? M = +M + 1 : N = +N + 1), K === "<" && (b = "-0"), D = `${K + M}.${N}.${p}${b}`) : c ? D = `>=${M}.0.0${b} <${+M + 1}.0.0-0` : f && (D = `>=${M}.${N}.0${b} <${M}.${+N + 1}.0-0`), a("xRange return", D), D;
     });
-  }, ae = (O, k) => (a("replaceStars", O, k), O.trim().replace(i[d.STAR], "")), C = (O, k) => (a("replaceGTE0", O, k), O.trim().replace(i[k.includePrerelease ? d.GTE0PRE : d.GTE0], "")), z = (O) => (k, F, D, K, M, N, p, b, g, c, f, S) => (P(D) ? F = "" : P(K) ? F = `>=${D}.0.0${O ? "-0" : ""}` : P(M) ? F = `>=${D}.${K}.0${O ? "-0" : ""}` : N ? F = `>=${F}` : F = `>=${F}${O ? "-0" : ""}`, P(g) ? b = "" : P(c) ? b = `<${+g + 1}.0.0-0` : P(f) ? b = `<${g}.${+c + 1}.0-0` : S ? b = `<=${g}.${c}.${f}-${S}` : O ? b = `<${g}.${c}.${+f + 1}-0` : b = `<=${b}`, `${F} ${b}`.trim()), se = (O, k, F) => {
+  }, ae = (O, k) => (a("replaceStars", O, k), O.trim().replace(i[d.STAR], "")), C = (O, k) => (a("replaceGTE0", O, k), O.trim().replace(i[k.includePrerelease ? d.GTE0PRE : d.GTE0], "")), q = (O) => (k, F, D, K, M, N, p, b, g, c, f, S) => (P(D) ? F = "" : P(K) ? F = `>=${D}.0.0${O ? "-0" : ""}` : P(M) ? F = `>=${D}.${K}.0${O ? "-0" : ""}` : N ? F = `>=${F}` : F = `>=${F}${O ? "-0" : ""}`, P(g) ? b = "" : P(c) ? b = `<${+g + 1}.0.0-0` : P(f) ? b = `<${g}.${+c + 1}.0-0` : S ? b = `<=${g}.${c}.${f}-${S}` : O ? b = `<${g}.${c}.${+f + 1}-0` : b = `<=${b}`, `${F} ${b}`.trim()), se = (O, k, F) => {
     for (let D = 0; D < O.length; D++)
       if (!O[D].test(k))
         return !1;
@@ -10556,7 +10556,7 @@ class ob {
       ...r.defaults
     }), r.serialize && (this._serialize = r.serialize), r.deserialize && (this._deserialize = r.deserialize), this.events = new EventTarget(), Mr(this, it, r.encryptionKey);
     const n = r.fileExtension ? `.${r.fileExtension}` : "";
-    this.path = q.resolve(r.cwd, `${r.configName ?? "config"}${n}`);
+    this.path = z.resolve(r.cwd, `${r.configName ?? "config"}${n}`);
     const s = this.store, o = Object.assign(dr(), r.defaults, s);
     if (r.migrations) {
       if (!r.projectVersion)
@@ -10706,7 +10706,7 @@ class ob {
     throw new Error("Config schema violation: " + n.join("; "));
   }
   _ensureDirectory() {
-    ee.mkdirSync(q.dirname(this.path), { recursive: !0 });
+    ee.mkdirSync(z.dirname(this.path), { recursive: !0 });
   }
   _write(t) {
     let r = this._serialize(t);
@@ -10796,7 +10796,7 @@ class ib extends ob {
     t = {
       name: "config",
       ...t
-    }, t.projectVersion || (t.projectVersion = n), t.cwd ? t.cwd = q.isAbsolute(t.cwd) ? t.cwd : q.join(r, t.cwd) : t.cwd = r, t.configName = t.name, delete t.name, super(t);
+    }, t.projectVersion || (t.projectVersion = n), t.cwd ? t.cwd = z.isAbsolute(t.cwd) ? t.cwd : z.join(r, t.cwd) : t.cwd = r, t.configName = t.name, delete t.name, super(t);
   }
   static initRenderer() {
     Bc();
@@ -10820,7 +10820,7 @@ function ed(e) {
   for (; a < n + r; ) {
     if (e.readUInt32LE(a) !== Zu)
       throw new Error("Invalid central directory signature");
-    const d = e.readUInt16LE(a + 4), u = e.readUInt16LE(a + 6), h = e.readUInt16LE(a + 8), E = e.readUInt16LE(a + 10), _ = e.readUInt16LE(a + 12), v = e.readUInt16LE(a + 14), y = e.readUInt32LE(a + 16), $ = e.readUInt32LE(a + 20), m = e.readUInt32LE(a + 24), w = e.readUInt16LE(a + 28), P = e.readUInt16LE(a + 30), I = e.readUInt16LE(a + 32), R = e.readUInt16LE(a + 34), V = e.readUInt16LE(a + 36), W = e.readUInt32LE(a + 38), Y = e.readUInt32LE(a + 42), ie = a + 46, ae = ie + w, C = e.slice(ie, ae).toString("utf8"), z = ae, se = z + P, O = e.slice(z, se), k = se, F = k + I, D = e.slice(k, F);
+    const d = e.readUInt16LE(a + 4), u = e.readUInt16LE(a + 6), h = e.readUInt16LE(a + 8), E = e.readUInt16LE(a + 10), _ = e.readUInt16LE(a + 12), v = e.readUInt16LE(a + 14), y = e.readUInt32LE(a + 16), $ = e.readUInt32LE(a + 20), m = e.readUInt32LE(a + 24), w = e.readUInt16LE(a + 28), P = e.readUInt16LE(a + 30), I = e.readUInt16LE(a + 32), R = e.readUInt16LE(a + 34), V = e.readUInt16LE(a + 36), W = e.readUInt32LE(a + 38), Y = e.readUInt32LE(a + 42), ie = a + 46, ae = ie + w, C = e.slice(ie, ae).toString("utf8"), q = ae, se = q + P, O = e.slice(q, se), k = se, F = k + I, D = e.slice(k, F);
     if (e.readUInt32LE(Y) !== Yu)
       throw new Error(`Invalid local header signature for ${C}`);
     const M = e.readUInt16LE(Y + 26), N = e.readUInt16LE(Y + 28), p = Y + 30 + M + N, b = p + $, g = e.slice(p, b), c = e.slice(
@@ -10973,12 +10973,12 @@ function pb(e, t, r) {
             ae && ie.add(ae);
             const C = ae.replace(/[()]/g, "").trim();
             if (C && ie.add(C), ae.startsWith("(") && ae.endsWith(")")) {
-              const z = ae.slice(1, -1).trim();
-              z && ie.add(z);
+              const q = ae.slice(1, -1).trim();
+              q && ie.add(q);
             }
-            for (const z of ie)
-              if (cb.call(r, z))
-                return r[z];
+            for (const q of ie)
+              if (cb.call(r, q))
+                return r[q];
           }, V = I ?? (w === 1 ? "SFC" : void 0), W = R(V);
           if (V && W !== void 0) {
             const Y = { ...E }, ie = Gs(Y);
@@ -10986,8 +10986,8 @@ function pb(e, t, r) {
             if (!sd(W))
               ae = `<c${ie ? ` ${ie}` : ""}/>`;
             else {
-              const C = `${W}`, z = Number(C);
-              if (C.trim().length > 0 && !Number.isNaN(z)) {
+              const C = `${W}`, q = Number(C);
+              if (C.trim().length > 0 && !Number.isNaN(q)) {
                 delete Y.t;
                 const O = Gs(Y);
                 ae = `<c${O ? ` ${O}` : ""}><v>${C}</v></c>`;
@@ -11059,11 +11059,11 @@ function gb(e, t, r) {
     u
   );
   if (h === d)
-    return;
+    return u;
   const E = Buffer.from(h, "utf8"), _ = fb(E, o.compressionMethod);
   o.compressedData = _, o.compressedSize = _.length, o.uncompressedSize = E.length, o.crc32 = ub(E);
   const v = $b(s), y = `${e}.tmp`;
-  ce.writeFileSync(y, v), ce.renameSync(y, e);
+  return ce.writeFileSync(y, v), ce.renameSync(y, e), u;
 }
 function _b(e, t = "xl/worksheets/sheet1.xml") {
   if (!ce.existsSync(e))
@@ -11109,15 +11109,15 @@ function vb(e) {
   return t;
 }
 md(import.meta.url);
-const ws = q.dirname(pd(import.meta.url));
-process.env.APP_ROOT = q.join(ws, "..");
-const fo = process.env.VITE_DEV_SERVER_URL, Xb = q.join(process.env.APP_ROOT, "dist-electron"), qn = q.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = fo ? q.join(process.env.APP_ROOT, "public") : qn;
+const ws = z.dirname(pd(import.meta.url));
+process.env.APP_ROOT = z.join(ws, "..");
+const fo = process.env.VITE_DEV_SERVER_URL, Xb = z.join(process.env.APP_ROOT, "dist-electron"), qn = z.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = fo ? z.join(process.env.APP_ROOT, "public") : qn;
 function wb() {
-  return er.isPackaged ? q.join(process.resourcesPath, "third-party") : q.join(ws, "..", "third-party");
+  return er.isPackaged ? z.join(process.resourcesPath, "third-party") : z.join(ws, "..", "third-party");
 }
 function fn() {
-  return er.isPackaged ? q.join(process.resourcesPath, "output") : q.join(ws, "..", "output");
+  return er.isPackaged ? z.join(process.resourcesPath, "output") : z.join(ws, "..", "output");
 }
 function Wc(e) {
   ce.existsSync(e) || ce.mkdirSync(e, { recursive: !0 });
@@ -11138,14 +11138,14 @@ function Eb(e = "Asia/Seoul") {
 function ad(e, t) {
   const r = (o) => {
     if (!o) return null;
-    const a = q.join(e, o);
+    const a = z.join(e, o);
     return ce.existsSync(a) && ce.statSync(a).isDirectory() ? { dir: a, date: o } : null;
   }, n = od(t), s = r(n);
   if (s)
     return s;
   try {
     const a = ce.readdirSync(e, { withFileTypes: !0 }).filter((l) => l.isDirectory() && /^\d{8}$/.test(l.name)).map((l) => l.name).sort().at(-1) ?? null;
-    return a ? { dir: q.join(e, a), date: a } : null;
+    return a ? { dir: z.join(e, a), date: a } : null;
   } catch (o) {
     return console.error("Failed to resolve output directory", e, o), null;
   }
@@ -11243,13 +11243,13 @@ function Pb(e) {
   }
 }
 function cd(e) {
-  const t = q.join(e, "Output_Total.xlsx");
+  const t = z.join(e, "Output_Total.xlsx");
   if (ce.existsSync(t)) {
     const n = Pb(t);
     if (n.length > 0)
       return n;
   }
-  const r = q.join(e, "Output_Total.csv");
+  const r = z.join(e, "Output_Total.csv");
   return ce.existsSync(r) ? bb(r) : [];
 }
 const Nb = /* @__PURE__ */ new Set([
@@ -11297,7 +11297,7 @@ function Xc(e) {
   return t;
 }
 function Ib(e) {
-  const t = q.join(e, "Output_EE2.csv"), r = q.join(e, "Output_EE3.csv"), n = q.join(e, "Output_EE1.csv"), s = {}, o = Ks(t);
+  const t = z.join(e, "Output_EE2.csv"), r = z.join(e, "Output_EE3.csv"), n = z.join(e, "Output_EE1.csv"), s = {}, o = Ks(t);
   for (const i of o) {
     const d = Object.entries(i);
     if (d.length === 0) continue;
@@ -11312,7 +11312,7 @@ function Ib(e) {
   return { report: s, cashflow: a, coefficients: l };
 }
 pt.handle("run-exe", async (e, t) => {
-  const r = wb(), n = q.join(r, "MHySIM_HRS_Run.exe");
+  const r = wb(), n = z.join(r, "MHySIM_HRS_Run.exe");
   if (!ce.existsSync(n)) {
     const v = `실행 파일을 찾을 수 없습니다:
 ` + n + `
@@ -11322,36 +11322,45 @@ pt.handle("run-exe", async (e, t) => {
   }
   const s = Eb(), o = fn();
   Wc(o);
-  const a = q.join(o, s);
+  const a = z.join(o, s);
   Wc(a);
   const l = a, i = (t == null ? void 0 : t.skipExe) ?? !1, d = s, u = ce.readdirSync(l).filter((v) => /^Output_\d+\.csv$/i.test(v));
   for (const v of u) {
-    const y = q.extname(v), $ = q.basename(v, y);
+    const y = z.extname(v), $ = z.basename(v, y);
     let m = 1, w = `${$}-${m}${y}`;
-    for (; ce.existsSync(q.join(l, w)); )
+    for (; ce.existsSync(z.join(l, w)); )
       m++, w = `${$}-${m}${y}`;
     ce.renameSync(
-      q.join(l, v),
-      q.join(l, w)
+      z.join(l, v),
+      z.join(l, w)
     ), console.log(`📁 백업됨: ${v} → ${w}`);
   }
   try {
     const v = (t == null ? void 0 : t.values) ?? {}, y = (t == null ? void 0 : t.sfc) ?? null;
     if (Object.keys(v).length > 0 || y) {
-      const m = vb(r);
-      gb(m, v, y);
+      const m = vb(r), w = gb(m, v, y);
       try {
-        const w = q.join(l, "Input_Total.xlsx");
-        ce.copyFileSync(m, w), console.log("📄 Input_Total.xlsx copied to", w);
-      } catch (w) {
-        console.error("⚠️ Failed to copy Input_Total workbook", w);
+        const P = z.join(l, "Input_Total.xlsx");
+        ce.copyFileSync(m, P), console.log("📄 Input_Total.xlsx copied to", P);
+      } catch (P) {
+        console.error("⚠️ Failed to copy Input_Total workbook", P);
+      }
+      try {
+        const P = {
+          sfc: y,
+          values: w,
+          generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+        }, I = z.join(l, "input_total.json");
+        ce.writeFileSync(I, JSON.stringify(P, null, 2), "utf8"), console.log("📝 input_total.json written to", I);
+      } catch (P) {
+        console.error("⚠️ Failed to write input_total.json", P);
       }
     }
   } catch (v) {
     throw console.error("❌ Excel 업데이트 실패:", v), v;
   }
   try {
-    const v = q.join(l, "MHySIM.log");
+    const v = z.join(l, "MHySIM.log");
     ce.existsSync(v) && ce.writeFileSync(v, "");
   } catch (v) {
     console.warn("⚠️ 진행 로그 초기화 실패", v);
@@ -11395,7 +11404,7 @@ pt.handle(
 pt.handle(
   "read-progress-log",
   async (e, t) => {
-    const r = fn(), n = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, ""), o = od((t == null ? void 0 : t.date) ?? null) ?? n, a = q.join(r, o), l = q.join(a, "MHySIM.log");
+    const r = fn(), n = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, ""), o = od((t == null ? void 0 : t.date) ?? null) ?? n, a = z.join(r, o), l = z.join(a, "MHySIM.log");
     if (!ce.existsSync(l))
       return {
         date: o,
@@ -11430,7 +11439,7 @@ pt.handle("read-recent-logs", async () => {
   for (let n = 0; n < 5; n += 1) {
     const s = new Date(r);
     s.setDate(r.getDate() - n);
-    const o = Rb(s), a = o.replace(/-/g, ""), l = q.join(e, a, "MHySIM.jsonl");
+    const o = Rb(s), a = o.replace(/-/g, ""), l = z.join(e, a, "MHySIM.jsonl");
     let i = [];
     if (ce.existsSync(l))
       try {
@@ -11490,7 +11499,7 @@ pt.handle("electron-store-delete", (e, t) => {
   mi.delete(t);
 });
 pt.on("save-project-backup", (e, t, r) => {
-  const n = q.join(er.getPath("userData"), `${r}.json`);
+  const n = z.join(er.getPath("userData"), `${r}.json`);
   try {
     ce.writeFileSync(n, JSON.stringify(t, null, 2), "utf-8"), console.log("✅ 프로젝트 백업 저장 완료:", n);
   } catch (s) {
@@ -11500,13 +11509,13 @@ pt.on("save-project-backup", (e, t, r) => {
 let bt;
 function ud() {
   bt = new xc({
-    icon: q.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: z.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: q.join(ws, "preload.mjs")
+      preload: z.join(ws, "preload.mjs")
     }
   }), bt.webContents.on("did-finish-load", () => {
     bt == null || bt.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), fo ? bt.loadURL(fo) : (console.log("RENDERER_DIST:", qn), console.log("index.html path:", q.join(qn, "index.html")), bt.loadFile(q.join(qn, "index.html")));
+  }), fo ? bt.loadURL(fo) : (console.log("RENDERER_DIST:", qn), console.log("index.html path:", z.join(qn, "index.html")), bt.loadFile(z.join(qn, "index.html")));
 }
 er.on("window-all-closed", () => {
   process.platform !== "darwin" && (er.quit(), bt = null);
