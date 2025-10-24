@@ -115,6 +115,40 @@ const applyScenarioDefaults = (
 	}
 };
 
+const synchronizeAliasValues = (values: Record<string, string>) => {
+	const groups = new Map<
+		string,
+		{ keys: string[]; preferredValue: string | null }
+	>();
+
+	for (const [key, rawValue] of Object.entries(values)) {
+		const canonical = key.replace(/[()]/g, "").trim() || key;
+		let group = groups.get(canonical);
+		if (!group) {
+			group = { keys: [], preferredValue: null };
+			groups.set(canonical, group);
+		}
+		group.keys.push(key);
+		if (hasValue(rawValue)) {
+			const trimmedKey = key.trim();
+			const isParenthetical =
+				trimmedKey.startsWith("(") && trimmedKey.endsWith(")");
+			if (isParenthetical) {
+				group.preferredValue = `${rawValue}`;
+			} else if (group.preferredValue === null) {
+				group.preferredValue = `${rawValue}`;
+			}
+		}
+	}
+
+	for (const { keys, preferredValue } of groups.values()) {
+		if (!hasValue(preferredValue)) continue;
+		for (const key of keys) {
+			values[key] = preferredValue as string;
+		}
+	}
+};
+
 export const collectScenarioInputValues = (
 	scenario: ScenarioInterface | null,
 ): { sfc: string | null; values: Record<string, string> } | null => {
@@ -130,6 +164,7 @@ export const collectScenarioInputValues = (
 	}
 
 	applyScenarioDefaults(scenario, values);
+	synchronizeAliasValues(values);
 
 	const sfc = scenario.sfcName ?? scenario.id ?? null;
 	if (sfc) {
