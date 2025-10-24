@@ -20,6 +20,16 @@ export function generateCustomId(keyword: string): string {
 	return `${keyword}_${randomString}_${formattedDate}`;
 }
 
+export function getTodayKey(timeZone = "Asia/Seoul"): string {
+	const formatter = new Intl.DateTimeFormat("en-CA", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		timeZone,
+	});
+	return formatter.format(new Date()).replace(/-/g, "");
+}
+
 export function saveLocalStore(key: string, data: unknown): void {
 	window.electronStore.set(key, data);
 }

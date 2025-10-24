@@ -23,6 +23,7 @@ import {
 
 import { parseExecutionLog } from "@/lib/executionProgress";
 import { collectScenarioInputValues } from "@/lib/simulation";
+import { getTodayKey } from "@/lib/utils";
 import useExecutionProgressStore from "@/store/useExecutionProgressStore";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -182,7 +183,7 @@ const BaseHeader = () => {
 			return;
 		}
 
-		const todayKey = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+		const todayKey = getTodayKey();
 		progressDateRef.current = todayKey;
 		clearProgressTimers();
 		resetProgress();

@@ -15524,7 +15524,8 @@ function updateSheetXml(sheetXml, sharedStrings, values) {
       if (match) {
         const column = match[1];
         const row = parseInt(match[2], 10);
-        if (column === "A") {
+        const columnIndex = columnLabelToIndex(column);
+        if (columnIndex === 0) {
           const valueMatch = inner.match(/<v>([\s\S]*?)<\/v>/);
           if (valueMatch) {
             const index = Number.parseInt(valueMatch[1], 10);
@@ -15533,8 +15534,7 @@ function updateSheetXml(sheetXml, sharedStrings, values) {
               rowKeyMap.set(row, key);
             }
           }
-        }
-        if (column === "B") {
+        } else if (columnIndex === 1) {
           const key = rowKeyMap.get(row);
           const lookupKey = key ?? (row === 1 ? "SFC" : void 0);
           if (lookupKey && hasOwn.call(values, lookupKey)) {
@@ -15560,6 +15560,8 @@ function updateSheetXml(sheetXml, sharedStrings, values) {
             }
             replacements.push({ start, end: fullEnd, text: replacement });
           }
+        } else {
+          replacements.push({ start, end: fullEnd, text: "" });
         }
       }
     }
@@ -15761,6 +15763,81 @@ function ensureInputTotalWorkbook(baseDir) {
   }
   return workbookPath;
 }
+function updateEntryXml(entry, xml) {
+  const buffer = Buffer.from(xml, "utf8");
+  const compressed = deflateBuffer(buffer, entry.compressionMethod);
+  entry.compressedData = compressed;
+  entry.compressedSize = compressed.length;
+  entry.uncompressedSize = buffer.length;
+  entry.crc32 = crc32(buffer);
+}
+function removeWorksheetByName(parsed, sheetName) {
+  const workbookEntry = parsed.entryMap.get("xl/workbook.xml");
+  if (!workbookEntry) {
+    return;
+  }
+  const workbookXml = inflateEntry(workbookEntry).toString("utf8");
+  const sheetRegex = new RegExp(
+    `<sheet[^>]*name="${sheetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
+    "i"
+  );
+  const sheetMatch = workbookXml.match(sheetRegex);
+  if (!sheetMatch) {
+    return;
+  }
+  const sheetTag = sheetMatch[0];
+  const attrRaw = sheetTag.replace(/^<sheet\s*/i, "").replace(/\s*\/?\>$/i, "").trim();
+  const sheetAttrs = parseAttributes(attrRaw);
+  const relId = sheetAttrs["r:id"];
+  let updatedWorkbookXml = workbookXml.replace(sheetTag, "");
+  updatedWorkbookXml = updatedWorkbookXml.replace(/\n\s*\n+/g, "\n");
+  updateEntryXml(workbookEntry, updatedWorkbookXml);
+  let worksheetTargetPath = null;
+  if (relId) {
+    const relEntry = parsed.entryMap.get("xl/_rels/workbook.xml.rels");
+    if (relEntry) {
+      const relXml = inflateEntry(relEntry).toString("utf8");
+      const relRegex = new RegExp(
+        `<Relationship[^>]*Id="${relId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
+        "i"
+      );
+      const relMatch = relXml.match(relRegex);
+      if (relMatch) {
+        const relAttrRaw = relMatch[0].replace(/^<Relationship\s*/i, "").replace(/\s*\/?\>$/i, "").trim();
+        const relAttrs = parseAttributes(relAttrRaw);
+        worksheetTargetPath = relAttrs.Target ? relAttrs.Target.replace(/^\//, "") : null;
+        const updatedRelXml = relXml.replace(relMatch[0], "");
+        updateEntryXml(relEntry, updatedRelXml);
+      }
+    }
+  }
+  if (worksheetTargetPath) {
+    let normalizedPath = worksheetTargetPath.replace(/\\/g, "/");
+    if (!normalizedPath.startsWith("xl/")) {
+      normalizedPath = path$1.posix.join("xl", normalizedPath);
+    }
+    normalizedPath = path$1.posix.normalize(normalizedPath);
+    parsed.entryMap.delete(normalizedPath);
+    const index = parsed.entries.findIndex(
+      (entry) => entry.fileName === normalizedPath
+    );
+    if (index >= 0) {
+      parsed.entries.splice(index, 1);
+    }
+  }
+}
+function copyWorkbookWithoutSheet(sourcePath, destinationPath, sheetName = "Meta") {
+  if (!fs$1.existsSync(sourcePath)) {
+    throw new Error(`Workbook not found: ${sourcePath}`);
+  }
+  const buffer = fs$1.readFileSync(sourcePath);
+  const parsed = parseZip(buffer);
+  removeWorksheetByName(parsed, sheetName);
+  const rebuilt = rebuildZip(parsed);
+  const tempPath = `${destinationPath}.tmp`;
+  fs$1.writeFileSync(tempPath, rebuilt);
+  fs$1.renameSync(tempPath, destinationPath);
+}
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -15781,6 +15858,15 @@ function normalizeOutputDate(input) {
   if (!input) return null;
   const digits2 = input.replace(/[^0-9]/g, "");
   return digits2.length === 8 ? digits2 : null;
+}
+function formatOutputDateKey(timeZone = "Asia/Seoul") {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  return formatter.format(/* @__PURE__ */ new Date()).replace(/-/g, "");
 }
 function resolveOutputDirectory(baseOutputDir, requestedDate) {
   const tryResolve = (date) => {
@@ -16035,7 +16121,7 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
     dialog.showErrorBox("Executable missing", msg);
     throw new Error(msg);
   }
-  const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replace(/-/g, "");
+  const today = formatOutputDateKey();
   const baseOutputDir = getBaseOutputDir();
   console.log(baseOutputDir, "baseOutputDir");
   ensureDir(baseOutputDir);
@@ -16070,7 +16156,7 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
       updateInputTotalWorkbook(workbookPath, values, sfc);
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
-        fs$1.copyFileSync(workbookPath, targetWorkbookPath);
+        copyWorkbookWithoutSheet(workbookPath, targetWorkbookPath, "Meta");
         console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
       } catch (copyError) {
         console.error("⚠️ Failed to copy Input_Total workbook", copyError);

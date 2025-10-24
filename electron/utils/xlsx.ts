@@ -321,8 +321,9 @@ function updateSheetXml(
       if (match) {
         const column = match[1];
         const row = parseInt(match[2], 10);
+        const columnIndex = columnLabelToIndex(column);
 
-        if (column === "A") {
+        if (columnIndex === 0) {
           const valueMatch = inner.match(/<v>([\s\S]*?)<\/v>/);
           if (valueMatch) {
             const index = Number.parseInt(valueMatch[1], 10);
@@ -331,9 +332,7 @@ function updateSheetXml(
               rowKeyMap.set(row, key);
             }
           }
-        }
-
-        if (column === "B") {
+        } else if (columnIndex === 1) {
           const key = rowKeyMap.get(row);
           const lookupKey = key ?? (row === 1 ? "SFC" : undefined);
           if (lookupKey && hasOwn.call(values, lookupKey)) {
@@ -367,6 +366,9 @@ function updateSheetXml(
 
             replacements.push({ start, end: fullEnd, text: replacement });
           }
+        } else {
+          // Drop any cells beyond column B so they are not surfaced to the executable
+          replacements.push({ start, end: fullEnd, text: "" });
         }
       }
     }
@@ -626,6 +628,105 @@ export function ensureInputTotalWorkbook(baseDir: string): string {
     fs.copyFileSync(templatePath, workbookPath);
   }
   return workbookPath;
+}
+
+function updateEntryXml(entry: ZipEntry, xml: string) {
+  const buffer = Buffer.from(xml, "utf8");
+  const compressed = deflateBuffer(buffer, entry.compressionMethod);
+  entry.compressedData = compressed;
+  entry.compressedSize = compressed.length;
+  entry.uncompressedSize = buffer.length;
+  entry.crc32 = crc32(buffer);
+}
+
+function removeWorksheetByName(parsed: ParsedZip, sheetName: string) {
+  const workbookEntry = parsed.entryMap.get("xl/workbook.xml");
+  if (!workbookEntry) {
+    return;
+  }
+
+  const workbookXml = inflateEntry(workbookEntry).toString("utf8");
+  const sheetRegex = new RegExp(
+    `<sheet[^>]*name="${sheetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
+    "i"
+  );
+  const sheetMatch = workbookXml.match(sheetRegex);
+  if (!sheetMatch) {
+    return;
+  }
+
+  const sheetTag = sheetMatch[0];
+  const attrRaw = sheetTag
+    .replace(/^<sheet\s*/i, "")
+    .replace(/\s*\/?\>$/i, "")
+    .trim();
+  const sheetAttrs = parseAttributes(attrRaw);
+  const relId = sheetAttrs["r:id"];
+
+  let updatedWorkbookXml = workbookXml.replace(sheetTag, "");
+  updatedWorkbookXml = updatedWorkbookXml.replace(/\n\s*\n+/g, "\n");
+  updateEntryXml(workbookEntry, updatedWorkbookXml);
+
+  let worksheetTargetPath: string | null = null;
+
+  if (relId) {
+    const relEntry = parsed.entryMap.get("xl/_rels/workbook.xml.rels");
+    if (relEntry) {
+      const relXml = inflateEntry(relEntry).toString("utf8");
+      const relRegex = new RegExp(
+        `<Relationship[^>]*Id="${relId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
+        "i"
+      );
+      const relMatch = relXml.match(relRegex);
+      if (relMatch) {
+        const relAttrRaw = relMatch[0]
+          .replace(/^<Relationship\s*/i, "")
+          .replace(/\s*\/?\>$/i, "")
+          .trim();
+        const relAttrs = parseAttributes(relAttrRaw);
+        worksheetTargetPath = relAttrs.Target
+          ? relAttrs.Target.replace(/^\//, "")
+          : null;
+
+        const updatedRelXml = relXml.replace(relMatch[0], "");
+        updateEntryXml(relEntry, updatedRelXml);
+      }
+    }
+  }
+
+  if (worksheetTargetPath) {
+    let normalizedPath = worksheetTargetPath.replace(/\\/g, "/");
+    if (!normalizedPath.startsWith("xl/")) {
+      normalizedPath = path.posix.join("xl", normalizedPath);
+    }
+    normalizedPath = path.posix.normalize(normalizedPath);
+    parsed.entryMap.delete(normalizedPath);
+    const index = parsed.entries.findIndex(
+      (entry) => entry.fileName === normalizedPath
+    );
+    if (index >= 0) {
+      parsed.entries.splice(index, 1);
+    }
+  }
+}
+
+export function copyWorkbookWithoutSheet(
+  sourcePath: string,
+  destinationPath: string,
+  sheetName = "Meta"
+): void {
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`Workbook not found: ${sourcePath}`);
+  }
+
+  const buffer = fs.readFileSync(sourcePath);
+  const parsed = parseZip(buffer);
+  removeWorksheetByName(parsed, sheetName);
+  const rebuilt = rebuildZip(parsed);
+
+  const tempPath = `${destinationPath}.tmp`;
+  fs.writeFileSync(tempPath, rebuilt);
+  fs.renameSync(tempPath, destinationPath);
 }
 
 export type ScenarioValueMap = Record<string, string>;
