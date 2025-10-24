@@ -3015,9 +3015,9 @@ function commentKeyword$1({ gen, schemaEnv, schema, errSchemaPath, opts }) {
   }
 }
 function returnResults$1(it) {
-  const { gen, schemaEnv, validateName, ValidationError: ValidationError3, opts } = it;
+  const { gen, schemaEnv, validateName, ValidationError: ValidationError2, opts } = it;
   if (schemaEnv.$async) {
-    gen.if((0, codegen_1$X._)`${names_1$d.default.errors} === 0`, () => gen.return(names_1$d.default.data), () => gen.throw((0, codegen_1$X._)`new ${ValidationError3}(${names_1$d.default.vErrors})`));
+    gen.if((0, codegen_1$X._)`${names_1$d.default.errors} === 0`, () => gen.return(names_1$d.default.data), () => gen.throw((0, codegen_1$X._)`new ${ValidationError2}(${names_1$d.default.vErrors})`));
   } else {
     gen.assign((0, codegen_1$X._)`${validateName}.errors`, names_1$d.default.vErrors);
     if (opts.unevaluated)
@@ -3362,14 +3362,14 @@ function getData$1($data, { dataLevel, dataNames, dataPathArr }) {
 validate$1.getData = getData$1;
 var validation_error$1 = {};
 Object.defineProperty(validation_error$1, "__esModule", { value: true });
-let ValidationError$1 = class ValidationError extends Error {
+class ValidationError extends Error {
   constructor(errors2) {
     super("validation failed");
     this.errors = errors2;
     this.ajv = this.validation = true;
   }
-};
-validation_error$1.default = ValidationError$1;
+}
+validation_error$1.default = ValidationError;
 var ref_error$1 = {};
 Object.defineProperty(ref_error$1, "__esModule", { value: true });
 const resolve_1$4 = resolve$4;
@@ -9841,9 +9841,9 @@ function commentKeyword({ gen, schemaEnv, schema, errSchemaPath, opts }) {
   }
 }
 function returnResults(it) {
-  const { gen, schemaEnv, validateName, ValidationError: ValidationError3, opts } = it;
+  const { gen, schemaEnv, validateName, ValidationError: ValidationError2, opts } = it;
   if (schemaEnv.$async) {
-    gen.if((0, codegen_1$n._)`${names_1$3.default.errors} === 0`, () => gen.return(names_1$3.default.data), () => gen.throw((0, codegen_1$n._)`new ${ValidationError3}(${names_1$3.default.vErrors})`));
+    gen.if((0, codegen_1$n._)`${names_1$3.default.errors} === 0`, () => gen.return(names_1$3.default.data), () => gen.throw((0, codegen_1$n._)`new ${ValidationError2}(${names_1$3.default.vErrors})`));
   } else {
     gen.assign((0, codegen_1$n._)`${validateName}.errors`, names_1$3.default.vErrors);
     if (opts.unevaluated)
@@ -10187,15 +10187,21 @@ function getData($data, { dataLevel, dataNames, dataPathArr }) {
 }
 validate.getData = getData;
 var validation_error = {};
-Object.defineProperty(validation_error, "__esModule", { value: true });
-class ValidationError2 extends Error {
-  constructor(errors2) {
-    super("validation failed");
-    this.errors = errors2;
-    this.ajv = this.validation = true;
+var hasRequiredValidation_error;
+function requireValidation_error() {
+  if (hasRequiredValidation_error) return validation_error;
+  hasRequiredValidation_error = 1;
+  Object.defineProperty(validation_error, "__esModule", { value: true });
+  class ValidationError2 extends Error {
+    constructor(errors2) {
+      super("validation failed");
+      this.errors = errors2;
+      this.ajv = this.validation = true;
+    }
   }
+  validation_error.default = ValidationError2;
+  return validation_error;
 }
-validation_error.default = ValidationError2;
 var ref_error = {};
 Object.defineProperty(ref_error, "__esModule", { value: true });
 const resolve_1$1 = resolve$1;
@@ -10211,7 +10217,7 @@ var compile = {};
 Object.defineProperty(compile, "__esModule", { value: true });
 compile.resolveSchema = compile.getCompilingSchema = compile.resolveRef = compile.compileSchema = compile.SchemaEnv = void 0;
 const codegen_1$m = codegen;
-const validation_error_1 = validation_error;
+const validation_error_1 = requireValidation_error();
 const names_1$2 = names$1;
 const resolve_1 = resolve$1;
 const util_1$k = util;
@@ -10484,7 +10490,7 @@ uri$1.default = uri;
   Object.defineProperty(exports, "CodeGen", { enumerable: true, get: function() {
     return codegen_12.CodeGen;
   } });
-  const validation_error_12 = validation_error;
+  const validation_error_12 = requireValidation_error();
   const ref_error_12 = ref_error;
   const rules_12 = rules;
   const compile_12 = compile;
@@ -12937,7 +12943,7 @@ const require$$3 = {
   Object.defineProperty(exports, "CodeGen", { enumerable: true, get: function() {
     return codegen_12.CodeGen;
   } });
-  var validation_error_12 = validation_error;
+  var validation_error_12 = requireValidation_error();
   Object.defineProperty(exports, "ValidationError", { enumerable: true, get: function() {
     return validation_error_12.default;
   } });
@@ -15531,14 +15537,33 @@ function updateSheetXml(sheetXml, sharedStrings, values) {
             const index = Number.parseInt(valueMatch[1], 10);
             const key = sharedStrings[index];
             if (key) {
-              rowKeyMap.set(row, key);
+              rowKeyMap.set(row, key.trim());
             }
           }
         } else if (columnIndex === 1) {
           const key = rowKeyMap.get(row);
+          const resolveValue = (rawKey) => {
+            if (!rawKey) return void 0;
+            const variants = /* @__PURE__ */ new Set();
+            variants.add(rawKey);
+            const trimmedKey = rawKey.trim();
+            if (trimmedKey) variants.add(trimmedKey);
+            const withoutParens = trimmedKey.replace(/[()]/g, "").trim();
+            if (withoutParens) variants.add(withoutParens);
+            if (trimmedKey.startsWith("(") && trimmedKey.endsWith(")")) {
+              const inner2 = trimmedKey.slice(1, -1).trim();
+              if (inner2) variants.add(inner2);
+            }
+            for (const variant of variants) {
+              if (hasOwn.call(values, variant)) {
+                return values[variant];
+              }
+            }
+            return void 0;
+          };
           const lookupKey = key ?? (row === 1 ? "SFC" : void 0);
-          if (lookupKey && hasOwn.call(values, lookupKey)) {
-            const newValue = values[lookupKey];
+          const newValue = resolveValue(lookupKey);
+          if (lookupKey && newValue !== void 0) {
             const attrCopy = { ...attrs };
             const attrString = buildAttributeString(attrCopy);
             let replacement;
@@ -15762,81 +15787,6 @@ function ensureInputTotalWorkbook(baseDir) {
     fs$1.copyFileSync(templatePath, workbookPath);
   }
   return workbookPath;
-}
-function updateEntryXml(entry, xml) {
-  const buffer = Buffer.from(xml, "utf8");
-  const compressed = deflateBuffer(buffer, entry.compressionMethod);
-  entry.compressedData = compressed;
-  entry.compressedSize = compressed.length;
-  entry.uncompressedSize = buffer.length;
-  entry.crc32 = crc32(buffer);
-}
-function removeWorksheetByName(parsed, sheetName) {
-  const workbookEntry = parsed.entryMap.get("xl/workbook.xml");
-  if (!workbookEntry) {
-    return;
-  }
-  const workbookXml = inflateEntry(workbookEntry).toString("utf8");
-  const sheetRegex = new RegExp(
-    `<sheet[^>]*name="${sheetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
-    "i"
-  );
-  const sheetMatch = workbookXml.match(sheetRegex);
-  if (!sheetMatch) {
-    return;
-  }
-  const sheetTag = sheetMatch[0];
-  const attrRaw = sheetTag.replace(/^<sheet\s*/i, "").replace(/\s*\/?\>$/i, "").trim();
-  const sheetAttrs = parseAttributes(attrRaw);
-  const relId = sheetAttrs["r:id"];
-  let updatedWorkbookXml = workbookXml.replace(sheetTag, "");
-  updatedWorkbookXml = updatedWorkbookXml.replace(/\n\s*\n+/g, "\n");
-  updateEntryXml(workbookEntry, updatedWorkbookXml);
-  let worksheetTargetPath = null;
-  if (relId) {
-    const relEntry = parsed.entryMap.get("xl/_rels/workbook.xml.rels");
-    if (relEntry) {
-      const relXml = inflateEntry(relEntry).toString("utf8");
-      const relRegex = new RegExp(
-        `<Relationship[^>]*Id="${relId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*/>`,
-        "i"
-      );
-      const relMatch = relXml.match(relRegex);
-      if (relMatch) {
-        const relAttrRaw = relMatch[0].replace(/^<Relationship\s*/i, "").replace(/\s*\/?\>$/i, "").trim();
-        const relAttrs = parseAttributes(relAttrRaw);
-        worksheetTargetPath = relAttrs.Target ? relAttrs.Target.replace(/^\//, "") : null;
-        const updatedRelXml = relXml.replace(relMatch[0], "");
-        updateEntryXml(relEntry, updatedRelXml);
-      }
-    }
-  }
-  if (worksheetTargetPath) {
-    let normalizedPath = worksheetTargetPath.replace(/\\/g, "/");
-    if (!normalizedPath.startsWith("xl/")) {
-      normalizedPath = path$1.posix.join("xl", normalizedPath);
-    }
-    normalizedPath = path$1.posix.normalize(normalizedPath);
-    parsed.entryMap.delete(normalizedPath);
-    const index = parsed.entries.findIndex(
-      (entry) => entry.fileName === normalizedPath
-    );
-    if (index >= 0) {
-      parsed.entries.splice(index, 1);
-    }
-  }
-}
-function copyWorkbookWithoutSheet(sourcePath, destinationPath, sheetName = "Meta") {
-  if (!fs$1.existsSync(sourcePath)) {
-    throw new Error(`Workbook not found: ${sourcePath}`);
-  }
-  const buffer = fs$1.readFileSync(sourcePath);
-  const parsed = parseZip(buffer);
-  removeWorksheetByName(parsed, sheetName);
-  const rebuilt = rebuildZip(parsed);
-  const tempPath = `${destinationPath}.tmp`;
-  fs$1.writeFileSync(tempPath, rebuilt);
-  fs$1.renameSync(tempPath, destinationPath);
 }
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16156,7 +16106,7 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
       updateInputTotalWorkbook(workbookPath, values, sfc);
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
-        copyWorkbookWithoutSheet(workbookPath, targetWorkbookPath, "Meta");
+        fs$1.copyFileSync(workbookPath, targetWorkbookPath);
         console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
       } catch (copyError) {
         console.error("⚠️ Failed to copy Input_Total workbook", copyError);
