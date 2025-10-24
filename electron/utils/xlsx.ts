@@ -522,7 +522,7 @@ export function updateInputTotalWorkbook(
   workbookPath: string,
   scenarioValues: Record<string, string>,
   sfc?: string | null
-): void {
+): Record<string, string> {
   if (!fs.existsSync(workbookPath)) {
     throw new Error(`Workbook not found: ${workbookPath}`);
   }
@@ -549,7 +549,7 @@ export function updateInputTotalWorkbook(
   );
 
   if (updatedSheetXml === sheetXml) {
-    return;
+    return normalizedValues;
   }
 
   const updatedBuffer = Buffer.from(updatedSheetXml, "utf8");
@@ -563,6 +563,8 @@ export function updateInputTotalWorkbook(
   const tempPath = `${workbookPath}.tmp`;
   fs.writeFileSync(tempPath, rebuilt);
   fs.renameSync(tempPath, workbookPath);
+
+  return normalizedValues;
 }
 
 export function readWorksheetRows(

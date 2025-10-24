@@ -3015,9 +3015,9 @@ function commentKeyword$1({ gen, schemaEnv, schema, errSchemaPath, opts }) {
   }
 }
 function returnResults$1(it) {
-  const { gen, schemaEnv, validateName, ValidationError: ValidationError2, opts } = it;
+  const { gen, schemaEnv, validateName, ValidationError: ValidationError3, opts } = it;
   if (schemaEnv.$async) {
-    gen.if((0, codegen_1$X._)`${names_1$d.default.errors} === 0`, () => gen.return(names_1$d.default.data), () => gen.throw((0, codegen_1$X._)`new ${ValidationError2}(${names_1$d.default.vErrors})`));
+    gen.if((0, codegen_1$X._)`${names_1$d.default.errors} === 0`, () => gen.return(names_1$d.default.data), () => gen.throw((0, codegen_1$X._)`new ${ValidationError3}(${names_1$d.default.vErrors})`));
   } else {
     gen.assign((0, codegen_1$X._)`${validateName}.errors`, names_1$d.default.vErrors);
     if (opts.unevaluated)
@@ -3362,14 +3362,14 @@ function getData$1($data, { dataLevel, dataNames, dataPathArr }) {
 validate$1.getData = getData$1;
 var validation_error$1 = {};
 Object.defineProperty(validation_error$1, "__esModule", { value: true });
-class ValidationError extends Error {
+let ValidationError$1 = class ValidationError extends Error {
   constructor(errors2) {
     super("validation failed");
     this.errors = errors2;
     this.ajv = this.validation = true;
   }
-}
-validation_error$1.default = ValidationError;
+};
+validation_error$1.default = ValidationError$1;
 var ref_error$1 = {};
 Object.defineProperty(ref_error$1, "__esModule", { value: true });
 const resolve_1$4 = resolve$4;
@@ -9841,9 +9841,9 @@ function commentKeyword({ gen, schemaEnv, schema, errSchemaPath, opts }) {
   }
 }
 function returnResults(it) {
-  const { gen, schemaEnv, validateName, ValidationError: ValidationError2, opts } = it;
+  const { gen, schemaEnv, validateName, ValidationError: ValidationError3, opts } = it;
   if (schemaEnv.$async) {
-    gen.if((0, codegen_1$n._)`${names_1$3.default.errors} === 0`, () => gen.return(names_1$3.default.data), () => gen.throw((0, codegen_1$n._)`new ${ValidationError2}(${names_1$3.default.vErrors})`));
+    gen.if((0, codegen_1$n._)`${names_1$3.default.errors} === 0`, () => gen.return(names_1$3.default.data), () => gen.throw((0, codegen_1$n._)`new ${ValidationError3}(${names_1$3.default.vErrors})`));
   } else {
     gen.assign((0, codegen_1$n._)`${validateName}.errors`, names_1$3.default.vErrors);
     if (opts.unevaluated)
@@ -10187,21 +10187,15 @@ function getData($data, { dataLevel, dataNames, dataPathArr }) {
 }
 validate.getData = getData;
 var validation_error = {};
-var hasRequiredValidation_error;
-function requireValidation_error() {
-  if (hasRequiredValidation_error) return validation_error;
-  hasRequiredValidation_error = 1;
-  Object.defineProperty(validation_error, "__esModule", { value: true });
-  class ValidationError2 extends Error {
-    constructor(errors2) {
-      super("validation failed");
-      this.errors = errors2;
-      this.ajv = this.validation = true;
-    }
+Object.defineProperty(validation_error, "__esModule", { value: true });
+class ValidationError2 extends Error {
+  constructor(errors2) {
+    super("validation failed");
+    this.errors = errors2;
+    this.ajv = this.validation = true;
   }
-  validation_error.default = ValidationError2;
-  return validation_error;
 }
+validation_error.default = ValidationError2;
 var ref_error = {};
 Object.defineProperty(ref_error, "__esModule", { value: true });
 const resolve_1$1 = resolve$1;
@@ -10217,7 +10211,7 @@ var compile = {};
 Object.defineProperty(compile, "__esModule", { value: true });
 compile.resolveSchema = compile.getCompilingSchema = compile.resolveRef = compile.compileSchema = compile.SchemaEnv = void 0;
 const codegen_1$m = codegen;
-const validation_error_1 = requireValidation_error();
+const validation_error_1 = validation_error;
 const names_1$2 = names$1;
 const resolve_1 = resolve$1;
 const util_1$k = util;
@@ -10490,7 +10484,7 @@ uri$1.default = uri;
   Object.defineProperty(exports, "CodeGen", { enumerable: true, get: function() {
     return codegen_12.CodeGen;
   } });
-  const validation_error_12 = requireValidation_error();
+  const validation_error_12 = validation_error;
   const ref_error_12 = ref_error;
   const rules_12 = rules;
   const compile_12 = compile;
@@ -12943,7 +12937,7 @@ const require$$3 = {
   Object.defineProperty(exports, "CodeGen", { enumerable: true, get: function() {
     return codegen_12.CodeGen;
   } });
-  var validation_error_12 = requireValidation_error();
+  var validation_error_12 = validation_error;
   Object.defineProperty(exports, "ValidationError", { enumerable: true, get: function() {
     return validation_error_12.default;
   } });
@@ -15710,7 +15704,7 @@ function updateInputTotalWorkbook(workbookPath, scenarioValues, sfc) {
     normalizedValues
   );
   if (updatedSheetXml === sheetXml) {
-    return;
+    return normalizedValues;
   }
   const updatedBuffer = Buffer.from(updatedSheetXml, "utf8");
   const compressed = deflateBuffer(updatedBuffer, sheetEntry.compressionMethod);
@@ -15722,6 +15716,7 @@ function updateInputTotalWorkbook(workbookPath, scenarioValues, sfc) {
   const tempPath = `${workbookPath}.tmp`;
   fs$1.writeFileSync(tempPath, rebuilt);
   fs$1.renameSync(tempPath, workbookPath);
+  return normalizedValues;
 }
 function readWorksheetRows(workbookPath, sheetFile = "xl/worksheets/sheet1.xml") {
   if (!fs$1.existsSync(workbookPath)) {
@@ -16103,13 +16098,25 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
     if (Object.keys(values).length > 0 || sfc) {
       const workbookBaseDir = thirdPartyDir;
       const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
-      updateInputTotalWorkbook(workbookPath, values, sfc);
+      const normalizedValues = updateInputTotalWorkbook(workbookPath, values, sfc);
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
         fs$1.copyFileSync(workbookPath, targetWorkbookPath);
         console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
       } catch (copyError) {
         console.error("⚠️ Failed to copy Input_Total workbook", copyError);
+      }
+      try {
+        const jsonPayload = {
+          sfc,
+          values: normalizedValues,
+          generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const jsonPath = path.join(workingDir, "input_total.json");
+        fs$1.writeFileSync(jsonPath, JSON.stringify(jsonPayload, null, 2), "utf8");
+        console.log("📝 input_total.json written to", jsonPath);
+      } catch (jsonError) {
+        console.error("⚠️ Failed to write input_total.json", jsonError);
       }
     }
   } catch (error2) {
