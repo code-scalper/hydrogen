@@ -10,7 +10,6 @@ import {
   ensureInputTotalWorkbook,
   updateInputTotalWorkbook,
   readWorksheetRows,
-  copyWorkbookWithoutSheet,
 } from "./utils/xlsx";
 
 //
@@ -453,7 +452,7 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
       updateInputTotalWorkbook(workbookPath, values, sfc);
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
-        copyWorkbookWithoutSheet(workbookPath, targetWorkbookPath, "Meta");
+        fs.copyFileSync(workbookPath, targetWorkbookPath);
         console.log("📄 Input_Total.xlsx copied to", targetWorkbookPath);
       } catch (copyError) {
         console.error("⚠️ Failed to copy Input_Total workbook", copyError);

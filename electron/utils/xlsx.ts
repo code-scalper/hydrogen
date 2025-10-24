@@ -329,14 +329,34 @@ function updateSheetXml(
             const index = Number.parseInt(valueMatch[1], 10);
             const key = sharedStrings[index];
             if (key) {
-              rowKeyMap.set(row, key);
+              rowKeyMap.set(row, key.trim());
             }
           }
         } else if (columnIndex === 1) {
           const key = rowKeyMap.get(row);
+          const resolveValue = (rawKey?: string) => {
+            if (!rawKey) return undefined;
+            const variants = new Set<string>();
+            variants.add(rawKey);
+            const trimmedKey = rawKey.trim();
+            if (trimmedKey) variants.add(trimmedKey);
+            const withoutParens = trimmedKey.replace(/[()]/g, "").trim();
+            if (withoutParens) variants.add(withoutParens);
+            if (trimmedKey.startsWith("(") && trimmedKey.endsWith(")")) {
+              const inner = trimmedKey.slice(1, -1).trim();
+              if (inner) variants.add(inner);
+            }
+            for (const variant of variants) {
+              if (hasOwn.call(values, variant)) {
+                return values[variant];
+              }
+            }
+            return undefined;
+          };
+
           const lookupKey = key ?? (row === 1 ? "SFC" : undefined);
-          if (lookupKey && hasOwn.call(values, lookupKey)) {
-            const newValue = values[lookupKey];
+          const newValue = resolveValue(lookupKey);
+          if (lookupKey && newValue !== undefined) {
             const attrCopy = { ...attrs };
             const attrString = buildAttributeString(attrCopy);
 

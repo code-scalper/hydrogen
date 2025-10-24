@@ -1,3 +1,4 @@
+import { DEFAULT_SCENARIO_VALUES } from "@/constants/defaultValue";
 import type {
 	DeviceInterface,
 	DeviceProperty,
@@ -67,6 +68,53 @@ const extractScenarioBaseValues = (
 	}
 };
 
+const resolveScenarioDefaults = (
+	scenario: ScenarioInterface,
+): Record<string, number | string | boolean> => {
+	const sfc = scenario.sfcName;
+	if (!sfc) return {};
+	const scenarioKey = `SFC${sfc}` as keyof typeof DEFAULT_SCENARIO_VALUES;
+	const entry = DEFAULT_SCENARIO_VALUES[scenarioKey];
+	if (!entry) return {};
+	const optionKey = scenario.optionKey as keyof typeof entry | undefined;
+	if (optionKey) {
+		const variant = entry[optionKey];
+		if (variant) {
+			return variant;
+		}
+	}
+	return entry.type1 ?? {};
+};
+
+const applyScenarioDefaults = (
+	scenario: ScenarioInterface,
+	accumulator: Record<string, string>,
+) => {
+	const defaults = resolveScenarioDefaults(scenario);
+	const addVariant = (key: string | undefined, value: string) => {
+		if (!key) return;
+		const variants = new Set<string>();
+		variants.add(key);
+		const trimmed = key.trim();
+		if (trimmed && trimmed !== key) variants.add(trimmed);
+		const withoutParens = trimmed.replace(/[()]/g, "").trim();
+		if (withoutParens) variants.add(withoutParens);
+		if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+			variants.add(trimmed.slice(1, -1).trim());
+		}
+		for (const variant of variants) {
+			if (!hasValue(accumulator[variant])) {
+				accumulator[variant] = value;
+			}
+		}
+	};
+
+	for (const [key, raw] of Object.entries(defaults)) {
+		if (!hasValue(raw)) continue;
+		addVariant(key, `${raw}`);
+	}
+};
+
 export const collectScenarioInputValues = (
 	scenario: ScenarioInterface | null,
 ): { sfc: string | null; values: Record<string, string> } | null => {
@@ -80,6 +128,8 @@ export const collectScenarioInputValues = (
 			extractDeviceValues(device, values);
 		}
 	}
+
+	applyScenarioDefaults(scenario, values);
 
 	const sfc = scenario.sfcName ?? scenario.id ?? null;
 	if (sfc) {
