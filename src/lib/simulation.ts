@@ -103,7 +103,24 @@ const applyScenarioDefaults = (
 			variants.add(trimmed.slice(1, -1).trim());
 		}
 		for (const variant of variants) {
-			if (!hasValue(accumulator[variant])) {
+			const existingRaw = accumulator[variant];
+			if (!hasValue(existingRaw)) {
+				accumulator[variant] = value;
+				continue;
+			}
+			const existing = `${existingRaw}`.trim();
+			const incoming = value.trim();
+			const existingNumber = Number.parseFloat(existing);
+			const incomingNumber = Number.parseFloat(incoming);
+			const isExistingNumeric = !Number.isNaN(existingNumber);
+			const isIncomingNumeric = !Number.isNaN(incomingNumber);
+			const shouldOverride =
+				(existing === "0" && incoming !== "0") ||
+				(isExistingNumeric &&
+					isIncomingNumeric &&
+					existingNumber === 0 &&
+					incomingNumber !== 0);
+			if (shouldOverride) {
 				accumulator[variant] = value;
 			}
 		}
