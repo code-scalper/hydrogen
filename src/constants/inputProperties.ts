@@ -1,3 +1,4 @@
+import { o } from "node_modules/framer-motion/dist/types.d-Cjd591yU";
 import { INPUT_PROPERTY_META } from "./inputPropertyMeta";
 
 const applyMeta = <T extends Record<string, any>>(properties: T) => {
@@ -81,10 +82,10 @@ const INPUT_PROPERTIES_BASE = {
     unit: "",
     description: "",
     io: "Input",
-    type: "select",
+    type: "radio",
     options: [
-      { id: "0", name: "On" },
-      { id: "1", name: "Off" },
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
     ],
     displayOnDiagram: false,
     x: 0.1,
@@ -145,10 +146,10 @@ const INPUT_PROPERTIES_BASE = {
     unit: "",
     description: "",
     io: "Input",
-    type: "select",
+    type: "radio",
     options: [
-      { id: "0", name: "On" },
-      { id: "1", name: "Off" },
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
     ],
     displayOnDiagram: false,
     x: 0.1,
@@ -481,10 +482,10 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "1이면 펌프 작동, 0이면 펌프 미작동",
     io: "input",
-    type: "select",
+    type: "radio",
     options: [
-      { id: "0", name: "미작동" },
-      { id: "1", name: "작동" },
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
     ],
     displayOnDiagram: false,
     x: 0.1,
@@ -497,10 +498,10 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "1이면 PSV 작동, 0이면 PSV 미작동",
     io: "input",
-    type: "select",
+    type: "radio",
     options: [
-      { id: "0", name: "미작동" },
-      { id: "1", name: "작동" },
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
     ],
     displayOnDiagram: false,
     x: 0.1,
@@ -1336,7 +1337,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   V_TTInd1: {
     key: "V_TTInd1",
-    name: "부피2",
+    name: "부피",
     unit: "m3",
     description: "TT 구성 용기 1개의 체적",
     io: "input",
@@ -1756,7 +1757,11 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 1 Step 0",
     io: "input",
-    type: "select",
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.176,
     y: 0.39,
@@ -2106,7 +2111,12 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 1 Step 0",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.39,
@@ -2118,7 +2128,12 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 1 Step 10",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.41,
@@ -2130,7 +2145,12 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 1 Step 20",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.43,
@@ -2142,7 +2162,12 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 1 Step 30",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.45,
@@ -2155,7 +2180,12 @@ const INPUT_PROPERTIES_BASE = {
     description:
       "Comp Operation when No Fueling. 이 값이 1이면 모빌리티에 충전하는 동안 압축기에 의한 가압을 하지 않도록 작동",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.47,
@@ -2167,7 +2197,12 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 2 Step 0",
     io: "input",
-    type: "select",
+
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.49,
@@ -2191,7 +2226,11 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 2 Step 20",
     io: "input",
-    type: "select",
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.53,
@@ -2203,7 +2242,11 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 2 Step 30",
     io: "input",
-    type: "select",
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.55,
@@ -2215,7 +2258,11 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "예비",
     io: "input",
-    type: "select",
+    type: "radio",
+    options: [
+      { id: "0", name: "on" },
+      { id: "1", name: "off" },
+    ],
     displayOnDiagram: true,
     x: 0.425,
     y: 0.57,
