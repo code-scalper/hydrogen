@@ -205,28 +205,32 @@ export const CreateDeviceModal = ({
 								<div className="flex space-x-5">
 									<div className="w-[350px] bg-gray-700 overflow-y-auto max-h-[400px]">
 										{properties1.map((prop, index) => (
-											<DevicePropertyInput
-												label={prop.name || prop.key}
-												key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
-												value={prop.value || ""}
-												unit={prop.unit}
-												onChange={(val) =>
-													updateDevicePropValue(selectedDevice, prop.key, val)
-												}
-											/>
+										<DevicePropertyInput
+											label={prop.name || prop.key}
+											key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
+											value={prop.value || ""}
+											unit={prop.unit}
+											type={prop.type}
+											options={prop.options}
+											onChange={(val) =>
+												updateDevicePropValue(selectedDevice, prop.key, val)
+											}
+										/>
 										))}
 									</div>
 									<div className="w-[350px] bg-gray-700 overflow-y-auto max-h-[400px]">
 										{properties2.map((prop, index) => (
-											<DevicePropertyInput
-												label={prop.name || prop.key}
-												key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
-												value={prop.value || ""}
-												unit={prop.unit}
-												onChange={(val) =>
-													updateDevicePropValue(selectedDevice, prop.key, val)
-												}
-											/>
+										<DevicePropertyInput
+											label={prop.name || prop.key}
+											key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
+											value={prop.value || ""}
+											unit={prop.unit}
+											type={prop.type}
+											options={prop.options}
+											onChange={(val) =>
+												updateDevicePropValue(selectedDevice, prop.key, val)
+											}
+										/>
 										))}
 									</div>
 								</div>

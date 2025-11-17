@@ -3,6 +3,7 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useEffect, useMemo, useState } from "react";
 import LabeledInput from "../LabelInput";
 import LabelSelect from "../LabelSelect";
+import LabelRadioGroup from "../LabelRadioGroup";
 
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
@@ -82,6 +83,52 @@ export const AdjustBasicDataModal = ({
 		debouncedUpdateValue(key, val);
 	};
 
+	const renderField = (input: (typeof scenarioBaseData)[number], index: number) => {
+		if (input.type === "text") {
+			return (
+				<LabeledInput
+					key={input.key ?? index}
+					label={input.name}
+					name={input.key}
+					unit={input.unit}
+					description={input.description}
+					value={formState[input.key] || ""}
+					onChange={handleChange}
+					placeholder={input.placeholder || ""}
+					onEnter={() => onCreate(name, "")}
+				/>
+			);
+		}
+
+		if (input.type === "radio") {
+			return (
+				<LabelRadioGroup
+					key={input.key ?? index}
+					label={input.name}
+					name={input.key}
+					unit={input.unit}
+					description={input.description}
+					options={input.options?.map((option) => ({ ...option })) ?? []}
+					value={formState[input.key] || ""}
+					onChange={handleChange}
+				/>
+			);
+		}
+
+		return (
+			<LabelSelect
+				key={input.key ?? index}
+				label={input.name}
+				name={input.key}
+				unit={input.unit}
+				description={input.description}
+				options={input.options?.map((option) => ({ ...option })) ?? []}
+				value={formState[input.key] || ""}
+				onChange={handleChange}
+			/>
+		);
+	};
+
 	if (!isOpen) return null;
 
 	return (
@@ -119,64 +166,10 @@ export const AdjustBasicDataModal = ({
 						</div>
 						<div className="flex space-x-3">
 							<div className="flex-1 space-y-2">
-								{baseData1.map((input, index) =>
-									input.type === "text" ? (
-										<LabeledInput
-											key={input.key ?? index}
-											label={input.name}
-											name={input.key}
-											unit={input.unit}
-											description={input.description}
-											value={formState[input.key] || ""}
-											onChange={handleChange}
-											placeholder={input.placeholder || ""}
-											onEnter={() => onCreate(name, "")}
-										/>
-									) : (
-										<LabelSelect
-											key={input.key ?? index}
-											label={input.name}
-											name={input.key}
-											unit={input.unit}
-											description={input.description}
-											options={
-												input.options?.map((option) => ({ ...option })) ?? []
-											}
-											value={formState[input.key] || ""}
-											onChange={handleChange}
-										/>
-									),
-								)}
+								{baseData1.map((input, index) => renderField(input, index))}
 							</div>
 							<div className="flex-1 space-y-2">
-								{baseData2.map((input, index) =>
-									input.type === "text" ? (
-										<LabeledInput
-											key={input.key ?? index}
-											label={input.name}
-											name={input.key}
-											unit={input.unit}
-											description={input.description}
-											value={formState[input.key] || ""}
-											onChange={handleChange}
-											placeholder={input.placeholder}
-											onEnter={() => onCreate(name, "")}
-										/>
-									) : (
-										<LabelSelect
-											key={input.key ?? index}
-											label={input.name}
-											name={input.key}
-											unit={input.unit}
-											description={input.description}
-											options={
-												input.options?.map((option) => ({ ...option })) ?? []
-											}
-											value={formState[input.key] || ""}
-											onChange={handleChange}
-										/>
-									),
-								)}
+								{baseData2.map((input, index) => renderField(input, index))}
 							</div>
 						</div>
 					</div>
