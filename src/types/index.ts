@@ -39,6 +39,8 @@ export type DeviceProperty = {
 	unit: string;
 	value?: string;
 	description: string;
+	min?: number;
+	max?: number;
 	displayOnDiagram?: boolean;
 	status?: string;
 	x?: number;

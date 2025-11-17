@@ -1,4 +1,29 @@
-export const INPUT_PROPERTIES = {
+import { INPUT_PROPERTY_META } from "./inputPropertyMeta";
+
+const applyMeta = <T extends Record<string, any>>(properties: T) => {
+	Object.values(properties).forEach((property) => {
+		const meta = INPUT_PROPERTY_META[property.key];
+		if (!meta) return;
+		if (meta.name && (!property.name || property.name === "")) {
+			property.name = meta.name;
+		}
+		if (meta.description && (!property.description || property.description === "")) {
+			property.description = meta.description;
+		}
+		if (meta.unit && (!property.unit || property.unit === "")) {
+			property.unit = meta.unit;
+		}
+		if (meta.min !== undefined) {
+			property.min = meta.min;
+		}
+		if (meta.max !== undefined) {
+			property.max = meta.max;
+		}
+	});
+	return properties;
+};
+
+const INPUT_PROPERTIES_BASE = {
   SFC: {
     key: "SFC",
     name: "",
@@ -4236,3 +4261,5 @@ export const INPUT_PROPERTIES = {
     order: 332,
   },
 };
+
+export const INPUT_PROPERTIES = applyMeta(INPUT_PROPERTIES_BASE);
