@@ -37,6 +37,8 @@ const HIDDEN_SCENARIOS = new Set([
 	"SFC5110",
 ]);
 
+const DISABLED_SCENARIOS = new Set(["SFC2050"]);
+
 const IMAGES: Record<string, string> = {
 	SFC1012,
 	SFC1013,
@@ -91,6 +93,7 @@ export const CreateScenarioModal = ({
 				label: scenario.sfcName,
 				key: scenario.id,
 				data: scenario,
+				disabled: DISABLED_SCENARIOS.has(scenario.id),
 				})) || [];
 		return items ? items : [];
 	}, [scenarios]);
