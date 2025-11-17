@@ -28,6 +28,15 @@ interface CreateScenarioModalProps {
 	) => void;
 }
 
+const HIDDEN_SCENARIOS = new Set([
+	"SFC4050",
+	"SFC4110",
+	"SFC4120",
+	"SFC4130",
+	"SFC4500",
+	"SFC5110",
+]);
+
 const IMAGES: Record<string, string> = {
 	SFC1012,
 	SFC1013,
@@ -74,12 +83,15 @@ export const CreateScenarioModal = ({
 	}, [folders]);
 
 	const selectScenarioItems = useMemo(() => {
+		// 특정 시나리오들은 선택 목록에서 제외한다.
 		const items =
-			scenarios.map((scenario) => ({
+			scenarios
+				.filter((scenario) => !HIDDEN_SCENARIOS.has(scenario.id))
+				.map((scenario) => ({
 				label: scenario.sfcName,
 				key: scenario.id,
 				data: scenario,
-			})) || [];
+				})) || [];
 		return items ? items : [];
 	}, [scenarios]);
 
