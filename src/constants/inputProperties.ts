@@ -1,26 +1,29 @@
 import { INPUT_PROPERTY_META } from "./inputPropertyMeta";
 
 const applyMeta = <T extends Record<string, any>>(properties: T) => {
-	Object.values(properties).forEach((property) => {
-		const meta = INPUT_PROPERTY_META[property.key];
-		if (!meta) return;
-		if (meta.name && (!property.name || property.name === "")) {
-			property.name = meta.name;
-		}
-		if (meta.description && (!property.description || property.description === "")) {
-			property.description = meta.description;
-		}
-		if (meta.unit && (!property.unit || property.unit === "")) {
-			property.unit = meta.unit;
-		}
-		if (meta.min !== undefined) {
-			property.min = meta.min;
-		}
-		if (meta.max !== undefined) {
-			property.max = meta.max;
-		}
-	});
-	return properties;
+  Object.values(properties).forEach((property) => {
+    const meta = INPUT_PROPERTY_META[property.key];
+    if (!meta) return;
+    if (meta.name && (!property.name || property.name === "")) {
+      property.name = meta.name;
+    }
+    if (
+      meta.description &&
+      (!property.description || property.description === "")
+    ) {
+      property.description = meta.description;
+    }
+    if (meta.unit && (!property.unit || property.unit === "")) {
+      property.unit = meta.unit;
+    }
+    if (meta.min !== undefined) {
+      property.min = meta.min;
+    }
+    if (meta.max !== undefined) {
+      property.max = meta.max;
+    }
+  });
+  return properties;
 };
 
 const INPUT_PROPERTIES_BASE = {
@@ -35,6 +38,122 @@ const INPUT_PROPERTIES_BASE = {
     x: 0.52,
     y: 0.2,
     order: 1,
+  },
+  P_LTL: {
+    key: "P_LTL",
+    name: "P_LTL",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 25,
+  },
+  T_LTL: {
+    key: "T_LTL",
+    name: "T_LTL",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 26,
+  },
+  m_LTL: {
+    key: "m_LTL",
+    name: "m_LTL",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 27,
+  },
+  LTLOn: {
+    key: "LTLOn",
+    name: "LTLOn",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "select",
+    options: [
+      { id: "0", name: "On" },
+      { id: "1", name: "Off" },
+    ],
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 28,
+  },
+  P_GTkIn: {
+    key: "P_GTkIn",
+    name: "P_GTkIn",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 29,
+  },
+  T_GTkIn: {
+    key: "T_GTkIn",
+    name: "T_GTkIn",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 30,
+  },
+  m_GTkIn: {
+    key: "m_GTkIn",
+    name: "m_GTkIn",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 31,
+  },
+  m_LTkOut: {
+    key: "m_LTkOut",
+    name: "m_LTkOut",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "Input",
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 32,
+  },
+  PBUOn: {
+    key: "PBUOn",
+    name: "PBUOn",
+    unit: "",
+    description: "",
+    io: "Input",
+    type: "select",
+    options: [
+      { id: "0", name: "On" },
+      { id: "1", name: "Off" },
+    ],
+    displayOnDiagram: false,
+    x: 0.1,
+    y: 0.1,
+    order: 33,
   },
   SimTime: {
     key: "SimTime",
