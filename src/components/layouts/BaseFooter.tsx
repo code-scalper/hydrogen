@@ -91,7 +91,7 @@ const BaseFooter = () => {
             </button>
           </li>
         </ul> */}
-        <label className="ml-4 flex items-center gap-2 text-[11px] text-slate-200 cursor-pointer select-none">
+        {/* <label className="ml-4 flex items-center gap-2 text-[11px] text-slate-200 cursor-pointer select-none">
           <input
             className="sr-only"
             type="checkbox"
@@ -112,7 +112,7 @@ const BaseFooter = () => {
             />
           </span>
           <span>{skipRunExe ? "모듈 스킵" : "모듈 실행"}</span>
-        </label>
+        </label> */}
       </div>
 
       <div className="flex items-center ">

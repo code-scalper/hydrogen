@@ -45,6 +45,10 @@ interface ProjectState {
 		type: "project" | "scenario" | "device" | "property" | "module" | "input",
 		parentId?: string,
 	) => void;
+	updateProjectDetails: (
+		projectId: string,
+		updates: { name?: string; description?: string },
+	) => void;
 
 	deleteItem: (
 		id: string,
@@ -314,6 +318,17 @@ export const useProjectStore = create<ProjectState>()(
 					});
 
 					return { folderList: updatedFolderList };
+				}),
+			updateProjectDetails: (projectId, updates) =>
+				set((state) => {
+					const updatedFolderList = state.folderList.map((project) =>
+						project.id === projectId ? { ...project, ...updates } : project,
+					);
+					const selectedProject =
+						state.selectedProject && state.selectedProject.id === projectId
+							? { ...state.selectedProject, ...updates }
+							: state.selectedProject;
+					return { folderList: updatedFolderList, selectedProject };
 				}),
 			deleteItem: (id, type, parentId) =>
 				set((state) => {
