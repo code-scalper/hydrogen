@@ -1805,7 +1805,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   CpNFL: {
     key: "CpNFL",
-    name: "압축기 미가압 조건",
+    name: "압축기 가압 조건",
     unit: "-",
     description:
       "Comp Operation when No Fueling. 이 값이 1이면 모빌리티에 충전하는 동안 압축기에 의한 가압을 하지 않도록 작동",
@@ -1950,9 +1950,9 @@ const INPUT_PROPERTIES_BASE = {
   },
   Sp_CpL: {
     key: "Sp_CpL",
-    name: "저압 압축기 분당 Speed",
+    name: "압축기 분당 Speed",
     unit: "RPM",
-    description: "저압 압축기 분당 Speed",
+    description: "압축기 분당 Speed",
     io: "input",
     type: "input",
     displayOnDiagram: false,
@@ -2058,7 +2058,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   Eta_CompL: {
     key: "Eta_CompL",
-    name: "고압 압축기 등엔트로피 효율",
+    name: "압축기 등엔트로피 효율",
     unit: "-",
     description: "압축기 등엔트로피효율(isentropic efficiency): 보통 0.7~0.9",
     io: "input",
@@ -2070,7 +2070,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   Eta_motorL: {
     key: "Eta_motorL",
-    name: "고압 압축기 전동기 효율",
+    name: "압축기 전동기 효율",
     unit: "-",
     description: "전동기 효율: 보통 0.9~0.5",
     io: "input",
@@ -2082,7 +2082,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   T_CoolSetCL: {
     key: "T_CoolSetCL",
-    name: "고압 압축기 쿨링 목표 온도",
+    name: "압축기 쿨링 목표 온도",
     unit: "℃",
     description: "쿨링 목표온도",
     io: "input",
@@ -2094,7 +2094,7 @@ const INPUT_PROPERTIES_BASE = {
   },
   COPL: {
     key: "COPL",
-    name: "고압 압축기 성능 계수",
+    name: "압축기 성능 계수",
     unit: "-",
     description:
       "Coefficient of Performance(성능 계수). 공랭식 2.5 - 4.0, 수냉식 4.0 - 6.0",
