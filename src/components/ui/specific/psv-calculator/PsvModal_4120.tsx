@@ -26,6 +26,13 @@ type GroupDefinition = {
   kind: GroupKind;
 };
 
+type ChartVariable = {
+  key: string;
+  name: string;
+  unit: string;
+  plotId: string;
+};
+
 const GROUPS: GroupDefinition[] = [
   {
     title: "중압 뱅크 입력 변수",
@@ -64,6 +71,18 @@ const DIAGRAM = {
   height: 500,
 };
 
+const CHART_VARIABLES: ChartVariable[] = [
+  { key: "P_TkAccM", name: "P_TkAccM", unit: "-", plotId: "PlotPSVMBk1" },
+  { key: "P_TkOpFullM", name: "P_TkOpFullM", unit: "-", plotId: "PlotPSVMBk1" },
+  { key: "P_TkOpStartM", name: "P_TkOpStartM", unit: "-", plotId: "PlotPSVMBk1" },
+  { key: "P_TkM_1", name: "P_TkM_1", unit: "-", plotId: "PlotPSVMBk1" },
+  { key: "W_Req_kgsM", name: "W_Req_kgsM", unit: "-", plotId: "PlotPSVMBk2" },
+  { key: "W_OpFullM", name: "W_OpFullM", unit: "-", plotId: "PlotPSVMBk2" },
+  { key: "W_OutMs", name: "W_OutMs", unit: "-", plotId: "PlotPSVMBk2" },
+  { key: "W_OutMh", name: "W_OutMh", unit: "-", plotId: "PlotPSVMBk3" },
+  { key: "SD_1PM", name: "SD_1PM", unit: "-", plotId: "PlotPSVMBk3" },
+];
+
 const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>
   groups
     .filter((group) => group.kind === kind)
@@ -98,30 +117,7 @@ export const PsvModal_4120: FC<PsvCalculatorModalProps> = () => {
     loadInputs,
   });
 
-  const chartVariables = useMemo(() => {
-    return GROUPS.filter((group) => group.kind === "output").flatMap(
-      (group) => {
-        const collected: Array<{
-          key: string;
-          name: string;
-          unit: string;
-          plotId: string;
-        }> = [];
-
-        for (const prop of group.items ?? []) {
-          if (!prop?.key) continue;
-          collected.push({
-            key: prop.key,
-            name: prop.name ?? prop.key,
-            unit: prop.unit ?? "-",
-            plotId: group.title,
-          });
-        }
-
-        return collected;
-      }
-    );
-  }, []);
+  const chartVariables = useMemo(() => CHART_VARIABLES, []);
 
   const handleOpenChart = () => {
     if (chartData.length === 0) return;

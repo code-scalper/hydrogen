@@ -19,11 +19,18 @@ interface PsvCalculatorModalProps {
 type GroupKind = "input" | "output";
 
 type GroupDefinition = {
-  title: string;
-  items?: DeviceProperty[];
-  x: number;
-  y: number;
-  kind: GroupKind;
+	title: string;
+	items?: DeviceProperty[];
+	x: number;
+	y: number;
+	kind: GroupKind;
+};
+
+type ChartVariable = {
+	key: string;
+	name: string;
+	unit: string;
+	plotId: string;
 };
 
 const GROUPS: GroupDefinition[] = [
@@ -44,11 +51,26 @@ const GROUPS: GroupDefinition[] = [
 ];
 
 const DIAGRAM = {
-  x: 520,
-  y: 30,
-  width: 760,
-  height: 620,
+	x: 520,
+	y: 30,
+	width: 760,
+	height: 620,
 };
+
+const CHART_VARIABLES: ChartVariable[] = [
+	{ key: "T_GTkO", name: "T_GTkO", unit: "-", plotId: "PlotLqTk1 · Tank Temperatures" },
+	{ key: "T_ITkO", name: "T_ITkO", unit: "-", plotId: "PlotLqTk1 · Tank Temperatures" },
+	{ key: "T_LTkO", name: "T_LTkO", unit: "-", plotId: "PlotLqTk1 · Tank Temperatures" },
+	{ key: "P_GTkO", name: "P_GTkO", unit: "-", plotId: "PlotLqTk1 · Tank Pressures" },
+	{ key: "P_OpStO_LqTk", name: "P_OpStO_LqTk", unit: "-", plotId: "PlotLqTk1 · Tank Pressures" },
+	{ key: "P_ReseatO_LqTk", name: "P_ReseatO_LqTk", unit: "-", plotId: "PlotLqTk1 · Tank Pressures" },
+	{ key: "m_BOGO", name: "m_BOGO", unit: "-", plotId: "PlotLqTk1 · Mass Flows" },
+	{ key: "m_PSVO_LqTk", name: "m_PSVO_LqTk", unit: "-", plotId: "PlotLqTk1 · Mass Flows" },
+	{ key: "Q_InGO", name: "Q_InGO", unit: "-", plotId: "PlotLqTk2" },
+	{ key: "Q_InLO", name: "Q_InLO", unit: "-", plotId: "PlotLqTk2" },
+	{ key: "Q_InGIO", name: "Q_InGIO", unit: "-", plotId: "PlotLqTk2" },
+	{ key: "Q_InILO", name: "Q_InILO", unit: "-", plotId: "PlotLqTk2" },
+];
 
 const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>
   groups
@@ -83,30 +105,7 @@ export const PsvModal_4500: FC<PsvCalculatorModalProps> = () => {
     loadInputs,
   });
 
-  const chartVariables = useMemo(() => {
-    return GROUPS.filter((group) => group.kind === "output").flatMap(
-      (group) => {
-        const collected: Array<{
-          key: string;
-          name: string;
-          unit: string;
-          plotId: string;
-        }> = [];
-
-        for (const prop of group.items ?? []) {
-          if (!prop?.key) continue;
-          collected.push({
-            key: prop.key,
-            name: prop.name ?? prop.key,
-            unit: prop.unit ?? "-",
-            plotId: group.title,
-          });
-        }
-
-        return collected;
-      }
-    );
-  }, []);
+  const chartVariables = useMemo(() => CHART_VARIABLES, []);
 
   const handleOpenChart = () => {
     if (chartData.length === 0) return;

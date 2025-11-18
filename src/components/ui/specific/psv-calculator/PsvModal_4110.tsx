@@ -19,11 +19,18 @@ interface PsvCalculatorModalProps {
 type GroupKind = "input" | "output";
 
 type GroupDefinition = {
-  title: string;
-  items?: DeviceProperty[];
-  x: number;
-  y: number;
-  kind: GroupKind;
+	title: string;
+	items?: DeviceProperty[];
+	x: number;
+	y: number;
+	kind: GroupKind;
+};
+
+type ChartVariable = {
+	key: string;
+	name: string;
+	unit: string;
+	plotId: string;
 };
 
 const GROUPS: GroupDefinition[] = [
@@ -58,11 +65,23 @@ const GROUPS: GroupDefinition[] = [
 ];
 
 const DIAGRAM = {
-  x: 500,
-  y: 150,
-  width: 600,
-  height: 440,
+	x: 500,
+	y: 150,
+	width: 600,
+	height: 440,
 };
+
+const CHART_VARIABLES: ChartVariable[] = [
+	{ key: "P_TkAccL", name: "P_TkAccL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "P_TkOpFullL", name: "P_TkOpFullL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "P_TkOpStartL", name: "P_TkOpStartL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "P_TkL", name: "P_TkL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "W_Req_kgsL", name: "W_Req_kgsL", unit: "-", plotId: "PlotPSVLBk2" },
+	{ key: "W_OpFullL", name: "W_OpFullL", unit: "-", plotId: "PlotPSVLBk2" },
+	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk2" },
+	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk3" },
+	{ key: "SD_1PL", name: "SD_1PL", unit: "-", plotId: "PlotPSVLBk3" },
+];
 
 const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>
   groups
@@ -99,30 +118,7 @@ export const PsvModal_4110: FC<PsvCalculatorModalProps> = () => {
     loadInputs,
   });
 
-  const chartVariables = useMemo(() => {
-    return GROUPS.filter((group) => group.kind === "output").flatMap(
-      (group) => {
-        const collected: Array<{
-          key: string;
-          name: string;
-          unit: string;
-          plotId: string;
-        }> = [];
-
-        for (const prop of group.items ?? []) {
-          if (!prop?.key) continue;
-          collected.push({
-            key: prop.key,
-            name: prop.name ?? prop.key,
-            unit: prop.unit ?? "-",
-            plotId: group.title,
-          });
-        }
-
-        return collected;
-      }
-    );
-  }, []);
+  const chartVariables = useMemo(() => CHART_VARIABLES, []);
 
   const handleOpenChart = () => {
     if (chartData.length === 0) return;
@@ -143,8 +139,8 @@ export const PsvModal_4110: FC<PsvCalculatorModalProps> = () => {
   if (!psvOpen) return null;
 
   return (
-		<div className="fixed inset-0 bg-stone-600 bg-opacity-40 flex items-center justify-center z-50 text-xs">
-			<div className="relative bg-gray-800 w-[1320px] max-w-[95vw] h-[90%] shadow-lg border border-stone-600 flex flex-col">
+    <div className="fixed inset-0 bg-stone-600 bg-opacity-40 flex items-center justify-center z-50 text-xs">
+      <div className="relative bg-gray-800 w-[1320px] max-w-[95vw] h-[90%] shadow-lg border border-stone-600 flex flex-col">
         <div className="flex justify-between items-center p-2 bg-gray-900">
           <h2 className="text-xs text-slate-200 font-semibold">
             시나리오 생성
