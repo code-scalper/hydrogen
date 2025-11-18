@@ -1978,7 +1978,7 @@ export const INPUT_PROPERTY_META: Record<string, InputPropertyMeta> = {
     min: 0,
   },
   V_TkMode2: {
-    name: "탱크 부피 종류",
+    name: "자동차 용기 Volume",
     description: 'Tank Volume의 종류. "11"은 넥소, 12는 일렉시티임.',
     unit: "-",
     min: 0,
