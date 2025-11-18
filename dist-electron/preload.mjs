@@ -25,6 +25,7 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
 });
 electron.contextBridge.exposeInMainWorld("electronAPI", {
   runExe: (payload) => electron.ipcRenderer.invoke("run-exe", payload),
+  stopExe: () => electron.ipcRenderer.invoke("stop-exe"),
   readRecentLogs: () => electron.ipcRenderer.invoke("read-recent-logs"),
   readOutputData: (payload) => electron.ipcRenderer.invoke("read-output-data", payload),
   readProgressLog: (payload) => electron.ipcRenderer.invoke("read-progress-log", payload),

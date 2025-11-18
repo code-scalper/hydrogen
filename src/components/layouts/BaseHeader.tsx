@@ -43,6 +43,7 @@ import { WhatIf } from "../views/what-if/WhatIf";
 import { WhatIfAnalisys } from "../views/what-if/WhatIfAnalisys";
 const ICON_SIZE = "h-6 w-6";
 const ICON_COLOR = "text-gray-300";
+const EXECUTION_CANCELLED_ERROR = "Execution cancelled by user";
 
 type NavigationChild = {
 	name: string;
@@ -240,12 +241,20 @@ const BaseHeader = () => {
 				progressCloseTimeoutRef.current = null;
 			}, 1200);
 		} catch (error) {
-			console.error("실행 실패", error);
+			const isCancelled =
+				error instanceof Error && error.message === EXECUTION_CANCELLED_ERROR;
+			if (isCancelled) {
+				console.warn("사용자가 실행을 취소했습니다.");
+			} else {
+				console.error("실행 실패", error);
+			}
 			stopProgressPolling();
 			failProgress(
-				error instanceof Error
-					? error.message
-					: "실행 도중 알 수 없는 오류가 발생했습니다.",
+				isCancelled
+					? "사용자에 의해 실행이 취소되었습니다."
+					: error instanceof Error
+						? error.message
+						: "실행 도중 알 수 없는 오류가 발생했습니다.",
 			);
 		} finally {
 			progressDateRef.current = null;

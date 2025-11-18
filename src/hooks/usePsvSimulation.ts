@@ -84,6 +84,21 @@ export const usePsvSimulation = ({
 		setInputs((prev) => ({ ...prev, [key]: value }));
 	}, []);
 
+	const loadInputs = useCallback(
+		(values: ValueMap) => {
+			setInputs((prev) => {
+				const next: ValueMap = { ...prev };
+				for (const key of inputKeys) {
+					if (Object.prototype.hasOwnProperty.call(values, key)) {
+						next[key] = toStringValue(values[key]);
+					}
+				}
+				return next;
+			});
+		},
+		[inputKeys],
+	);
+
 	const runSimulation = useCallback(async () => {
 		if (typeof window === "undefined" || !window.electronAPI?.runExe) {
 			console.warn("runExe API is unavailable in the current environment.");
@@ -145,6 +160,7 @@ export const usePsvSimulation = ({
 		running,
 		status,
 		setInputValue,
+		loadInputs,
 		runSimulation,
 	};
 };

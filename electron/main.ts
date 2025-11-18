@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "fs";
 import Store from "electron-store";
-import { spawn } from "child_process";
+import { spawn, type ChildProcess } from "child_process";
 
 import {
   ensureInputTotalWorkbook,
@@ -102,6 +102,10 @@ interface RunExePayload {
   skipExe?: boolean;
 }
 
+const EXECUTION_CANCELLED_MESSAGE = "Execution cancelled by user";
+let currentExeProcess: ChildProcess | null = null;
+let currentExeCancelled = false;
+
 type LogLine = {
   ts?: string;
   level?: string;
@@ -129,12 +133,17 @@ type RunExeResult = {
 
 function runExternalExecutable(executable: string, cwd: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    currentExeCancelled = false;
     const child = spawn(executable, {
       cwd,
       windowsHide: true,
     });
 
+    currentExeProcess = child;
+
     child.on("error", (error) => {
+      currentExeProcess = null;
+      currentExeCancelled = false;
       reject(error);
     });
 
@@ -147,6 +156,13 @@ function runExternalExecutable(executable: string, cwd: string): Promise<void> {
     });
 
     child.on("close", (code) => {
+      const wasCancelled = currentExeCancelled;
+      currentExeProcess = null;
+      currentExeCancelled = false;
+      if (wasCancelled) {
+        reject(new Error(EXECUTION_CANCELLED_MESSAGE));
+        return;
+      }
       if (code === 0) {
         resolve();
         return;
@@ -527,6 +543,22 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   };
 
   return result;
+});
+
+ipcMain.handle("stop-exe", async () => {
+  if (!currentExeProcess) {
+    return { stopped: false };
+  }
+  if (currentExeCancelled) {
+    return { stopped: true };
+  }
+  currentExeCancelled = true;
+  const killed = currentExeProcess.kill();
+  if (!killed) {
+    currentExeCancelled = false;
+    return { stopped: false };
+  }
+  return { stopped: true };
 });
 
 ipcMain.handle(

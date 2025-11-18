@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { EXECUTION_PROGRESS_STEPS } from "@/constants/executionProgress";
 import useExecutionProgressStore, {
@@ -26,6 +26,15 @@ const ExecutionProgressModal = () => {
 	const startedAt = useExecutionProgressStore((state) => state.startedAt);
 	const close = useExecutionProgressStore((state) => state.close);
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
+	const [isStopping, setIsStopping] = useState(false);
+	const [stopError, setStopError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!isOpen) {
+			setIsStopping(false);
+			setStopError(null);
+		}
+	}, [isOpen]);
 
 	useEffect(() => {
 		if (!isOpen || !startedAt) {
@@ -84,6 +93,32 @@ const ExecutionProgressModal = () => {
 		return `${elapsedSeconds}초 경과`;
 	}, [startedAt, elapsedSeconds]);
 
+	const handleStop = useCallback(async () => {
+		if (isStopping || error || isCompleted) {
+			return;
+		}
+		setStopError(null);
+		setIsStopping(true);
+		try {
+			if (!window.electronAPI?.stopExe) {
+				setStopError("정지 API를 사용할 수 없습니다.");
+				setIsStopping(false);
+				return;
+			}
+			const response = await window.electronAPI.stopExe();
+			if (!response || !response.stopped) {
+				setStopError("정지 요청을 처리하지 못했습니다.");
+				setIsStopping(false);
+			}
+		} catch (stopRequestError) {
+			console.error("정지 요청 실패", stopRequestError);
+			setStopError("정지 요청 중 오류가 발생했습니다.");
+			setIsStopping(false);
+		}
+	}, [error, isCompleted, isStopping]);
+
+	const canStop = !error && !isCompleted;
+
 	if (!isOpen) {
 		return null;
 	}
@@ -91,7 +126,7 @@ const ExecutionProgressModal = () => {
 	return (
 		<div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
 			<div className="w-[520px] max-w-[92vw] rounded-2xl border border-slate-700 bg-slate-900/95 p-6 text-slate-100 shadow-2xl">
-				<header className="flex items-start justify-between">
+				<header className="flex items-start justify-between gap-4">
 					<div>
 						<h2 className="text-lg font-semibold text-slate-50">
 							시뮬레이션 진행 상황
@@ -106,20 +141,35 @@ const ExecutionProgressModal = () => {
 							</p>
 						)}
 					</div>
-					{error ? (
-						<button
-							type="button"
-							onClick={close}
-							className="rounded-md border border-rose-500 px-3 py-1 text-xs text-rose-200 transition hover:bg-rose-500/10"
-						>
-							닫기
-						</button>
-					) : (
-						<div className="flex items-center gap-2 text-xs text-slate-400">
-							<span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-							<span>{percent}%</span>
-						</div>
-					)}
+					<div className="flex flex-col items-end gap-2">
+						{canStop && (
+							<button
+								type="button"
+								onClick={handleStop}
+								disabled={isStopping}
+								className="rounded-md border border-slate-600 px-3 py-1 text-xs font-medium text-slate-100 transition hover:border-amber-400 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+							>
+								{isStopping ? "정지 요청 중..." : "정지/취소"}
+							</button>
+						)}
+						{error ? (
+							<button
+								type="button"
+								onClick={close}
+								className="rounded-md border border-rose-500 px-3 py-1 text-xs text-rose-200 transition hover:bg-rose-500/10"
+							>
+								닫기
+							</button>
+						) : (
+							<div className="flex items-center gap-2 text-xs text-slate-400">
+								<span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+								<span>{percent}%</span>
+							</div>
+						)}
+						{stopError && (
+							<p className="text-[11px] text-rose-300">{stopError}</p>
+						)}
+					</div>
 				</header>
 
 				<div className="mt-5">

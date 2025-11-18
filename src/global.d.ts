@@ -16,6 +16,7 @@ declare global {
 				outputDate: string;
 				outputDir: string;
 			}>;
+			stopExe: () => Promise<{ stopped: boolean }>;
 			readRecentLogs: () => Promise<
 				Array<{
 					date: string;
