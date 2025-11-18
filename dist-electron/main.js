@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var _validator, _encryptionKey, _options, _defaultValues;
-import electron, { ipcMain as ipcMain$1, dialog, app as app$1, BrowserWindow } from "electron";
+import electron, { ipcMain as ipcMain$1, dialog, app as app$1, shell as shell$1, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -16325,6 +16325,58 @@ ipcMain$1.handle(
         coefficients: []
       };
     }
+  }
+);
+ipcMain$1.handle(
+  "download-report-files",
+  async (_event, payload) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, (payload == null ? void 0 : payload.date) ?? null);
+    if (!target) {
+      return { success: false, reason: "NO_OUTPUT_DIR" };
+    }
+    const requiredFiles = [
+      "Output_Total.csv",
+      "Output_EE2.csv",
+      "Output_EE3.csv"
+    ];
+    const missing = [];
+    const resolvedFiles = requiredFiles.map((file) => {
+      const fullPath = path.join(target.dir, file);
+      if (!fs$1.existsSync(fullPath)) {
+        missing.push(file);
+      }
+      return { name: file, path: fullPath };
+    });
+    if (missing.length > 0) {
+      return { success: false, reason: "MISSING_FILES", missing };
+    }
+    const downloadsDir = app$1.getPath("downloads");
+    const saved = [];
+    for (const file of resolvedFiles) {
+      const ext = path.extname(file.name);
+      const baseName = path.basename(file.name, ext);
+      let candidateName = `${baseName}_${target.date}${ext}`;
+      let counter = 1;
+      while (fs$1.existsSync(path.join(downloadsDir, candidateName))) {
+        candidateName = `${baseName}_${target.date}(${counter})${ext}`;
+        counter += 1;
+      }
+      const destination = path.join(downloadsDir, candidateName);
+      try {
+        fs$1.copyFileSync(file.path, destination);
+        saved.push(destination);
+      } catch (error2) {
+        console.error("Failed to copy report file", file.path, destination, error2);
+        return { success: false, reason: "COPY_FAILED", file: file.name };
+      }
+    }
+    try {
+      await shell$1.openPath(downloadsDir);
+    } catch (error2) {
+      console.warn("Failed to open downloads directory", downloadsDir, error2);
+    }
+    return { success: true, files: saved, date: target.date, opened: true };
   }
 );
 const store = new ElectronStore();

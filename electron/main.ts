@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -712,6 +712,66 @@ ipcMain.handle(
         coefficients: [] as Array<Record<string, number | string | null>>,
       };
     }
+  }
+);
+
+ipcMain.handle(
+  "download-report-files",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, payload?.date ?? null);
+
+    if (!target) {
+      return { success: false, reason: "NO_OUTPUT_DIR" };
+    }
+
+    const requiredFiles = [
+      "Output_Total.csv",
+      "Output_EE2.csv",
+      "Output_EE3.csv",
+    ];
+    const missing: string[] = [];
+    const resolvedFiles = requiredFiles.map((file) => {
+      const fullPath = path.join(target.dir, file);
+      if (!fs.existsSync(fullPath)) {
+        missing.push(file);
+      }
+      return { name: file, path: fullPath };
+    });
+
+    if (missing.length > 0) {
+      return { success: false, reason: "MISSING_FILES", missing };
+    }
+
+    const downloadsDir = app.getPath("downloads");
+    const saved: string[] = [];
+
+    for (const file of resolvedFiles) {
+      const ext = path.extname(file.name);
+      const baseName = path.basename(file.name, ext);
+      let candidateName = `${baseName}_${target.date}${ext}`;
+      let counter = 1;
+      while (fs.existsSync(path.join(downloadsDir, candidateName))) {
+        candidateName = `${baseName}_${target.date}(${counter})${ext}`;
+        counter += 1;
+      }
+      const destination = path.join(downloadsDir, candidateName);
+      try {
+        fs.copyFileSync(file.path, destination);
+        saved.push(destination);
+      } catch (error) {
+        console.error("Failed to copy report file", file.path, destination, error);
+        return { success: false, reason: "COPY_FAILED", file: file.name };
+      }
+    }
+
+    try {
+      await shell.openPath(downloadsDir);
+    } catch (error) {
+      console.warn("Failed to open downloads directory", downloadsDir, error);
+    }
+
+    return { success: true, files: saved, date: target.date, opened: true };
   }
 );
 

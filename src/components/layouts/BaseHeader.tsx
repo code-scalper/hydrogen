@@ -106,7 +106,7 @@ const NAVI_ITEMS: NavigationItem[] = [
       <PresentationChartLineIcon className={`${ICON_SIZE} ${ICON_COLOR}`} />
     ),
     name: "리포트",
-    to: "/report",
+    key: "download-report",
   },
 ];
 
@@ -130,6 +130,7 @@ const BaseHeader = () => {
     (state) => state.openWithResult
   );
   const setOutputData = useSimulationOutputStore((state) => state.setOutput);
+  const outputSourceDate = useSimulationOutputStore((state) => state.sourceDate);
   const resetWhatIf = useWhatIfStore((state) => state.reset);
   const clearWhatIfDataset = useWhatIfStore((state) => state.setDataset);
   const startProgress = useExecutionProgressStore((state) => state.start);
@@ -261,12 +262,39 @@ const BaseHeader = () => {
     }
   };
 
+  const handleReportDownload = async () => {
+    const dateKey = outputSourceDate?.replace(/[^0-9]/g, "") || getTodayKey();
+    try {
+      const response = await window.electronAPI.downloadReportFiles({
+        date: dateKey,
+      });
+
+      if (!response?.success) {
+        window.alert("Report할 파일이 없습니다.");
+        return;
+      }
+
+      if (response.opened) {
+        window.alert("리포트 파일을 다운로드했습니다. (다운로드 폴더가 열렸습니다.)");
+      } else {
+        window.alert("리포트 파일을 다운로드했습니다. (다운로드 폴더 확인)");
+      }
+    } catch (error) {
+      console.error("download-report", error);
+      window.alert("Report할 파일이 없습니다.");
+    }
+  };
+
   const handleNavigation = (navi: NavigationItem, index: number) => {
     if (!hasChildren(navi)) {
       setOpenIndex(null);
     }
     if (navi.key === "run-simulation") {
       handleRun();
+      return;
+    }
+    if (navi.key === "download-report") {
+      void handleReportDownload();
       return;
     }
     if (navi.key === "economic-evaluation") {

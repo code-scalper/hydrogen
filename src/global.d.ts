@@ -54,6 +54,17 @@ declare global {
 				cashflow: Array<Record<string, number | string | null>>;
 				coefficients: Array<Record<string, number | string | null>>;
 			}>;
+			downloadReportFiles: (payload?: {
+				date?: string;
+			}) => Promise<
+				| { success: true; files: string[]; date: string }
+				| {
+						 success: false;
+						 reason: "NO_OUTPUT_DIR" | "MISSING_FILES" | "COPY_FAILED";
+						 missing?: string[];
+						 file?: string;
+				   }
+			>;
 		};
 		electronStore: {
 			get: (key: string) => Promise<unknown>;
