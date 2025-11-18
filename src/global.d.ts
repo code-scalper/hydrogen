@@ -57,7 +57,7 @@ declare global {
 			downloadReportFiles: (payload?: {
 				date?: string;
 			}) => Promise<
-				| { success: true; files: string[]; date: string }
+				| { success: true; files: string[]; date: string; opened: boolean }
 				| {
 						 success: false;
 						 reason: "NO_OUTPUT_DIR" | "MISSING_FILES" | "COPY_FAILED";

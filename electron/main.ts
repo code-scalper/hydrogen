@@ -765,13 +765,15 @@ ipcMain.handle(
       }
     }
 
+    let opened = false;
     try {
       await shell.openPath(downloadsDir);
+      opened = true;
     } catch (error) {
       console.warn("Failed to open downloads directory", downloadsDir, error);
     }
 
-    return { success: true, files: saved, date: target.date, opened: true };
+    return { success: true, files: saved, date: target.date, opened };
   }
 );
 
