@@ -16098,7 +16098,11 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
     if (Object.keys(values).length > 0 || sfc) {
       const workbookBaseDir = thirdPartyDir;
       const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
-      const normalizedValues = updateInputTotalWorkbook(workbookPath, values, sfc);
+      const normalizedValues = updateInputTotalWorkbook(
+        workbookPath,
+        values,
+        sfc
+      );
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
         fs$1.copyFileSync(workbookPath, targetWorkbookPath);
@@ -16113,7 +16117,11 @@ ipcMain$1.handle("run-exe", async (_event, payload) => {
           generatedAt: (/* @__PURE__ */ new Date()).toISOString()
         };
         const jsonPath = path.join(workingDir, "input_total.json");
-        fs$1.writeFileSync(jsonPath, JSON.stringify(jsonPayload, null, 2), "utf8");
+        fs$1.writeFileSync(
+          jsonPath,
+          JSON.stringify(jsonPayload, null, 2),
+          "utf8"
+        );
         console.log("📝 input_total.json written to", jsonPath);
       } catch (jsonError) {
         console.error("⚠️ Failed to write input_total.json", jsonError);
