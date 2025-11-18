@@ -519,7 +519,23 @@ export const useProjectStore = create<ProjectState>()(
 					};
 				});
 
-				set({ folderList: updatedFolderList });
+				const updatedProject = updatedFolderList.find(
+					(project) => project.id === device.projectId,
+				);
+				const updatedScenario = updatedProject?.children?.find(
+					(scenario) => scenario.id === device.scenarioId,
+				) as ScenarioInterface | undefined;
+				const updatedDevice = updatedScenario?.children?.find(
+					(candidate) => candidate.id === device.id,
+				) as DeviceInterface | undefined;
+
+				set({
+					folderList: updatedFolderList,
+					selectedDevice:
+						state.selectedDevice && state.selectedDevice.id === device.id
+							? updatedDevice ?? state.selectedDevice
+							: state.selectedDevice,
+				});
 			},
 
 			updateScenarioBaseDataValue: (key: string, newValue: string) => {

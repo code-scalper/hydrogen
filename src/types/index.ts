@@ -38,6 +38,7 @@ export type DeviceProperty = {
 	name: string;
 	unit: string;
 	value?: string;
+	defaultValue?: string;
 	description: string;
 	min?: number;
 	max?: number;

@@ -85,31 +85,56 @@ export const CreateDeviceModal = ({
 		(props?: DeviceProperty[] | null) => {
 			if (!props) return [] as DeviceProperty[];
 			return props.map((prop) => {
-				if (prop.value !== undefined && prop.value !== null) {
-					const value = `${prop.value}`.trim();
-					if (value.length > 0 && value !== "0") {
-						return prop;
-					}
-				}
-				if (!scenarioDefaults) {
-					return prop;
-				}
 				const rawKey = prop.key ?? prop.name ?? "";
 				const normalized = rawKey.replace(/[()]/g, "").trim();
-				if (!normalized) {
-					return prop;
-				}
-				const raw = scenarioDefaults[normalized as keyof ScenarioDefaultValue];
-				if (raw === undefined || raw === null) {
-					return prop;
-				}
-				const value =
-					typeof raw === "boolean" ? (raw ? "true" : "false") : `${raw}`;
-				return { ...prop, value };
+				const scenarioDefault =
+					normalized && scenarioDefaults
+						? scenarioDefaults[normalized as keyof ScenarioDefaultValue]
+						: undefined;
+				const resolvedDefault = (() => {
+					if (scenarioDefault === undefined || scenarioDefault === null) {
+						return prop.defaultValue;
+					}
+					return typeof scenarioDefault === "boolean"
+						? scenarioDefault
+							? "true"
+							: "false"
+						: `${scenarioDefault}`;
+				})();
+
+				const existingValue =
+					prop.value !== undefined && prop.value !== null
+						? `${prop.value}`.trim()
+						: "";
+				const nextValue = existingValue.length > 0
+					? `${prop.value}`
+					: resolvedDefault ?? prop.value ?? "";
+
+				return {
+					...prop,
+					value: nextValue,
+					defaultValue: resolvedDefault ?? prop.defaultValue ?? nextValue,
+				};
 			});
 		},
 		[scenarioDefaults],
 	);
+
+	const resetPropsToDefault = useCallback(() => {
+		if (!selectedDevice) return;
+		const confirmed = window.confirm(
+			"입력했던 모든 값이 초기화됩니다. 초기화 하시겠습니까?",
+		);
+		if (!confirmed) {
+			return;
+		}
+		const nextProps = selectedDevice.props.map((prop) => {
+			const fallback = prop.defaultValue ?? "";
+			updateDevicePropValue(selectedDevice, prop.key, fallback);
+			return { ...prop, value: fallback };
+		});
+		setSelectedDevice({ ...selectedDevice, props: nextProps });
+	}, [selectedDevice, updateDevicePropValue, setSelectedDevice]);
 
 	const [properties1, properties2] = useMemo(() => {
 		const allProps = hydrateProps(selectedDevice?.props);
@@ -190,16 +215,25 @@ export const CreateDeviceModal = ({
 							/>
 						</div>
 						<div className="space-y-3 flex-1">
-							<div className="flex justify-between">
+							<div className="flex justify-between items-center">
 								<p className="text-md mr-3 font-bold">변수 입력 영역</p>
 
-								<button
-									type="button"
-									onClick={() => setShowExtra(!showExtra)}
-									className="text-xs px-4 py-1 bg-gray-500 text-gray-200 hover:bg-gray-600"
-								>
-									입력 변수 범위확인 {showExtra ? "닫기" : "열기"}
-								</button>
+								<div className="flex items-center gap-2">
+									<button
+										type="button"
+										onClick={resetPropsToDefault}
+										className="text-xs px-4 py-1 rounded bg-gray-600 text-gray-100 hover:bg-gray-500"
+									>
+										기본값 초기화
+									</button>
+									<button
+										type="button"
+										onClick={() => setShowExtra(!showExtra)}
+										className="text-xs px-4 py-1 bg-gray-500 text-gray-200 hover:bg-gray-600"
+									>
+										입력 변수 범위확인 {showExtra ? "닫기" : "열기"}
+									</button>
+								</div>
 							</div>
 							{selectedDevice && (
 								<div className="flex space-x-5">
