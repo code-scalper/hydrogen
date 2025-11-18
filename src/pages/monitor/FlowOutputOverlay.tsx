@@ -42,11 +42,25 @@ const FlowOutputOverlay: React.FC<FlowOutputOverlayProps> = ({
     (state) => state.currentValues[point.key ?? ""]
   );
 
-  const displayedValue = useMemo(() => {
-    if (simulationValue === undefined || simulationValue === null) {
-      return point.value ?? "";
+  const formatToTwoDecimals = (value: string | number) => {
+    const asString = `${value}`;
+    if (asString.trim() === "") return "";
+    const numericValue =
+      typeof value === "number" ? value : Number.parseFloat(asString);
+    if (Number.isNaN(numericValue)) {
+      return asString;
     }
-    return simulationValue;
+    const fixed = numericValue.toFixed(2);
+    return fixed.replace(/\.00$/, "").replace(/(\.[1-9])0$/, "$1");
+  };
+
+  const displayedValue = useMemo(() => {
+    const rawValue =
+      simulationValue === undefined || simulationValue === null
+        ? point.value ?? ""
+        : simulationValue;
+    if (rawValue === "") return "";
+    return formatToTwoDecimals(rawValue as string | number);
   }, [point.value, simulationValue]);
   return (
     <div
