@@ -342,8 +342,8 @@ const BaseHeader = () => {
     >
       <div className="m-0 px-3">
         <h1 className="flex font-bold text-blue-400 text-xl">
-          Hydrogen
-          <span className="text-white font-normal ml-1">Simulator</span>
+          MHy
+          <span className="text-white font-normal">SIM</span>
         </h1>
       </div>
       <nav className="relative flex items-center gap-4 justify-end p-3">
