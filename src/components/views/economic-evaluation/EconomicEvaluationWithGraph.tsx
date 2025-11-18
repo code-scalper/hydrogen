@@ -87,6 +87,8 @@ const additionalTabs = [
   // { id: "coefficients", label: "회귀 계수" },
 ];
 
+const OUTPUT_TAB_IDS = new Set(["report", "cashflow"] as const);
+
 const formatNumber = (value: number | null | undefined, fractionDigits = 2) => {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return "-";
@@ -390,9 +392,24 @@ const EconomicEvaluationWithGraph = ({
     []
   );
 
-  const tabItems = useMemo(() => {
-    return [...MODAL_TABS, ...equipmentTabs, ...additionalTabs];
-  }, [equipmentTabs]);
+  const inputTabs = useMemo(
+    () => additionalTabs.filter((tab: any) => !OUTPUT_TAB_IDS.has(tab.id)),
+    []
+  );
+  const outputTabs = useMemo(
+    () => additionalTabs.filter((tab: any) => OUTPUT_TAB_IDS.has(tab.id)),
+    []
+  );
+
+  const navSections = useMemo(
+    () => [
+      { key: "basic", label: "기본 입력", tabs: MODAL_TABS },
+      { key: "equipment", label: "설비 비용 입력", tabs: equipmentTabs },
+      { key: "inputs", label: "단가 입력", tabs: inputTabs },
+      { key: "outputs", label: "결과 출력", tabs: outputTabs },
+    ],
+    [equipmentTabs, inputTabs, outputTabs]
+  );
 
   const defaultCurrency = DEFAULT_GENERAL_SETTINGS.currencies;
   const { enabled, graphEnabled, dalToWon } = general;
@@ -457,7 +474,7 @@ const EconomicEvaluationWithGraph = ({
               onClick={() => resetAll()}
               className="rounded-md border border-slate-600 px-3 py-1 text-xs text-slate-300 transition hover:bg-slate-700"
             >
-              초기화
+              기본값으로 초기화
             </button>
             <button
               type="button"
@@ -469,7 +486,7 @@ const EconomicEvaluationWithGraph = ({
                   : "text-emerald-200 hover:bg-emerald-500/10"
               }`}
             >
-              {loadingOutputs ? "불러오는 중..." : "데이터 새로고침"}
+              {loadingOutputs ? "불러오는 중..." : "입력 데이터 업데이트"}
             </button>
             <button
               type="button"
@@ -482,8 +499,19 @@ const EconomicEvaluationWithGraph = ({
         </header>
 
         <div className="flex flex-1 gap-4 overflow-hidden px-5 py-4">
-          <nav className="flex w-56 flex-col gap-1 overflow-y-auto border-r border-slate-800 pr-3">
-            {tabItems.map((tab) => renderTabButton(tab.id, tab.label))}
+          <nav className="flex w-56 flex-col gap-4 overflow-y-auto border-r border-slate-800 pr-3">
+            {navSections.map((section) => (
+              <div key={section.key}>
+                <p className="px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  {section.label}
+                </p>
+                <div className="mt-1 flex flex-col gap-1">
+                  {section.tabs.map((tab) =>
+                    renderTabButton(tab.id, tab.label)
+                  )}
+                </div>
+              </div>
+            ))}
           </nav>
           <section className="relative flex-1 overflow-y-auto">
             {activeTab === "basic" && (
