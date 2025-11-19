@@ -166,7 +166,7 @@ export const EQUIPMENT_TAB_CONFIGS: EquipmentTabConfig[] = [
 		xUnit: "m³",
 		yLabel: "설비비",
 		currencyKey: "lqTk",
-		usdUnit: { unit: "달러", scale: 1 },
+		usdUnit: { unit: "$K", scale: 1_000 },
 		krwUnit: { unit: "백만원", scale: 1_000_000 },
 		defaultSamples: [
 			{ x: 20, usd: USD(85_000) },

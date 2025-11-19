@@ -1,4 +1,7 @@
 import type { DeviceInterface } from "@/types";
+const formatRangeValue = (value?: number) =>
+	value === undefined || value === null ? "-" : value;
+
 const ExtraInfoPanel = ({ props }: { props: DeviceInterface["props"] }) => {
 	return (
 		<div className="w-[400px] bg-gray-700 p-3 text-[10px] overflow-y-auto max-h-[550px]">
@@ -19,8 +22,12 @@ const ExtraInfoPanel = ({ props }: { props: DeviceInterface["props"] }) => {
 							<td className="py-1 px-2 text-white">{prop.name}</td>
 							<td className="py-1 px-2 text-white">{prop.description}</td>
 							<td className="py-1 px-2 text-white">{prop.unit}</td>
-							<td className="py-1 px-2 text-white" /> {/* min */}
-							<td className="py-1 px-2 text-white" /> {/* max */}
+							<td className="py-1 px-2 text-white">
+								{formatRangeValue(prop.min)}
+							</td>
+							<td className="py-1 px-2 text-white">
+								{formatRangeValue(prop.max)}
+							</td>
 						</tr>
 					))}
 				</tbody>

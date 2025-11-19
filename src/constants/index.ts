@@ -510,10 +510,10 @@ const SCENARIO_BASE_DATA: BaseDataProps[] = [
 		unit: "",
 		value: "",
 		description: "",
-		type: "select",
+		type: "radio",
 		options: [
-			{ id: "1", name: "적용" },
-			{ id: "2", name: "미적용" },
+			{ id: "0", name: "적용" },
+			{ id: "1", name: "미적용" },
 		],
 	},
 	{
@@ -524,10 +524,10 @@ const SCENARIO_BASE_DATA: BaseDataProps[] = [
 		unit: "",
 		value: "",
 		description: "",
-		type: "select",
+		type: "radio",
 		options: [
-			{ id: "1", name: "적용" },
-			{ id: "2", name: "미적용" },
+			{ id: "0", name: "적용" },
+			{ id: "1", name: "미적용" },
 		],
 	},
 	{
@@ -582,7 +582,7 @@ const SCENARIO_BASE_DATA: BaseDataProps[] = [
 		unit: "",
 		value: "",
 		description: "",
-		type: "select",
+		type: "radio",
 		options: [
 			{ id: "1", name: "충전스텝에 따라 가동" },
 			{ id: "2", name: "뱅크압력에 따라 가동" },

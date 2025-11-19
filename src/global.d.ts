@@ -16,6 +16,7 @@ declare global {
 				outputDate: string;
 				outputDir: string;
 			}>;
+			stopExe: () => Promise<{ stopped: boolean }>;
 			readRecentLogs: () => Promise<
 				Array<{
 					date: string;
@@ -53,6 +54,17 @@ declare global {
 				cashflow: Array<Record<string, number | string | null>>;
 				coefficients: Array<Record<string, number | string | null>>;
 			}>;
+			downloadReportFiles: (payload?: {
+				date?: string;
+			}) => Promise<
+				| { success: true; files: string[]; date: string; opened: boolean }
+				| {
+						 success: false;
+						 reason: "NO_OUTPUT_DIR" | "MISSING_FILES" | "COPY_FAILED";
+						 missing?: string[];
+						 file?: string;
+				   }
+			>;
 		};
 		electronStore: {
 			get: (key: string) => Promise<unknown>;

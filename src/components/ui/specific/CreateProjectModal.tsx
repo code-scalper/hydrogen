@@ -1,21 +1,44 @@
 import { TextArea } from "@radix-ui/themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CreateProjectModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onCreate: (name: string, description: string) => void;
+	onSubmit: (name: string, description: string) => void;
+	title?: string;
+	submitLabel?: string;
+	initialName?: string;
+	initialDescription?: string;
 }
 
 export const CreateProjectModal = ({
 	isOpen,
 	onClose,
-	onCreate,
+	onSubmit,
+	title = "프로젝트 생성",
+	submitLabel = "생성",
+	initialName = "",
+	initialDescription = "",
 }: CreateProjectModalProps) => {
-	const [name, setName] = useState("");
-	const [description, setDescription] = useState("");
+	const [name, setName] = useState(initialName);
+	const [description, setDescription] = useState(initialDescription);
 	const nameInputId = "create-project-name";
 	const descriptionInputId = "create-project-description";
+
+	useEffect(() => {
+		if (isOpen) {
+			setName(initialName);
+			setDescription(initialDescription);
+		}
+	}, [isOpen, initialName, initialDescription]);
+
+	const handleSubmit = () => {
+		if (!name.trim()) {
+			return;
+		}
+		onSubmit(name.trim(), description.trim());
+		onClose();
+	};
 
 	if (!isOpen) return null;
 
@@ -24,9 +47,7 @@ export const CreateProjectModal = ({
 			<div className="bg-gray-800 rounded-md w-96 shadow-lg border border-gray-800 border-r">
 				{/* Header */}
 				<div className="flex justify-between items-center  p-2 bg-gray-900">
-					<h2 className="text-sm text-slate-200  font-semibold">
-						프로젝트 생성
-					</h2>
+					<h2 className="text-sm text-slate-200  font-semibold">{title}</h2>
 					<button
 						type="button"
 						onClick={onClose}
@@ -54,8 +75,7 @@ export const CreateProjectModal = ({
 							placeholder="예: New Project"
 							onKeyDown={(e) => {
 								if (e.key === "Enter") {
-									// 엔터를 눌렀을 때 실행할 코드
-									onCreate(name, description); // 예: 폴더 생성
+									handleSubmit();
 								}
 							}}
 						/>
@@ -68,18 +88,18 @@ export const CreateProjectModal = ({
 						>
 							프로젝트 설명
 						</label>
-						<TextArea
-							id={descriptionInputId}
-							placeholder=""
-							onChange={(e) => setDescription(e.target.value)}
-							size="1" // 1 = small, 2 = default, 3 = large
-							className="!border-none !border rounded p-1 px-2 
-              placeholder-gray-400
-              !focus:outline-none !focus:ring-2 !focus:ring-blue-800 flex-1 !bg-gray-700 !text-white"
+					<TextArea
+						id={descriptionInputId}
+						placeholder=""
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+						size="1" // 1 = small, 2 = default, 3 = large
+						className="!border-none !border rounded p-1 px-2 
+						placeholder-gray-400
+						!focus:outline-none !focus:ring-2 !focus:ring-blue-800 flex-1 !bg-gray-700 !text-white"
 							onKeyDown={(e) => {
-								if (e.key === "Enter") {
-									// 엔터를 눌렀을 때 실행할 코드
-									onCreate(name, description); // 예: 폴더 생성
+								if (e.key === "Enter" && e.metaKey) {
+									handleSubmit();
 								}
 							}}
 						/>
@@ -110,14 +130,11 @@ export const CreateProjectModal = ({
 					</button>
 					<button
 						type="button"
-						onClick={() => {
-							onCreate(name, description);
-							setName("");
-							onClose();
-						}}
-						className="text-xs px-4 py-1  bg-blue-500 text-white hover:bg-blue-600"
+						onClick={handleSubmit}
+						disabled={!name.trim()}
+						className="text-xs px-4 py-1  bg-blue-500 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
 					>
-						생성
+						{submitLabel}
 					</button>
 				</div>
 			</div>

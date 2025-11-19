@@ -69,8 +69,7 @@ export const usePsvSimulation = ({
 			const entry: { time: number; [key: string]: number } = {
 				time: frame.time,
 			};
-			for (const key of outputKeys) {
-				const raw = frame.values[key];
+			for (const [key, raw] of Object.entries(frame.values)) {
 				const parsed = Number.parseFloat(raw ?? "");
 				if (Number.isFinite(parsed)) {
 					entry[key] = parsed;
@@ -78,11 +77,26 @@ export const usePsvSimulation = ({
 			}
 			return entry;
 		});
-	}, [frames, outputKeys]);
+	}, [frames]);
 
 	const setInputValue = useCallback((key: string, value: string) => {
 		setInputs((prev) => ({ ...prev, [key]: value }));
 	}, []);
+
+	const loadInputs = useCallback(
+		(values: ValueMap) => {
+			setInputs((prev) => {
+				const next: ValueMap = { ...prev };
+				for (const key of inputKeys) {
+					if (Object.prototype.hasOwnProperty.call(values, key)) {
+						next[key] = toStringValue(values[key]);
+					}
+				}
+				return next;
+			});
+		},
+		[inputKeys],
+	);
 
 	const runSimulation = useCallback(async () => {
 		if (typeof window === "undefined" || !window.electronAPI?.runExe) {
@@ -145,6 +159,7 @@ export const usePsvSimulation = ({
 		running,
 		status,
 		setInputValue,
+		loadInputs,
 		runSimulation,
 	};
 };

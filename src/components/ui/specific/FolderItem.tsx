@@ -6,6 +6,8 @@ import {
 	FolderIcon,
 } from "@heroicons/react/24/solid";
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CreateProjectModal } from "./CreateProjectModal";
 import FolderContext from "./FolderContext";
 
 import type {
@@ -42,6 +44,9 @@ export const FolderItem = ({
 		(state) => state.setSelectedScenario,
 	);
 	const setSelectedDevice = useProjectStore((state) => state.setSelectedDevice);
+	const updateProjectDetails = useProjectStore(
+		(state) => state.updateProjectDetails,
+	);
 
 	const selectedProject = useProjectStore((state) => state.selectedProject);
 	const selectedScenario = useProjectStore((state) => state.selectedScenario);
@@ -66,6 +71,15 @@ export const FolderItem = ({
 
 	const [contextOpen, setContextOpen] = useState(false);
 	const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+	const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	const ensureMonitorRoute = () => {
+		if (location.pathname !== "/") {
+			navigate("/");
+		}
+	};
 
 	const findParentProject = (id: string): ProjectInterface | undefined => {
 		return folderList.find((project) =>
@@ -215,6 +229,7 @@ export const FolderItem = ({
 	};
 
 	const handleItemClick = () => {
+		ensureMonitorRoute();
 		if (data.type === "project") {
 			toggle();
 			return;
@@ -231,6 +246,7 @@ export const FolderItem = ({
 	};
 
 	const handleItemDoubleClick = () => {
+		ensureMonitorRoute();
 		if (data.type === "scenario") {
 			toggle();
 			return;
@@ -363,7 +379,25 @@ export const FolderItem = ({
 						parent?.id, // project가 아닌 경우 필요
 					);
 				}}
+				onProjectSettings={() => {
+					setProjectSettingsOpen(true);
+				}}
 			/>
+
+			{data.type === "project" && (
+				<CreateProjectModal
+					isOpen={projectSettingsOpen}
+					onClose={() => setProjectSettingsOpen(false)}
+					onSubmit={(name, description) => {
+						updateProjectDetails(data.id, { name, description });
+						setProjectSettingsOpen(false);
+					}}
+					title="프로젝트 설정 변경"
+					submitLabel="저장"
+					initialName={data.name}
+					initialDescription={data.description ?? ""}
+				/>
+			)}
 		</div>
 	);
 };

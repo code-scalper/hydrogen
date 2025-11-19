@@ -93,7 +93,7 @@ const SidebarHeader = ({ handleProjectOpen }: SidebarHeaderProps) => {
 			<CreateProjectModal
 				isOpen={isOpen}
 				onClose={() => setIsOpen(false)}
-				onCreate={handleCreate}
+				onSubmit={handleCreate}
 			/>
 			<CreateScenarioModal
 				isOpen={scenarioOpen}

@@ -1,10 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "fs";
 import Store from "electron-store";
-import { spawn } from "child_process";
+import { spawn, type ChildProcess } from "child_process";
 
 import {
   ensureInputTotalWorkbook,
@@ -102,6 +102,10 @@ interface RunExePayload {
   skipExe?: boolean;
 }
 
+const EXECUTION_CANCELLED_MESSAGE = "Execution cancelled by user";
+let currentExeProcess: ChildProcess | null = null;
+let currentExeCancelled = false;
+
 type LogLine = {
   ts?: string;
   level?: string;
@@ -129,12 +133,17 @@ type RunExeResult = {
 
 function runExternalExecutable(executable: string, cwd: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    currentExeCancelled = false;
     const child = spawn(executable, {
       cwd,
       windowsHide: true,
     });
 
+    currentExeProcess = child;
+
     child.on("error", (error) => {
+      currentExeProcess = null;
+      currentExeCancelled = false;
       reject(error);
     });
 
@@ -147,6 +156,13 @@ function runExternalExecutable(executable: string, cwd: string): Promise<void> {
     });
 
     child.on("close", (code) => {
+      const wasCancelled = currentExeCancelled;
+      currentExeProcess = null;
+      currentExeCancelled = false;
+      if (wasCancelled) {
+        reject(new Error(EXECUTION_CANCELLED_MESSAGE));
+        return;
+      }
       if (code === 0) {
         resolve();
         return;
@@ -454,7 +470,11 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
     if (Object.keys(values).length > 0 || sfc) {
       const workbookBaseDir = thirdPartyDir;
       const workbookPath = ensureInputTotalWorkbook(workbookBaseDir);
-      const normalizedValues = updateInputTotalWorkbook(workbookPath, values, sfc);
+      const normalizedValues = updateInputTotalWorkbook(
+        workbookPath,
+        values,
+        sfc
+      );
       try {
         const targetWorkbookPath = path.join(workingDir, "Input_Total.xlsx");
         fs.copyFileSync(workbookPath, targetWorkbookPath);
@@ -469,7 +489,11 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
           generatedAt: new Date().toISOString(),
         };
         const jsonPath = path.join(workingDir, "input_total.json");
-        fs.writeFileSync(jsonPath, JSON.stringify(jsonPayload, null, 2), "utf8");
+        fs.writeFileSync(
+          jsonPath,
+          JSON.stringify(jsonPayload, null, 2),
+          "utf8"
+        );
         console.log("📝 input_total.json written to", jsonPath);
       } catch (jsonError) {
         console.error("⚠️ Failed to write input_total.json", jsonError);
@@ -519,6 +543,22 @@ ipcMain.handle("run-exe", async (_event, payload?: RunExePayload) => {
   };
 
   return result;
+});
+
+ipcMain.handle("stop-exe", async () => {
+  if (!currentExeProcess) {
+    return { stopped: false };
+  }
+  if (currentExeCancelled) {
+    return { stopped: true };
+  }
+  currentExeCancelled = true;
+  const killed = currentExeProcess.kill();
+  if (!killed) {
+    currentExeCancelled = false;
+    return { stopped: false };
+  }
+  return { stopped: true };
 });
 
 ipcMain.handle(
@@ -672,6 +712,68 @@ ipcMain.handle(
         coefficients: [] as Array<Record<string, number | string | null>>,
       };
     }
+  }
+);
+
+ipcMain.handle(
+  "download-report-files",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, payload?.date ?? null);
+
+    if (!target) {
+      return { success: false, reason: "NO_OUTPUT_DIR" };
+    }
+
+    const requiredFiles = [
+      "Output_Total.csv",
+      "Output_EE2.csv",
+      "Output_EE3.csv",
+    ];
+    const missing: string[] = [];
+    const resolvedFiles = requiredFiles.map((file) => {
+      const fullPath = path.join(target.dir, file);
+      if (!fs.existsSync(fullPath)) {
+        missing.push(file);
+      }
+      return { name: file, path: fullPath };
+    });
+
+    if (missing.length > 0) {
+      return { success: false, reason: "MISSING_FILES", missing };
+    }
+
+    const downloadsDir = app.getPath("downloads");
+    const saved: string[] = [];
+
+    for (const file of resolvedFiles) {
+      const ext = path.extname(file.name);
+      const baseName = path.basename(file.name, ext);
+      let candidateName = `${baseName}_${target.date}${ext}`;
+      let counter = 1;
+      while (fs.existsSync(path.join(downloadsDir, candidateName))) {
+        candidateName = `${baseName}_${target.date}(${counter})${ext}`;
+        counter += 1;
+      }
+      const destination = path.join(downloadsDir, candidateName);
+      try {
+        fs.copyFileSync(file.path, destination);
+        saved.push(destination);
+      } catch (error) {
+        console.error("Failed to copy report file", file.path, destination, error);
+        return { success: false, reason: "COPY_FAILED", file: file.name };
+      }
+    }
+
+    let opened = false;
+    try {
+      await shell.openPath(downloadsDir);
+      opened = true;
+    } catch (error) {
+      console.warn("Failed to open downloads directory", downloadsDir, error);
+    }
+
+    return { success: true, files: saved, date: target.date, opened };
   }
 );
 

@@ -1,3 +1,6 @@
+import type { DeviceProperty } from "@/types";
+import { DEVICES } from "./devices";
+
 export type WhatIfComboOption = {
 	value: string;
 	label: string;
@@ -28,6 +31,9 @@ export interface WhatIfInputs {
 	P_Tk0C_Max: string;
 	MaxIter: string;
 }
+
+export type WhatIfDispenserInputs = Record<string, string>;
+export type WhatIfVehicleInputs = Record<string, string>;
 
 export const WHAT_IF_TABS = [
 	{ id: "basic", label: "What-if 기본정보" },
@@ -139,6 +145,53 @@ export const DEFAULT_WHAT_IF_INPUTS: WhatIfInputs = (() => {
 	}
 	return result;
 })();
+
+const DISPENSER_FIELDS_SOURCE: DeviceProperty[] = DEVICES.Disp1?.props ?? [];
+const VEHICLE_FIELDS_SOURCE: DeviceProperty[] = DEVICES.TkVe1?.props ?? [];
+
+export interface WhatIfDeviceField {
+	key: string;
+	label: string;
+	unit?: string;
+	type: "text" | "select";
+	options?: WhatIfComboOption[];
+	description?: string;
+}
+
+const mapDeviceFields = (props: DeviceProperty[]): WhatIfDeviceField[] =>
+	props.map((prop) => ({
+		key: prop.key,
+		label: prop.name ?? prop.key,
+		unit: prop.unit,
+		type: prop.type === "select" ? "select" : "text",
+		options: prop.options?.map((option) => ({
+			value: option.id,
+			label: option.name,
+		})),
+		description: prop.description,
+	}));
+
+const buildDeviceDefaults = (
+	fields: WhatIfDeviceField[],
+	props: DeviceProperty[],
+) => {
+	const initial: Record<string, string> = {};
+	for (const field of fields) {
+		const source = props.find((prop) => prop.key === field.key);
+		initial[field.key] = source?.value ?? "";
+	}
+	return initial;
+};
+
+export const WHAT_IF_DISPENSER_FIELDS = mapDeviceFields(
+	DISPENSER_FIELDS_SOURCE,
+);
+export const DEFAULT_WHAT_IF_DISPENSER_INPUTS: WhatIfDispenserInputs =
+	buildDeviceDefaults(WHAT_IF_DISPENSER_FIELDS, DISPENSER_FIELDS_SOURCE);
+
+export const WHAT_IF_VEHICLE_FIELDS = mapDeviceFields(VEHICLE_FIELDS_SOURCE);
+export const DEFAULT_WHAT_IF_VEHICLE_INPUTS: WhatIfVehicleInputs =
+	buildDeviceDefaults(WHAT_IF_VEHICLE_FIELDS, VEHICLE_FIELDS_SOURCE);
 
 export const WHAT_IF_AXIS_MAP = {
 	in: {

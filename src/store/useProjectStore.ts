@@ -45,6 +45,10 @@ interface ProjectState {
 		type: "project" | "scenario" | "device" | "property" | "module" | "input",
 		parentId?: string,
 	) => void;
+	updateProjectDetails: (
+		projectId: string,
+		updates: { name?: string; description?: string },
+	) => void;
 
 	deleteItem: (
 		id: string,
@@ -315,6 +319,17 @@ export const useProjectStore = create<ProjectState>()(
 
 					return { folderList: updatedFolderList };
 				}),
+			updateProjectDetails: (projectId, updates) =>
+				set((state) => {
+					const updatedFolderList = state.folderList.map((project) =>
+						project.id === projectId ? { ...project, ...updates } : project,
+					);
+					const selectedProject =
+						state.selectedProject && state.selectedProject.id === projectId
+							? { ...state.selectedProject, ...updates }
+							: state.selectedProject;
+					return { folderList: updatedFolderList, selectedProject };
+				}),
 			deleteItem: (id, type, parentId) =>
 				set((state) => {
 					const removeDevices = (
@@ -519,7 +534,23 @@ export const useProjectStore = create<ProjectState>()(
 					};
 				});
 
-				set({ folderList: updatedFolderList });
+				const updatedProject = updatedFolderList.find(
+					(project) => project.id === device.projectId,
+				);
+				const updatedScenario = updatedProject?.children?.find(
+					(scenario) => scenario.id === device.scenarioId,
+				) as ScenarioInterface | undefined;
+				const updatedDevice = updatedScenario?.children?.find(
+					(candidate) => candidate.id === device.id,
+				) as DeviceInterface | undefined;
+
+				set({
+					folderList: updatedFolderList,
+					selectedDevice:
+						state.selectedDevice && state.selectedDevice.id === device.id
+							? updatedDevice ?? state.selectedDevice
+							: state.selectedDevice,
+				});
 			},
 
 			updateScenarioBaseDataValue: (key: string, newValue: string) => {
