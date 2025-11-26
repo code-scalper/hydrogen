@@ -1,12 +1,16 @@
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   WHAT_IF_BASIC_FIELDS,
   WHAT_IF_DISPENSER_FIELDS,
+  WHAT_IF_SCENARIO_5110_OPTIONS,
   WHAT_IF_TABS,
   WHAT_IF_VEHICLE_FIELDS,
+  getScenario5110DatasetDate,
+  getScenario5110WhatIfDefaults,
   type WhatIfInputs,
+  type WhatIfScenario5110TypeId,
 } from "@/constants/whatIf";
 import { buildWhatIfDataset, validateWhatIfInputs } from "@/lib/whatIf";
 import useSimulationOutputStore from "@/store/useSimulationOutputStore";
@@ -57,6 +61,7 @@ export const WhatIf = ({
     vehicleInputs,
     setActiveTab,
     setInput,
+    setInputs,
     setDispenserInput,
     setVehicleInput,
     setErrors,
@@ -68,10 +73,53 @@ export const WhatIf = ({
     frames,
     sourceDate,
     refreshLatest,
+    refreshForDate,
     loading: outputLoading,
   } = useSimulationOutputStore();
 
   const [touched, setTouched] = useState<Partial<WhatIfInputs>>({});
+  const scenarioOptions = WHAT_IF_SCENARIO_5110_OPTIONS;
+  const [selectedScenarioType, setSelectedScenarioType] = useState<
+    WhatIfScenario5110TypeId | null
+  >(scenarioOptions[0]?.id ?? null);
+
+  const applyScenarioDefaults = useCallback(
+    (typeId: WhatIfScenario5110TypeId) => {
+      const defaults = getScenario5110WhatIfDefaults(typeId);
+      setInputs(defaults);
+      setTouched({});
+    },
+    [setInputs]
+  );
+
+  useEffect(() => {
+    if (!selectedScenarioType) return;
+    applyScenarioDefaults(selectedScenarioType);
+
+    const datasetDate = getScenario5110DatasetDate(selectedScenarioType);
+    const loadDataset = async () => {
+      try {
+        if (datasetDate) {
+          await refreshForDate(datasetDate);
+        } else {
+          await refreshLatest();
+        }
+      } catch (error) {
+        console.error(
+          "[WhatIf] Failed to load dataset for scenario 5110",
+          selectedScenarioType,
+          error
+        );
+      }
+    };
+
+    loadDataset();
+  }, [
+    selectedScenarioType,
+    applyScenarioDefaults,
+    refreshForDate,
+    refreshLatest,
+  ]);
 
   const markAllTouched = () => {
     const next: Partial<WhatIfInputs> = {};
@@ -95,7 +143,11 @@ export const WhatIf = ({
 
   const resetForm = () => {
     reset();
-    setTouched({});
+    if (selectedScenarioType) {
+      applyScenarioDefaults(selectedScenarioType);
+    } else {
+      setTouched({});
+    }
   };
 
   const handleDispenserInput = (key: string, value: string) => {
@@ -213,7 +265,7 @@ export const WhatIf = ({
                     <span className="text-[11px] text-slate-400">
                       {tab.id === "basic"
                         ? "입력 범위 및 출력 선택"
-                        : "향후 확장 예정"}
+                        : "입력 설정"}
                     </span>
                   </button>
                 </li>
@@ -406,16 +458,63 @@ export const WhatIf = ({
           </div>
         </div>
 
-        <div className="flex justify-between border-t border-slate-700 bg-slate-900 px-6 py-3 text-[12px]">
-          <button
-            type="button"
-            onClick={() => {
-              resetForm();
-            }}
-            className="rounded bg-slate-800 px-3 py-2 text-slate-200 hover:bg-slate-700"
-          >
-            기본값으로 초기화
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-700 bg-slate-900 px-6 py-3 text-[12px]">
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+              }}
+              className="rounded bg-slate-800 px-3 py-2 text-slate-200 hover:bg-slate-700"
+            >
+              기본값으로 초기화
+            </button>
+            {scenarioOptions.length > 0 && (
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="text-[12px] text-slate-400">시나리오 옵션</span>
+                <div className="flex items-center gap-2">
+                  {scenarioOptions.map((option) => {
+                    const checked = selectedScenarioType === option.id;
+                    return (
+                      <label
+                        key={option.id}
+                        className={`flex items-center gap-2 rounded-full border px-3 py-1 transition ${
+                          checked
+                            ? "border-blue-400 bg-blue-500/20 text-blue-200"
+                            : "border-slate-600 bg-slate-800 text-slate-200 hover:border-blue-400"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="scenario-5110-type"
+                          value={option.id}
+                          checked={checked}
+                          onChange={() => {
+                            setSelectedScenarioType(option.id);
+                          }}
+                          className="sr-only"
+                        />
+                        <span
+                          className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                            checked
+                              ? "border-blue-300 bg-blue-400"
+                              : "border-slate-500 bg-slate-900"
+                          }`}
+                        >
+                          {checked && (
+                            <span className="h-2 w-2 rounded-full bg-slate-900" />
+                          )}
+                        </span>
+                        <span className="text-[12px] font-semibold">
+                          {option.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <button
               type="button"

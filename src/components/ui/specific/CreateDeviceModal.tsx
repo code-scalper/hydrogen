@@ -102,12 +102,17 @@ export const CreateDeviceModal = ({
 						: `${scenarioDefault}`;
 				})();
 
-				const existingValue =
-					prop.value !== undefined && prop.value !== null
-						? `${prop.value}`.trim()
-						: "";
-				const nextValue = existingValue.length > 0
+				const hasMeaningfulValue = (value: unknown) => {
+					if (value === undefined || value === null) return false;
+					const text = `${value}`.trim();
+					if (text.length === 0) return false;
+					return text !== "0";
+				};
+				const existingValue = hasMeaningfulValue(prop.value)
 					? `${prop.value}`
+					: "";
+				const nextValue = existingValue.length > 0
+					? existingValue
 					: resolvedDefault ?? prop.value ?? "";
 
 				return {

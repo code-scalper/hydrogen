@@ -1,4 +1,5 @@
 import type { DeviceProperty } from "@/types";
+import { DEFAULT_SCENARIO_VALUES } from "./defaultValue";
 import { DEVICES } from "./devices";
 
 export type WhatIfComboOption = {
@@ -145,6 +146,59 @@ export const DEFAULT_WHAT_IF_INPUTS: WhatIfInputs = (() => {
 	}
 	return result;
 })();
+
+const SCENARIO_5110_DEFAULTS = DEFAULT_SCENARIO_VALUES.SFC5110;
+export type WhatIfScenario5110TypeId = keyof typeof SCENARIO_5110_DEFAULTS;
+
+const scenarioRadioLabel = (typeId: string) => {
+	if (typeId.startsWith("type")) {
+		return `타입${typeId.replace("type", "")}`;
+	}
+	return typeId;
+};
+
+const SCENARIO_5110_DATASET_DATES: Partial<
+	Record<WhatIfScenario5110TypeId, string>
+> = {
+	type1: "20251118",
+	type2: "20251024",
+};
+
+export type WhatIfScenario5110Option = {
+	id: WhatIfScenario5110TypeId;
+	label: string;
+	datasetDate: string | null;
+};
+
+export const WHAT_IF_SCENARIO_5110_OPTIONS: WhatIfScenario5110Option[] = (
+	Object.keys(SCENARIO_5110_DEFAULTS) as WhatIfScenario5110TypeId[]
+).map((typeId) => ({
+	id: typeId,
+	label: scenarioRadioLabel(typeId),
+	datasetDate: SCENARIO_5110_DATASET_DATES[typeId] ?? null,
+}));
+
+const WHAT_IF_FIELD_KEYS = WHAT_IF_BASIC_FIELDS.map((field) => field.key);
+
+export const getScenario5110WhatIfDefaults = (
+	typeId: WhatIfScenario5110TypeId,
+): WhatIfInputs => {
+	const scenarioDefaults = SCENARIO_5110_DEFAULTS[typeId];
+	const nextInputs: WhatIfInputs = { ...DEFAULT_WHAT_IF_INPUTS };
+	for (const key of WHAT_IF_FIELD_KEYS) {
+		const raw = scenarioDefaults[key];
+		if (raw === undefined || raw === null) {
+			nextInputs[key] = DEFAULT_WHAT_IF_INPUTS[key];
+			continue;
+		}
+		nextInputs[key] = typeof raw === "boolean" ? (raw ? "1" : "0") : `${raw}`;
+	}
+	return nextInputs;
+};
+
+export const getScenario5110DatasetDate = (
+	typeId: WhatIfScenario5110TypeId,
+): string | null => SCENARIO_5110_DATASET_DATES[typeId] ?? null;
 
 const DISPENSER_FIELDS_SOURCE: DeviceProperty[] = DEVICES.Disp1?.props ?? [];
 const VEHICLE_FIELDS_SOURCE: DeviceProperty[] = DEVICES.TkVe1?.props ?? [];
