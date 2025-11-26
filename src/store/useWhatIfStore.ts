@@ -22,6 +22,8 @@ interface WhatIfState {
 	vehicleInputs: WhatIfVehicleInputs;
 	setVehicleInput: (key: string, value: string) => void;
 	setDispenserInput: (key: string, value: string) => void;
+	setVehicleInputs: (inputs: WhatIfVehicleInputs) => void;
+	setDispenserInputs: (inputs: WhatIfDispenserInputs) => void;
 	setActiveTab: (tab: WhatIfTabId) => void;
 	setInput: (key: keyof WhatIfInputs, value: string) => void;
 	setInputs: (inputs: WhatIfInputs) => void;
@@ -57,10 +59,12 @@ export const useWhatIfStore = create<WhatIfState>((set) => ({
 		set((state) => ({
 			dispenserInputs: { ...state.dispenserInputs, [key]: value },
 		})),
+	setDispenserInputs: (dispenserInputs) => set({ dispenserInputs }),
 	setVehicleInput: (key, value) =>
 		set((state) => ({
 			vehicleInputs: { ...state.vehicleInputs, [key]: value },
 		})),
+	setVehicleInputs: (vehicleInputs) => set({ vehicleInputs }),
 	reset: () =>
 		set({
 			activeTab: "basic",

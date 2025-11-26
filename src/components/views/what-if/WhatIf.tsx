@@ -8,7 +8,9 @@ import {
   WHAT_IF_TABS,
   WHAT_IF_VEHICLE_FIELDS,
   getScenario5110DatasetDate,
+  getScenario5110DispenserDefaults,
   getScenario5110WhatIfDefaults,
+  getScenario5110VehicleDefaults,
   type WhatIfInputs,
   type WhatIfScenario5110TypeId,
 } from "@/constants/whatIf";
@@ -63,7 +65,9 @@ export const WhatIf = ({
     setInput,
     setInputs,
     setDispenserInput,
+    setDispenserInputs,
     setVehicleInput,
+    setVehicleInputs,
     setErrors,
     setDataset,
     setLoading,
@@ -86,10 +90,14 @@ export const WhatIf = ({
   const applyScenarioDefaults = useCallback(
     (typeId: WhatIfScenario5110TypeId) => {
       const defaults = getScenario5110WhatIfDefaults(typeId);
+      const dispenserDefaults = getScenario5110DispenserDefaults(typeId);
+      const vehicleDefaults = getScenario5110VehicleDefaults(typeId);
       setInputs(defaults);
+      setDispenserInputs(dispenserDefaults);
+      setVehicleInputs(vehicleDefaults);
       setTouched({});
     },
-    [setInputs]
+    [setInputs, setDispenserInputs, setVehicleInputs]
   );
 
   useEffect(() => {
