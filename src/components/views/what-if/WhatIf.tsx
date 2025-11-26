@@ -14,7 +14,11 @@ import {
   type WhatIfInputs,
   type WhatIfScenario5110TypeId,
 } from "@/constants/whatIf";
+import { collectScenarioInputValues } from "@/lib/simulation";
 import { buildWhatIfDataset, validateWhatIfInputs } from "@/lib/whatIf";
+import { useInteractionStore } from "@/store/useInteractionStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import type { SimulationFrame } from "@/store/useSimulationStore";
 import useSimulationOutputStore from "@/store/useSimulationOutputStore";
 import useWhatIfStore from "@/store/useWhatIfStore";
 
@@ -79,7 +83,13 @@ export const WhatIf = ({
     refreshLatest,
     refreshForDate,
     loading: outputLoading,
+    setOutput: setOutputData,
   } = useSimulationOutputStore();
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
+  const hasInvalidInputs = useInteractionStore(
+    (state) => Object.keys(state.invalidInputKeys).length > 0
+  );
+  const skipRunExe = useInteractionStore((state) => state.skipRunExe);
 
   const [touched, setTouched] = useState<Partial<WhatIfInputs>>({});
   const scenarioOptions = WHAT_IF_SCENARIO_5110_OPTIONS;
@@ -173,6 +183,55 @@ export const WhatIf = ({
 
   const validationState = useMemo(() => validateWhatIfInputs(inputs), [inputs]);
 
+  const runSimulationWithCurrentInputs = useCallback(
+    async (): Promise<
+      { frames: SimulationFrame[]; sourceDate: string | null } | null
+    > => {
+      if (!selectedScenario) {
+        throw new Error("시뮬레이션 시나리오를 먼저 선택하세요.");
+      }
+      if (hasInvalidInputs) {
+        throw new Error(
+          "시뮬레이터에서 유효하지 않은 입력이 감지되었습니다. 빨간색으로 표시된 값을 먼저 수정하세요."
+        );
+      }
+
+      if (
+        typeof window === "undefined" ||
+        typeof window.electronAPI?.runExe !== "function"
+      ) {
+        console.warn(
+          "[WhatIf] runExe API is unavailable. Falling back to 기존 출력 데이터."
+        );
+        return null;
+      }
+
+      const payload = collectScenarioInputValues(selectedScenario);
+      if (!payload) {
+        throw new Error("시뮬레이션 입력 데이터를 준비하지 못했습니다.");
+      }
+
+      const result = await window.electronAPI.runExe({
+        ...payload,
+        skipExe: skipRunExe,
+      });
+
+      const normalizedFrames = Array.isArray(result.frames)
+        ? result.frames
+        : [];
+
+      setOutputData(normalizedFrames, {
+        sourceDate: result.outputDate ?? null,
+      });
+
+      return {
+        frames: normalizedFrames,
+        sourceDate: result.outputDate ?? null,
+      };
+    },
+    [hasInvalidInputs, selectedScenario, setOutputData, skipRunExe]
+  );
+
   const primaryAction = async () => {
     markAllTouched();
     const result = validateWhatIfInputs(inputs);
@@ -183,11 +242,30 @@ export const WhatIf = ({
 
     setLoading(true);
     try {
-      let workingFrames = frames;
+      let workingFrames: SimulationFrame[] = frames;
+      let workingSourceDate =
+        sourceDate ?? useSimulationOutputStore.getState().sourceDate;
+
+      try {
+        const runResult = await runSimulationWithCurrentInputs();
+        if (runResult) {
+          workingFrames = runResult.frames;
+          workingSourceDate = runResult.sourceDate ?? workingSourceDate;
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "시뮬레이션 실행 중 오류가 발생했습니다.";
+        window.alert(message);
+        return;
+      }
 
       if (workingFrames.length === 0) {
         await refreshLatest();
-        workingFrames = useSimulationOutputStore.getState().frames;
+        const latestState = useSimulationOutputStore.getState();
+        workingFrames = latestState.frames;
+        workingSourceDate = latestState.sourceDate ?? workingSourceDate;
       }
 
       if (workingFrames.length === 0) {
@@ -204,7 +282,9 @@ export const WhatIf = ({
       const dataset = buildWhatIfDataset(
         workingFrames,
         result.normalized,
-        sourceDate ?? useSimulationOutputStore.getState().sourceDate
+        workingSourceDate ??
+          sourceDate ??
+          useSimulationOutputStore.getState().sourceDate
       );
 
       if (!dataset) {

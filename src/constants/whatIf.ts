@@ -205,40 +205,6 @@ export const WHAT_IF_SCENARIO_5110_OPTIONS: WhatIfScenario5110Option[] = (
 	datasetDate: SCENARIO_5110_DATASET_DATES[typeId] ?? null,
 }));
 
-const WHAT_IF_FIELD_KEYS = WHAT_IF_BASIC_FIELDS.map((field) => field.key);
-
-export const getScenario5110WhatIfDefaults = (
-	typeId: WhatIfScenario5110TypeId,
-): WhatIfInputs => withScenarioDefaults(typeId, WHAT_IF_FIELD_KEYS, DEFAULT_WHAT_IF_INPUTS);
-
-const WHAT_IF_DISPENSER_FIELD_KEYS = WHAT_IF_DISPENSER_FIELDS.map(
-	(field) => field.key,
-);
-
-export const getScenario5110DispenserDefaults = (
-	typeId: WhatIfScenario5110TypeId,
-): WhatIfDispenserInputs =>
-	withScenarioDefaults(
-		typeId,
-		WHAT_IF_DISPENSER_FIELD_KEYS,
-		DEFAULT_WHAT_IF_DISPENSER_INPUTS,
-	);
-
-const WHAT_IF_VEHICLE_FIELD_KEYS = WHAT_IF_VEHICLE_FIELDS.map((field) => field.key);
-
-export const getScenario5110VehicleDefaults = (
-	typeId: WhatIfScenario5110TypeId,
-): WhatIfVehicleInputs =>
-	withScenarioDefaults(
-		typeId,
-		WHAT_IF_VEHICLE_FIELD_KEYS,
-		DEFAULT_WHAT_IF_VEHICLE_INPUTS,
-	);
-
-export const getScenario5110DatasetDate = (
-	typeId: WhatIfScenario5110TypeId,
-): string | null => SCENARIO_5110_DATASET_DATES[typeId] ?? null;
-
 const DISPENSER_FIELDS_SOURCE: DeviceProperty[] = DEVICES.Disp1?.props ?? [];
 const VEHICLE_FIELDS_SOURCE: DeviceProperty[] = DEVICES.TkVe1?.props ?? [];
 
@@ -285,6 +251,40 @@ export const DEFAULT_WHAT_IF_DISPENSER_INPUTS: WhatIfDispenserInputs =
 export const WHAT_IF_VEHICLE_FIELDS = mapDeviceFields(VEHICLE_FIELDS_SOURCE);
 export const DEFAULT_WHAT_IF_VEHICLE_INPUTS: WhatIfVehicleInputs =
 	buildDeviceDefaults(WHAT_IF_VEHICLE_FIELDS, VEHICLE_FIELDS_SOURCE);
+
+const WHAT_IF_FIELD_KEYS = WHAT_IF_BASIC_FIELDS.map((field) => field.key);
+
+export const getScenario5110WhatIfDefaults = (
+	typeId: WhatIfScenario5110TypeId,
+): WhatIfInputs => withScenarioDefaults(typeId, WHAT_IF_FIELD_KEYS, DEFAULT_WHAT_IF_INPUTS);
+
+const WHAT_IF_DISPENSER_FIELD_KEYS = WHAT_IF_DISPENSER_FIELDS.map(
+	(field) => field.key,
+);
+
+export const getScenario5110DispenserDefaults = (
+	typeId: WhatIfScenario5110TypeId,
+): WhatIfDispenserInputs =>
+	withScenarioDefaults(
+		typeId,
+		WHAT_IF_DISPENSER_FIELD_KEYS,
+		DEFAULT_WHAT_IF_DISPENSER_INPUTS,
+	);
+
+const WHAT_IF_VEHICLE_FIELD_KEYS = WHAT_IF_VEHICLE_FIELDS.map((field) => field.key);
+
+export const getScenario5110VehicleDefaults = (
+	typeId: WhatIfScenario5110TypeId,
+): WhatIfVehicleInputs =>
+	withScenarioDefaults(
+		typeId,
+		WHAT_IF_VEHICLE_FIELD_KEYS,
+		DEFAULT_WHAT_IF_VEHICLE_INPUTS,
+	);
+
+export const getScenario5110DatasetDate = (
+	typeId: WhatIfScenario5110TypeId,
+): string | null => SCENARIO_5110_DATASET_DATES[typeId] ?? null;
 
 export const WHAT_IF_AXIS_MAP = {
 	in: {
