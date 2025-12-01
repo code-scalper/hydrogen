@@ -7,6 +7,7 @@ import {
   ECONOMIC_REPORT_FIELDS,
   EQUIPMENT_TAB_CONFIGS,
 } from "@/constants/economicEvaluation";
+import { collectScenarioInputValues } from "@/lib/simulation";
 import type {
   ChargingInfoDefaults,
   CurrencyCode,
@@ -32,6 +33,10 @@ import {
   sortTimelinePoints,
 } from "@/lib/economicEvaluation";
 import useEconomicEvaluationStore from "@/store/useEconomicEvaluationStore";
+import { useInteractionStore } from "@/store/useInteractionStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import useSimulationOutputStore from "@/store/useSimulationOutputStore";
+import useSimulationStore from "@/store/useSimulationStore";
 
 import PlotlyWrapper from "@/components/ui/PlotlyWrapper";
 import type { Annotations, Layout, PlotData, Template } from "plotly.js";
@@ -242,6 +247,7 @@ const EconomicEvaluationWithGraph = ({
 }: EconomicEvaluationWithGraphProps) => {
   const [activeTab, setActiveTab] = useState<string>("basic");
   const [loadingOutputs, setLoadingOutputs] = useState(false);
+  const [updatingInputs, setUpdatingInputs] = useState(false);
   const [outputError, setOutputError] = useState<string | null>(null);
 
   const general = useEconomicEvaluationStore((state) => state.general);
@@ -378,6 +384,58 @@ const EconomicEvaluationWithGraph = ({
     void refreshOutputs();
   }, [showModal, refreshOutputs]);
 
+  const handleInputUpdate = useCallback(async () => {
+    if (updatingInputs) {
+      return;
+    }
+
+    if (hasInvalidInputs) {
+      window.alert("시뮬레이터 입력값을 먼저 확인하세요.");
+      return;
+    }
+
+    if (typeof window === "undefined" || !window.electronAPI?.runExe) {
+      window.alert("실행 기능을 사용할 수 없습니다.");
+      return;
+    }
+
+    const payload = collectScenarioInputValues(selectedScenario);
+    if (!payload) {
+      window.alert("실행할 시나리오가 선택되지 않았습니다.");
+      return;
+    }
+
+    setUpdatingInputs(true);
+    try {
+      stopSimulationPlayback();
+      const result = await window.electronAPI.runExe({
+        ...payload,
+        skipExe: skipRunExe,
+      });
+      if (Array.isArray(result?.frames)) {
+        setSimulationFrames(result.frames);
+        setOutputData(result.frames, {
+          sourceDate: result.outputDate ?? null,
+        });
+      }
+      await refreshOutputs();
+    } catch (error) {
+      console.error("Failed to update economic inputs", error);
+      window.alert("입력 데이터를 업데이트하지 못했습니다. 다시 시도해주세요.");
+    } finally {
+      setUpdatingInputs(false);
+    }
+  }, [
+    hasInvalidInputs,
+    selectedScenario,
+    skipRunExe,
+    stopSimulationPlayback,
+    setSimulationFrames,
+    setOutputData,
+    refreshOutputs,
+    updatingInputs,
+  ]);
+
   const equipmentStates = useEconomicEvaluationStore(
     (state) => state.equipment
   );
@@ -478,15 +536,19 @@ const EconomicEvaluationWithGraph = ({
             </button>
             <button
               type="button"
-              onClick={() => void refreshOutputs()}
-              disabled={loadingOutputs}
+              onClick={() => void handleInputUpdate()}
+              disabled={loadingOutputs || updatingInputs}
               className={`rounded-md border border-emerald-500 px-3 py-1 text-xs transition ${
-                loadingOutputs
+                loadingOutputs || updatingInputs
                   ? "cursor-not-allowed bg-emerald-500/10 text-emerald-200"
                   : "text-emerald-200 hover:bg-emerald-500/10"
               }`}
             >
-              {loadingOutputs ? "불러오는 중..." : "입력 데이터 업데이트"}
+              {updatingInputs
+                ? "재계산 중..."
+                : loadingOutputs
+                ? "불러오는 중..."
+                : "입력 데이터 업데이트"}
             </button>
             <button
               type="button"
@@ -1851,3 +1913,11 @@ const ToggleField = ({
 };
 
 export { EconomicEvaluationWithGraph };
+  const hasInvalidInputs = useInteractionStore(
+    (state) => Object.keys(state.invalidInputKeys).length > 0
+  );
+  const skipRunExe = useInteractionStore((state) => state.skipRunExe);
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
+  const stopSimulationPlayback = useSimulationStore((state) => state.stop);
+  const setSimulationFrames = useSimulationStore((state) => state.setFrames);
+  const setOutputData = useSimulationOutputStore((state) => state.setOutput);
