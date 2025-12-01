@@ -1,5 +1,6 @@
 import SFC4130 from "@/assets/sfc/sfc_4130.png";
 import { DEVICES } from "@/constants/devices";
+import useOutputTotalDownloader from "@/hooks/useOutputTotalDownloader";
 import { usePsvSimulation } from "@/hooks/usePsvSimulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import type { DeviceProperty, ScenarioInterface } from "@/types";
@@ -97,19 +98,22 @@ export const PsvModal_4130: FC<PsvCalculatorModalProps> = () => {
   const inputProps = useMemo(() => flattenProps(GROUPS, "input"), []);
   const outputProps = useMemo(() => flattenProps(GROUPS, "output"), []);
 
-  const {
-    inputs,
-    outputs,
-    chartData,
-    running,
-    runSimulation,
-    setInputValue,
-    loadInputs,
-  } = usePsvSimulation({
-    sfc: "4130",
-    inputProps,
-    outputProps,
-  });
+	const {
+		inputs,
+		outputs,
+		chartData,
+		running,
+		outputDate,
+		runSimulation,
+		setInputValue,
+		loadInputs,
+	} = usePsvSimulation({
+		sfc: "4130",
+		inputProps,
+		outputProps,
+	});
+
+	const downloadOutputTotal = useOutputTotalDownloader(outputDate);
   const { typeTabs, activeType, selectType } = usePsvTypeTabs({
     sfc: "4130",
     inputProps,
@@ -217,13 +221,14 @@ export const PsvModal_4130: FC<PsvCalculatorModalProps> = () => {
           ))}
         </div>
 
-        <PsvButtons
-          onClose={() => setPsvOpen(false)}
-          onRun={handleRun}
-          onOpenChart={handleOpenChart}
-          disabled={running}
-          chartDisabled={chartData.length === 0}
-        />
+		<PsvButtons
+			onClose={() => setPsvOpen(false)}
+			onRun={handleRun}
+			onOpenChart={handleOpenChart}
+			onSave={downloadOutputTotal}
+			disabled={running}
+			chartDisabled={chartData.length === 0}
+		/>
 
         {running && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-sm text-white">

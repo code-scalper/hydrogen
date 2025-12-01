@@ -1,0 +1,28 @@
+{
+  "sfc": "4110",
+  "values": {
+    "SFC": "4110",
+    "V_TkIndL": "1.3",
+    "N_TkL": "3",
+    "P_TkMaxL": "15",
+    "P_TkMinL": "7",
+    "FuMoOnL": "1",
+    "T_Tk_0CL": "21",
+    "d_TkInletL": "0.01483",
+    "d_TkOutletL": "0.01483",
+    "Thick_TkL": "0.0294",
+    "L_TkL": "6,.25",
+    "rho_CompL": "7900",
+    "rho_LinL": "7900",
+    "k_CompL": "0.000161",
+    "k_LinL": "0.000161",
+    "Cp_CompL": "14.3618",
+    "Cp_LinL": "14.3618",
+    "KdL": "0.975",
+    "KbL": "1",
+    "KcL": "1",
+    "P_OpFullRateL": "1.03",
+    "TwL": "865"
+  },
+  "generatedAt": "2025-12-01T08:06:03.860Z"
+}

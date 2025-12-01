@@ -30,7 +30,8 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   readOutputData: (payload) => electron.ipcRenderer.invoke("read-output-data", payload),
   readProgressLog: (payload) => electron.ipcRenderer.invoke("read-progress-log", payload),
   readEconomicEvaluation: (payload) => electron.ipcRenderer.invoke("read-economic-evaluation", payload),
-  downloadReportFiles: (payload) => electron.ipcRenderer.invoke("download-report-files", payload)
+  downloadReportFiles: (payload) => electron.ipcRenderer.invoke("download-report-files", payload),
+  downloadOutputTotal: (payload) => electron.ipcRenderer.invoke("download-output-total", payload)
 });
 electron.contextBridge.exposeInMainWorld("electronStore", {
   get: (key) => electron.ipcRenderer.invoke("electron-store-get", key),

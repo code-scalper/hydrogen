@@ -777,6 +777,57 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle(
+  "download-output-total",
+  async (_event, payload?: { date?: string }) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, payload?.date ?? null);
+
+    if (!target) {
+      return { success: false, reason: "NO_OUTPUT_DIR" };
+    }
+
+    const fileName = "Output_Total.csv";
+    const sourcePath = path.join(target.dir, fileName);
+    if (!fs.existsSync(sourcePath)) {
+      return { success: false, reason: "MISSING_FILE" };
+    }
+
+    const downloadsDir = app.getPath("downloads");
+    const ext = path.extname(fileName);
+    const baseName = path.basename(fileName, ext);
+    let candidate = `${baseName}_${target.date}${ext}`;
+    let counter = 1;
+    while (fs.existsSync(path.join(downloadsDir, candidate))) {
+      candidate = `${baseName}_${target.date}(${counter})${ext}`;
+      counter += 1;
+    }
+
+    const destination = path.join(downloadsDir, candidate);
+    try {
+      fs.copyFileSync(sourcePath, destination);
+    } catch (error) {
+      console.error(
+        "Failed to copy Output_Total.csv",
+        sourcePath,
+        destination,
+        error
+      );
+      return { success: false, reason: "COPY_FAILED" };
+    }
+
+    let opened = false;
+    try {
+      await shell.openPath(downloadsDir);
+      opened = true;
+    } catch (error) {
+      console.warn("Failed to open downloads directory", downloadsDir, error);
+    }
+
+    return { success: true, file: destination, date: target.date, opened };
+  }
+);
+
 const store = new Store();
 ipcMain.handle("electron-store-get", (_, key) => {
   return store.get(key);

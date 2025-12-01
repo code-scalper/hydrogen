@@ -56,6 +56,7 @@ export const usePsvSimulation = ({
 	const [frames, setFrames] = useState<SimulationFrame[]>([]);
 	const [status, setStatus] = useState<string>("");
 	const [running, setRunning] = useState(false);
+	const [outputDate, setOutputDate] = useState<string | null>(null);
 	const skipRunExe = useInteractionStore((state) => state.skipRunExe);
 	const openAnalysisModal = useSimulationAnalysisStore(
 		(state) => state.openWithResult,
@@ -121,6 +122,7 @@ export const usePsvSimulation = ({
 			});
 
 			setStatus(result?.status ?? "");
+			setOutputDate(result?.outputDate ?? null);
 
 			if (Array.isArray(result?.frames)) {
 				const sorted = [...result.frames].sort((a, b) => a.time - b.time);
@@ -147,7 +149,7 @@ export const usePsvSimulation = ({
 			setStatus("simulation failed");
 			throw error;
 		} finally {
-			setRunning(false);
+		setRunning(false);
 		}
 	}, [inputKeys, inputs, openAnalysisModal, outputKeys, sfc, skipRunExe]);
 
@@ -158,6 +160,7 @@ export const usePsvSimulation = ({
 		chartData,
 		running,
 		status,
+		outputDate,
 		setInputValue,
 		loadInputs,
 		runSimulation,

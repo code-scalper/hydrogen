@@ -16381,6 +16381,50 @@ ipcMain$1.handle(
     return { success: true, files: saved, date: target.date, opened };
   }
 );
+ipcMain$1.handle(
+  "download-output-total",
+  async (_event, payload) => {
+    const baseOutputDir = getBaseOutputDir();
+    const target = resolveOutputDirectory(baseOutputDir, (payload == null ? void 0 : payload.date) ?? null);
+    if (!target) {
+      return { success: false, reason: "NO_OUTPUT_DIR" };
+    }
+    const fileName = "Output_Total.csv";
+    const sourcePath = path.join(target.dir, fileName);
+    if (!fs$1.existsSync(sourcePath)) {
+      return { success: false, reason: "MISSING_FILE" };
+    }
+    const downloadsDir = app$1.getPath("downloads");
+    const ext = path.extname(fileName);
+    const baseName = path.basename(fileName, ext);
+    let candidate = `${baseName}_${target.date}${ext}`;
+    let counter = 1;
+    while (fs$1.existsSync(path.join(downloadsDir, candidate))) {
+      candidate = `${baseName}_${target.date}(${counter})${ext}`;
+      counter += 1;
+    }
+    const destination = path.join(downloadsDir, candidate);
+    try {
+      fs$1.copyFileSync(sourcePath, destination);
+    } catch (error2) {
+      console.error(
+        "Failed to copy Output_Total.csv",
+        sourcePath,
+        destination,
+        error2
+      );
+      return { success: false, reason: "COPY_FAILED" };
+    }
+    let opened = false;
+    try {
+      await shell$1.openPath(downloadsDir);
+      opened = true;
+    } catch (error2) {
+      console.warn("Failed to open downloads directory", downloadsDir, error2);
+    }
+    return { success: true, file: destination, date: target.date, opened };
+  }
+);
 const store = new ElectronStore();
 ipcMain$1.handle("electron-store-get", (_, key) => {
   return store.get(key);
