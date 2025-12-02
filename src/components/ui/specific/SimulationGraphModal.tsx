@@ -66,21 +66,23 @@ const colorForKey = (key: string): string => {
 	return DEFAULT_COLORS[hash % DEFAULT_COLORS.length];
 };
 
-const hasSeriesData = (frames: SimulationFrame[], key: string): boolean => {
-	for (const frame of frames) {
-		const value = toNumber(frame.values?.[key]);
-		if (value !== null) {
-			return true;
-		}
-	}
-	return false;
-};
+const TRACKED_SERIES_KEYS = Array.from(
+	new Set(
+		OUTPUT_CHART_GROUPS.flatMap((group) =>
+			group.charts.flatMap((chart) => chart.series.map((series) => series.key)),
+		),
+	),
+);
 
 const buildChartTraces = (
 	frames: SimulationFrame[],
 	chart: SimulationChartDefinition,
+	xValues?: number[],
 ) => {
-	const xValues = frames.map((frame) => frame.time);
+	const resolvedX =
+		Array.isArray(xValues) && xValues.length === frames.length
+			? xValues
+			: frames.map((frame) => frame.time);
 
 	return chart.series
 		.map((series, index) => {
@@ -92,7 +94,7 @@ const buildChartTraces = (
 				return null;
 			}
 			return {
-				x: xValues,
+				x: resolvedX,
 				y: yValues,
 				type: "scatter" as const,
 				mode: "lines" as const,
@@ -109,11 +111,11 @@ const buildChartTraces = (
 
 const findFirstGroupWithData = (
 	groups: SimulationChartGroupDefinition[],
-	frames: SimulationFrame[],
+	availableSeries: Set<string>,
 ): string | null => {
 	for (const group of groups) {
 		const groupHasData = group.charts.some((chart) =>
-			chart.series.some((series) => hasSeriesData(frames, series.key)),
+			chart.series.some((series) => availableSeries.has(series.key)),
 		);
 		if (groupHasData) {
 			return group.id;
@@ -138,12 +140,47 @@ export const SimulationGraphModal = ({
 	onReload,
 }: SimulationGraphModalProps) => {
 	const sortedFrames = useMemo(() => {
-		return [...frames].sort((a, b) => a.time - b.time);
+		if (frames.length < 2) {
+			return frames;
+		}
+		for (let index = 1; index < frames.length; index += 1) {
+			if (frames[index].time < frames[index - 1].time) {
+				return [...frames].sort((a, b) => a.time - b.time);
+			}
+		}
+		return frames;
 	}, [frames]);
 
-	const firstAvailableGroupId = useMemo(() => {
-		return findFirstGroupWithData(OUTPUT_CHART_GROUPS, sortedFrames);
+	const xValues = useMemo(
+		() => sortedFrames.map((frame) => frame.time),
+		[sortedFrames],
+	);
+
+	const availableSeries = useMemo(() => {
+		const set = new Set<string>();
+		if (sortedFrames.length === 0) {
+			return set;
+		}
+		for (const frame of sortedFrames) {
+			if (set.size === TRACKED_SERIES_KEYS.length) {
+				break;
+			}
+			for (const key of TRACKED_SERIES_KEYS) {
+				if (set.has(key)) {
+					continue;
+				}
+				const value = toNumber(frame.values?.[key]);
+				if (value !== null) {
+					set.add(key);
+				}
+			}
+		}
+		return set;
 	}, [sortedFrames]);
+
+	const firstAvailableGroupId = useMemo(() => {
+		return findFirstGroupWithData(OUTPUT_CHART_GROUPS, availableSeries);
+	}, [availableSeries]);
 
 	const [activeGroupId, setActiveGroupId] = useState<string | null>(
 		firstAvailableGroupId,
@@ -199,7 +236,7 @@ export const SimulationGraphModal = ({
 		}
 
 		const groupHasAnyData = activeGroup.charts.some((chart) =>
-			chart.series.some((series) => hasSeriesData(sortedFrames, series.key)),
+			chart.series.some((series) => availableSeries.has(series.key)),
 		);
 
 		if (!groupHasAnyData) {
@@ -214,7 +251,7 @@ export const SimulationGraphModal = ({
 			<div className="flex-1 overflow-y-auto bg-slate-950/40 px-4 py-4">
 				<div className="space-y-4">
 					{activeGroup.charts.map((chart) => {
-						const traces = buildChartTraces(sortedFrames, chart);
+						const traces = buildChartTraces(sortedFrames, chart, xValues);
 						if (traces.length === 0) {
 							return (
 								<div
@@ -294,12 +331,12 @@ export const SimulationGraphModal = ({
 					</div>
 					<div className="flex-1 overflow-y-auto">
 						<ul className="divide-y divide-slate-800 text-sm text-slate-300">
-							{OUTPUT_CHART_GROUPS.map((group) => {
-								const groupHasData = group.charts.some((chart) =>
-									chart.series.some((series) =>
-										hasSeriesData(sortedFrames, series.key),
-									),
-								);
+					{OUTPUT_CHART_GROUPS.map((group) => {
+						const groupHasData = group.charts.some((chart) =>
+							chart.series.some((series) =>
+								availableSeries.has(series.key),
+							),
+						);
 								const isActive = group.id === activeGroupId;
 								return (
 									<li key={group.id}>
