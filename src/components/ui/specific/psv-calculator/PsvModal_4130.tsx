@@ -73,15 +73,15 @@ const DIAGRAM = {
 };
 
 const CHART_VARIABLES: ChartVariable[] = [
-  { key: "P_TkAccH", name: "P_TkAccH", unit: "-", plotId: "PlotPSVHBk1" },
-  { key: "P_TkOpFullH", name: "P_TkOpFullH", unit: "-", plotId: "PlotPSVHBk1" },
-  { key: "P_TkOpStartH", name: "P_TkOpStartH", unit: "-", plotId: "PlotPSVHBk1" },
-  { key: "P_TkH", name: "P_TkH", unit: "-", plotId: "PlotPSVHBk1" },
-  { key: "W_Req_kgsH", name: "W_Req_kgsH", unit: "-", plotId: "PlotPSVHBk2" },
-  { key: "W_OpFullH", name: "W_OpFullH", unit: "-", plotId: "PlotPSVHBk2" },
-  { key: "W_OutH", name: "W_OutH", unit: "-", plotId: "PlotPSVHBk2" },
-  { key: "W_OutH", name: "W_OutH", unit: "-", plotId: "PlotPSVHBk3" },
-  { key: "SD_1PH", name: "SD_1PH", unit: "-", plotId: "PlotPSVHBk3" },
+	{ key: "P_TkAccH", name: "P_TkAccH", unit: "-", plotId: "PlotPSVHBk1" },
+	{ key: "P_TkOpFullH", name: "P_TkOpFullH", unit: "-", plotId: "PlotPSVHBk1" },
+	{ key: "P_TkOpStartH", name: "P_TkOpStartH", unit: "-", plotId: "PlotPSVHBk1" },
+	{ key: "P_TkH", name: "P_TkH", unit: "-", plotId: "PlotPSVHBk1" },
+	{ key: "W_Req_kgsH", name: "W_Req_kgsH", unit: "-", plotId: "PlotPSVHBk2" },
+	{ key: "W_OpFullH", name: "W_OpFullH", unit: "-", plotId: "PlotPSVHBk2" },
+	{ key: "W_OutHs", name: "W_OutHs", unit: "-", plotId: "PlotPSVHBk2" },
+	{ key: "W_OutHh", name: "W_OutHh", unit: "-", plotId: "PlotPSVHBk3" },
+	{ key: "SD_1PH", name: "SD_1PH", unit: "-", plotId: "PlotPSVHBk3" },
 ];
 
 const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>

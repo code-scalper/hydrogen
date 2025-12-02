@@ -562,7 +562,7 @@ export const OUTPUT_PROPERTIES = {
   },
   W_ReqM: {
     key: "W_ReqM",
-    name: "PSV 필요분량용량",
+    name: "PSV 필요분출용량",
     unit: "kg/hr",
     description: "PSV 필요분출유량",
     type: "output",

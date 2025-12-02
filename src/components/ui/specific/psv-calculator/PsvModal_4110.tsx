@@ -76,11 +76,11 @@ const CHART_VARIABLES: ChartVariable[] = [
 	{ key: "P_TkAccL", name: "P_TkAccL", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "P_TkOpFullL", name: "P_TkOpFullL", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "P_TkOpStartL", name: "P_TkOpStartL", unit: "-", plotId: "PlotPSVLBk1" },
-	{ key: "P_TkL", name: "P_TkL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "P_TkL_1", name: "P_TkL_1", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "W_Req_kgsL", name: "W_Req_kgsL", unit: "-", plotId: "PlotPSVLBk2" },
 	{ key: "W_OpFullL", name: "W_OpFullL", unit: "-", plotId: "PlotPSVLBk2" },
-	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk2" },
-	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk3" },
+	{ key: "W_OutLs", name: "W_OutLs", unit: "-", plotId: "PlotPSVLBk2" },
+	{ key: "W_OutLh", name: "W_OutLh", unit: "-", plotId: "PlotPSVLBk3" },
 	{ key: "SD_1PL", name: "SD_1PL", unit: "-", plotId: "PlotPSVLBk3" },
 ];
 
