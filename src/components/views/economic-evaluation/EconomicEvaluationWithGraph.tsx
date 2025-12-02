@@ -141,8 +141,12 @@ interface TrendlineSourceConfig {
   annotation?: TrendlineAnnotationOptions;
 }
 
+
+const TRENDLINE_SLOPE_ROW_INDEX = 2; // Output_EE1.csv row 3 (1-based)
+const TRENDLINE_INTERCEPT_ROW_INDEX = 3; // Output_EE1.csv row 4 (1-based)
+
 const TRENDLINE_SOURCES: Partial<Record<EquipmentKey, TrendlineSourceConfig>> =
-  {
+	{
     elec: { column: "Coeffs_Elec" },
     lqTk: {
       column: "Coeffs_Tk",
@@ -300,22 +304,27 @@ const EconomicEvaluationWithGraph = ({
   const skipRunExe = useInteractionStore((state) => state.skipRunExe);
   const selectedScenario = useProjectStore((state) => state.selectedScenario);
 
-  const equipmentTrendlines = useMemo<
-    Partial<Record<EquipmentKey, EquipmentTrendline>>
-  >(() => {
-    const coeffs = outputs.coefficients ?? [];
-    if (coeffs.length < 3) {
-      return {};
-    }
-    const map: Partial<Record<EquipmentKey, EquipmentTrendline>> = {};
-    for (const [key, source] of Object.entries(TRENDLINE_SOURCES) as Array<
-      [EquipmentKey, TrendlineSourceConfig]
-    >) {
-      const slope = toFiniteNumber(coeffs[1]?.[source.column]);
-      const intercept = toFiniteNumber(coeffs[2]?.[source.column]);
-      if (slope === null || intercept === null) {
-        continue;
-      }
+	const equipmentTrendlines = useMemo<
+		Partial<Record<EquipmentKey, EquipmentTrendline>>
+	>(() => {
+		const coeffs = outputs.coefficients ?? [];
+		if (coeffs.length <= TRENDLINE_INTERCEPT_ROW_INDEX) {
+			return {};
+		}
+		const slopeRow = coeffs[TRENDLINE_SLOPE_ROW_INDEX];
+		const interceptRow = coeffs[TRENDLINE_INTERCEPT_ROW_INDEX];
+		if (!slopeRow || !interceptRow) {
+			return {};
+		}
+		const map: Partial<Record<EquipmentKey, EquipmentTrendline>> = {};
+		for (const [key, source] of Object.entries(TRENDLINE_SOURCES) as Array<
+			[EquipmentKey, TrendlineSourceConfig]
+		>) {
+			const slope = toFiniteNumber(slopeRow?.[source.column]);
+			const intercept = toFiniteNumber(interceptRow?.[source.column]);
+			if (slope === null || intercept === null) {
+				continue;
+			}
       map[key] = {
         coefficients: { slope, intercept },
         annotation: source.annotation,
@@ -324,22 +333,27 @@ const EconomicEvaluationWithGraph = ({
     return map;
   }, [outputs.coefficients]);
 
-  const timelineTrendlines = useMemo<
-    Partial<Record<TimelineKind, EquipmentTrendline>>
-  >(() => {
-    const coeffs = outputs.coefficients ?? [];
-    if (coeffs.length < 3) {
-      return {};
-    }
-    const map: Partial<Record<TimelineKind, EquipmentTrendline>> = {};
-    for (const [key, source] of Object.entries(
-      TIMELINE_TRENDLINE_SOURCES
-    ) as Array<[TimelineKind, TrendlineSourceConfig]>) {
-      const slope = toFiniteNumber(coeffs[1]?.[source.column]);
-      const intercept = toFiniteNumber(coeffs[2]?.[source.column]);
-      if (slope === null || intercept === null) {
-        continue;
-      }
+	const timelineTrendlines = useMemo<
+		Partial<Record<TimelineKind, EquipmentTrendline>>
+	>(() => {
+		const coeffs = outputs.coefficients ?? [];
+		if (coeffs.length <= TRENDLINE_INTERCEPT_ROW_INDEX) {
+			return {};
+		}
+		const slopeRow = coeffs[TRENDLINE_SLOPE_ROW_INDEX];
+		const interceptRow = coeffs[TRENDLINE_INTERCEPT_ROW_INDEX];
+		if (!slopeRow || !interceptRow) {
+			return {};
+		}
+		const map: Partial<Record<TimelineKind, EquipmentTrendline>> = {};
+		for (const [key, source] of Object.entries(
+			TIMELINE_TRENDLINE_SOURCES
+		) as Array<[TimelineKind, TrendlineSourceConfig]>) {
+			const slope = toFiniteNumber(slopeRow?.[source.column]);
+			const intercept = toFiniteNumber(interceptRow?.[source.column]);
+			if (slope === null || intercept === null) {
+				continue;
+			}
       map[key] = {
         coefficients: { slope, intercept },
         annotation: source.annotation,
