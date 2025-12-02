@@ -78,21 +78,114 @@ type TimelineKind = "sales" | "purchase";
 
 const MODAL_TABS = [{ id: "basic", label: "기본 정보" }];
 
-const additionalTabs = [
-  { id: "installation", label: "설치비 계수" },
-  { id: "indirect", label: "간접비 계수" },
-  { id: "opex", label: "OPEX 계수" },
-  { id: "labor", label: "인건비" },
-  { id: "charging", label: "충전 정보" },
-  { id: "sales", label: "판매 단가" },
-  { id: "purchase", label: "구매 단가" },
-  { id: "escalation", label: "인상·감가" },
-  { id: "report", label: "요약 리포트" },
-  { id: "cashflow", label: "현금흐름" },
-  // { id: "coefficients", label: "회귀 계수" },
+const INPUT_TAB_CONFIGS = [
+	{ id: "installation", label: "설치비 계수" },
+	{ id: "indirect", label: "간접비 계수" },
+	{ id: "opex", label: "OPEX 계수" },
+	{ id: "labor", label: "인건비" },
+	{ id: "charging", label: "충전 정보" },
+	{ id: "sales", label: "판매 단가" },
+	{ id: "purchase", label: "구매 단가" },
+	{ id: "escalation", label: "인상·감가" },
 ];
 
-const OUTPUT_TAB_IDS = new Set(["report", "cashflow"] as const);
+interface EconomicOutputGraphConfig {
+	id: string;
+	label: string;
+	title: string;
+	description?: string;
+	yAxisTitle: string;
+	y2AxisTitle?: string;
+	series: Array<{
+		key: string;
+		name: string;
+		color: string;
+		yAxis?: "y" | "y2";
+		hoverSuffix?: string;
+	}>;
+}
+
+const ECONOMIC_OUTPUT_GRAPH_CONFIGS: EconomicOutputGraphConfig[] = [
+	{
+		id: "plot-op",
+		label: "Fueling & Operation",
+		title: "Fueling & Operation",
+		description: "연간 연료 사용량과 운영률 추세",
+		yAxisTitle: "Fueling Amount (FuPerDay)",
+		y2AxisTitle: "Operation Rate (%)",
+		series: [
+			{ key: "FuPerDay", name: "Fueling Amount", color: "#38bdf8" },
+			{
+				key: "OpRate",
+				name: "Operation Rate",
+				color: "#f87171",
+				yAxis: "y2",
+				hoverSuffix: "%",
+			},
+		],
+	},
+	{
+		id: "plot-h2snp",
+		label: "H2 Sale & Purchase",
+		title: "H2 Sale & Purchase",
+		description: "연간 판매/구매량 비교",
+		yAxisTitle: "Amount",
+		series: [
+			{ key: "M_Sale", name: "H2 Sale", color: "#34d399" },
+			{ key: "M_Purch", name: "H2 Purchase", color: "#facc15" },
+		],
+	},
+	{
+		id: "plot-people",
+		label: "People",
+		title: "People (연간 인력)",
+		description: "충전소 운영 인력 변화",
+		yAxisTitle: "인원 (명)",
+		series: [{ key: "People", name: "People", color: "#a855f7" }],
+	},
+	{
+		id: "plot-dep",
+		label: "Depreciation",
+		title: "Depreciation",
+		description: "연간 감가상각비",
+		yAxisTitle: "감가상각비",
+		series: [{ key: "Dep", name: "Depreciation", color: "#60a5fa" }],
+	},
+	{
+		id: "plot-opex-element",
+		label: "OPEX Element",
+		title: "OPEX Elements",
+		description: "운영비 구성 요소",
+		yAxisTitle: "금액",
+		series: [
+			{ key: "Elec", name: "Electric Power", color: "#38bdf8" },
+			{ key: "HW_Opex", name: "H/W Operation", color: "#fb7185" },
+			{ key: "Labor", name: "Labor Cost", color: "#f97316" },
+			{ key: "GnA", name: "Overhead G&A", color: "#a3e635" },
+		],
+	},
+	{
+		id: "plot-opex",
+		label: "OPEX",
+		title: "WonOPEX & PV of OPEX",
+		description: "연간 운영비 및 현재가치",
+		yAxisTitle: "운영비",
+		series: [
+			{ key: "TotalOpex", name: "WonOPEX", color: "#3b82f6" },
+			{ key: "PV_Opex", name: "PV of OPEX", color: "#f59e0b" },
+		],
+	},
+];
+
+const OUTPUT_TAB_CONFIGS = [
+	{ id: "report", label: "요약 리포트" },
+	...ECONOMIC_OUTPUT_GRAPH_CONFIGS.map((config) => ({
+		id: config.id,
+		label: config.label,
+	})),
+	{ id: "cashflow", label: "현금흐름" },
+];
+
 
 const formatNumber = (value: number | null | undefined, fractionDigits = 2) => {
   if (value === null || value === undefined || Number.isNaN(value)) {
@@ -466,14 +559,8 @@ const EconomicEvaluationWithGraph = ({
     []
   );
 
-  const inputTabs = useMemo(
-    () => additionalTabs.filter((tab: any) => !OUTPUT_TAB_IDS.has(tab.id)),
-    []
-  );
-  const outputTabs = useMemo(
-    () => additionalTabs.filter((tab: any) => OUTPUT_TAB_IDS.has(tab.id)),
-    []
-  );
+  const inputTabs = useMemo(() => INPUT_TAB_CONFIGS, []);
+  const outputTabs = useMemo(() => OUTPUT_TAB_CONFIGS, []);
 
   const navSections = useMemo(
     () => [
@@ -485,8 +572,11 @@ const EconomicEvaluationWithGraph = ({
     [equipmentTabs, inputTabs, outputTabs]
   );
 
-  const defaultCurrency = DEFAULT_GENERAL_SETTINGS.currencies;
-  const { enabled, graphEnabled, dalToWon } = general;
+	const defaultCurrency = DEFAULT_GENERAL_SETTINGS.currencies;
+	const { enabled, graphEnabled, dalToWon } = general;
+	const activeOutputGraph = ECONOMIC_OUTPUT_GRAPH_CONFIGS.find(
+		(config) => config.id === activeTab,
+	);
 
   const handleGeneralToggle =
     (key: "enabled" | "graphEnabled") => (value: boolean) => {
@@ -708,16 +798,25 @@ const EconomicEvaluationWithGraph = ({
               />
             )}
 
-            {activeTab === "report" && (
-              <ReportTab
-                report={outputs.report}
-                date={outputs.date}
-                error={outputError}
-              />
-            )}
+			{activeTab === "report" && (
+				<ReportTab
+					report={outputs.report}
+					date={outputs.date}
+					error={outputError}
+				/>
+			)}
 
-            {activeTab === "cashflow" && (
-              <CashflowTab
+			{activeOutputGraph && (
+				<EconomicOutputGraphTab
+					rows={outputs.cashflow}
+					config={activeOutputGraph}
+					graphEnabled={graphEnabled}
+					error={outputError}
+				/>
+			)}
+
+			{activeTab === "cashflow" && (
+				<CashflowTab
                 rows={outputs.cashflow}
                 error={outputError}
                 graphEnabled={graphEnabled}
@@ -1681,6 +1780,118 @@ const ReportTab = ({ report, date, error }: ReportTabProps) => {
       </div>
     </div>
   );
+};
+
+interface EconomicOutputGraphTabProps {
+	rows: Array<Record<string, number | string | null>>;
+	config: EconomicOutputGraphConfig;
+	graphEnabled: boolean;
+	error: string | null;
+}
+
+const EconomicOutputGraphTab = ({
+	rows,
+	config,
+	graphEnabled,
+	error,
+}: EconomicOutputGraphTabProps) => {
+	const chartData = useMemo(() => {
+		const years: number[] = [];
+		const seriesValues = config.series.map(() => [] as Array<number | null>);
+		let hasSeries = false;
+		rows.forEach((row) => {
+			const year = sanitizeNumericInput(row.Year as string | number | null);
+			if (year === null) {
+				return;
+			}
+			years.push(year);
+			config.series.forEach((series, index) => {
+				const value = sanitizeNumericInput(
+					row[series.key] as string | number | null,
+				);
+				seriesValues[index].push(value);
+				if (!hasSeries && value !== null) {
+					hasSeries = true;
+				}
+			});
+		});
+		return { years, seriesValues, hasSeries };
+	}, [rows, config]);
+
+	const marginRight = config.y2AxisTitle ? 56 : 24;
+
+	return (
+		<div className="space-y-4">
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<div>
+					<h3 className="text-sm font-semibold text-slate-100">
+						{config.title}
+					</h3>
+					{config.description && (
+						<p className="text-xs text-slate-400">{config.description}</p>
+					)}
+				</div>
+				{error && <p className="text-xs text-rose-400">{error}</p>}
+			</div>
+			<div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+				<div className="min-h-[320px]">
+					{!graphEnabled ? (
+						<p className="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-6 text-center text-xs text-slate-500">
+							그래프 표시가 비활성화되어 있습니다.
+						</p>
+					) : chartData.years.length === 0 || !chartData.hasSeries ? (
+						<p className="rounded-md border border-slate-800 bg-slate-900/80 px-3 py-6 text-center text-xs text-slate-500">
+							그래프를 표시할 데이터가 없습니다.
+						</p>
+					) : (
+						<PlotlyWrapper>
+							{({ Plot, plotEvents }) => {
+								const layout: Partial<Layout> = {
+									template: PLOTLY_DARK_TEMPLATE,
+									height: 320,
+									margin: { t: 32, r: marginRight, b: 48, l: 64 },
+									xaxis: { title: { text: "Year" } },
+									yaxis: { title: { text: config.yAxisTitle } },
+									paper_bgcolor: PLOT_BACKGROUND,
+									plot_bgcolor: PLOT_BACKGROUND,
+									legend: { orientation: "h" },
+								};
+								if (config.y2AxisTitle) {
+									layout.yaxis2 = {
+										title: { text: config.y2AxisTitle },
+										overlaying: "y",
+										side: "right",
+										showgrid: false,
+										zeroline: false,
+									};
+								}
+								return (
+									<Plot
+										data={config.series.map((series, index) => ({
+											type: "scatter",
+											mode: "lines+markers",
+											x: chartData.years,
+											y: chartData.seriesValues[index],
+											name: series.name,
+											line: { color: series.color, width: 2 },
+											marker: { color: series.color, size: 6 },
+											yaxis: series.yAxis ?? "y",
+											hovertemplate: `%{x}: %{y:,}${
+												series.hoverSuffix ?? ""
+											}<extra>${series.name}</extra>`,
+										}))}
+										layout={layout}
+										style={{ width: "100%", height: "100%" }}
+										{...plotEvents}
+									/>
+								);
+							}}
+						</PlotlyWrapper>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 };
 
 interface CashflowTabProps {
