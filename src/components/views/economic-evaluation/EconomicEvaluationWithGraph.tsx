@@ -294,6 +294,11 @@ const EconomicEvaluationWithGraph = ({
   const outputs = useEconomicEvaluationStore((state) => state.outputs);
   const setOutputs = useEconomicEvaluationStore((state) => state.setOutputs);
   const resetAll = useEconomicEvaluationStore((state) => state.resetAll);
+  const hasInvalidInputs = useInteractionStore(
+    (state) => Object.keys(state.invalidInputKeys).length > 0
+  );
+  const skipRunExe = useInteractionStore((state) => state.skipRunExe);
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
 
   const equipmentTrendlines = useMemo<
     Partial<Record<EquipmentKey, EquipmentTrendline>>
@@ -405,21 +410,21 @@ const EconomicEvaluationWithGraph = ({
       return;
     }
 
-    setUpdatingInputs(true);
-    try {
-      stopSimulationPlayback();
-      const result = await window.electronAPI.runExe({
-        ...payload,
-        skipExe: skipRunExe,
-      });
-      if (Array.isArray(result?.frames)) {
-        setSimulationFrames(result.frames);
-        setOutputData(result.frames, {
-          sourceDate: result.outputDate ?? null,
-        });
-      }
-      await refreshOutputs();
-    } catch (error) {
+	setUpdatingInputs(true);
+	try {
+		useSimulationStore.getState().stop();
+		const result = await window.electronAPI.runExe({
+			...payload,
+			skipExe: skipRunExe,
+		});
+		if (Array.isArray(result?.frames)) {
+			useSimulationStore.getState().setFrames(result.frames);
+			useSimulationOutputStore.getState().setOutput(result.frames, {
+				sourceDate: result.outputDate ?? null,
+			});
+		}
+		await refreshOutputs();
+	} catch (error) {
       console.error("Failed to update economic inputs", error);
       window.alert("입력 데이터를 업데이트하지 못했습니다. 다시 시도해주세요.");
     } finally {
@@ -429,12 +434,9 @@ const EconomicEvaluationWithGraph = ({
     hasInvalidInputs,
     selectedScenario,
     skipRunExe,
-    stopSimulationPlayback,
-    setSimulationFrames,
-    setOutputData,
-    refreshOutputs,
-    updatingInputs,
-  ]);
+	refreshOutputs,
+	updatingInputs,
+]);
 
   const equipmentStates = useEconomicEvaluationStore(
     (state) => state.equipment
@@ -1913,11 +1915,3 @@ const ToggleField = ({
 };
 
 export { EconomicEvaluationWithGraph };
-  const hasInvalidInputs = useInteractionStore(
-    (state) => Object.keys(state.invalidInputKeys).length > 0
-  );
-  const skipRunExe = useInteractionStore((state) => state.skipRunExe);
-  const selectedScenario = useProjectStore((state) => state.selectedScenario);
-  const stopSimulationPlayback = useSimulationStore((state) => state.stop);
-  const setSimulationFrames = useSimulationStore((state) => state.setFrames);
-  const setOutputData = useSimulationOutputStore((state) => state.setOutput);
