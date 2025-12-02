@@ -31,7 +31,7 @@
 | T_BaC_Max  | Bank 온도 최대값      | ℃        | -40        | -17.5      | -17.5      | Number   | -                                                       |
 | P_Tk0C_Min | Tank 초기 압력 최소값 | MPa      | 0\.5       | 70         | 0\.5       | Number   | -                                                       |
 | T_Tk0C_Max | Tank 초기 압력 최대값 | MPa      | 0\.5       | 70         | 20         | Number   | -                                                       |
-| MaxIter    | 반복 계산 횟수        | -        | 1          | 2          | 2          | Number   | -                                                       |
+| MaxIter    | 반복 계산 횟수        | -        | 1          | 99999      | 2          | Number   | -                                                       |
 
 **■ 출력 변수 리스트**
 

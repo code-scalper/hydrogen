@@ -7,6 +7,7 @@ import {
   ECONOMIC_REPORT_FIELDS,
   EQUIPMENT_TAB_CONFIGS,
 } from "@/constants/economicEvaluation";
+import { collectScenarioInputValues } from "@/lib/simulation";
 import type {
   ChargingInfoDefaults,
   CurrencyCode,
@@ -32,6 +33,10 @@ import {
   sortTimelinePoints,
 } from "@/lib/economicEvaluation";
 import useEconomicEvaluationStore from "@/store/useEconomicEvaluationStore";
+import { useInteractionStore } from "@/store/useInteractionStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import useSimulationOutputStore from "@/store/useSimulationOutputStore";
+import useSimulationStore from "@/store/useSimulationStore";
 
 import PlotlyWrapper from "@/components/ui/PlotlyWrapper";
 import type { Annotations, Layout, PlotData, Template } from "plotly.js";
@@ -136,8 +141,12 @@ interface TrendlineSourceConfig {
   annotation?: TrendlineAnnotationOptions;
 }
 
+
+const TRENDLINE_SLOPE_ROW_INDEX = 2; // Output_EE1.csv row 3 (1-based)
+const TRENDLINE_INTERCEPT_ROW_INDEX = 3; // Output_EE1.csv row 4 (1-based)
+
 const TRENDLINE_SOURCES: Partial<Record<EquipmentKey, TrendlineSourceConfig>> =
-  {
+	{
     elec: { column: "Coeffs_Elec" },
     lqTk: {
       column: "Coeffs_Tk",
@@ -242,6 +251,7 @@ const EconomicEvaluationWithGraph = ({
 }: EconomicEvaluationWithGraphProps) => {
   const [activeTab, setActiveTab] = useState<string>("basic");
   const [loadingOutputs, setLoadingOutputs] = useState(false);
+  const [updatingInputs, setUpdatingInputs] = useState(false);
   const [outputError, setOutputError] = useState<string | null>(null);
 
   const general = useEconomicEvaluationStore((state) => state.general);
@@ -288,23 +298,33 @@ const EconomicEvaluationWithGraph = ({
   const outputs = useEconomicEvaluationStore((state) => state.outputs);
   const setOutputs = useEconomicEvaluationStore((state) => state.setOutputs);
   const resetAll = useEconomicEvaluationStore((state) => state.resetAll);
+  const hasInvalidInputs = useInteractionStore(
+    (state) => Object.keys(state.invalidInputKeys).length > 0
+  );
+  const skipRunExe = useInteractionStore((state) => state.skipRunExe);
+  const selectedScenario = useProjectStore((state) => state.selectedScenario);
 
-  const equipmentTrendlines = useMemo<
-    Partial<Record<EquipmentKey, EquipmentTrendline>>
-  >(() => {
-    const coeffs = outputs.coefficients ?? [];
-    if (coeffs.length < 3) {
-      return {};
-    }
-    const map: Partial<Record<EquipmentKey, EquipmentTrendline>> = {};
-    for (const [key, source] of Object.entries(TRENDLINE_SOURCES) as Array<
-      [EquipmentKey, TrendlineSourceConfig]
-    >) {
-      const slope = toFiniteNumber(coeffs[1]?.[source.column]);
-      const intercept = toFiniteNumber(coeffs[2]?.[source.column]);
-      if (slope === null || intercept === null) {
-        continue;
-      }
+	const equipmentTrendlines = useMemo<
+		Partial<Record<EquipmentKey, EquipmentTrendline>>
+	>(() => {
+		const coeffs = outputs.coefficients ?? [];
+		if (coeffs.length <= TRENDLINE_INTERCEPT_ROW_INDEX) {
+			return {};
+		}
+		const slopeRow = coeffs[TRENDLINE_SLOPE_ROW_INDEX];
+		const interceptRow = coeffs[TRENDLINE_INTERCEPT_ROW_INDEX];
+		if (!slopeRow || !interceptRow) {
+			return {};
+		}
+		const map: Partial<Record<EquipmentKey, EquipmentTrendline>> = {};
+		for (const [key, source] of Object.entries(TRENDLINE_SOURCES) as Array<
+			[EquipmentKey, TrendlineSourceConfig]
+		>) {
+			const slope = toFiniteNumber(slopeRow?.[source.column]);
+			const intercept = toFiniteNumber(interceptRow?.[source.column]);
+			if (slope === null || intercept === null) {
+				continue;
+			}
       map[key] = {
         coefficients: { slope, intercept },
         annotation: source.annotation,
@@ -313,22 +333,27 @@ const EconomicEvaluationWithGraph = ({
     return map;
   }, [outputs.coefficients]);
 
-  const timelineTrendlines = useMemo<
-    Partial<Record<TimelineKind, EquipmentTrendline>>
-  >(() => {
-    const coeffs = outputs.coefficients ?? [];
-    if (coeffs.length < 3) {
-      return {};
-    }
-    const map: Partial<Record<TimelineKind, EquipmentTrendline>> = {};
-    for (const [key, source] of Object.entries(
-      TIMELINE_TRENDLINE_SOURCES
-    ) as Array<[TimelineKind, TrendlineSourceConfig]>) {
-      const slope = toFiniteNumber(coeffs[1]?.[source.column]);
-      const intercept = toFiniteNumber(coeffs[2]?.[source.column]);
-      if (slope === null || intercept === null) {
-        continue;
-      }
+	const timelineTrendlines = useMemo<
+		Partial<Record<TimelineKind, EquipmentTrendline>>
+	>(() => {
+		const coeffs = outputs.coefficients ?? [];
+		if (coeffs.length <= TRENDLINE_INTERCEPT_ROW_INDEX) {
+			return {};
+		}
+		const slopeRow = coeffs[TRENDLINE_SLOPE_ROW_INDEX];
+		const interceptRow = coeffs[TRENDLINE_INTERCEPT_ROW_INDEX];
+		if (!slopeRow || !interceptRow) {
+			return {};
+		}
+		const map: Partial<Record<TimelineKind, EquipmentTrendline>> = {};
+		for (const [key, source] of Object.entries(
+			TIMELINE_TRENDLINE_SOURCES
+		) as Array<[TimelineKind, TrendlineSourceConfig]>) {
+			const slope = toFiniteNumber(slopeRow?.[source.column]);
+			const intercept = toFiniteNumber(interceptRow?.[source.column]);
+			if (slope === null || intercept === null) {
+				continue;
+			}
       map[key] = {
         coefficients: { slope, intercept },
         annotation: source.annotation,
@@ -377,6 +402,55 @@ const EconomicEvaluationWithGraph = ({
     setActiveTab((prev) => prev ?? "basic");
     void refreshOutputs();
   }, [showModal, refreshOutputs]);
+
+  const handleInputUpdate = useCallback(async () => {
+    if (updatingInputs) {
+      return;
+    }
+
+    if (hasInvalidInputs) {
+      window.alert("시뮬레이터 입력값을 먼저 확인하세요.");
+      return;
+    }
+
+    if (typeof window === "undefined" || !window.electronAPI?.runExe) {
+      window.alert("실행 기능을 사용할 수 없습니다.");
+      return;
+    }
+
+    const payload = collectScenarioInputValues(selectedScenario);
+    if (!payload) {
+      window.alert("실행할 시나리오가 선택되지 않았습니다.");
+      return;
+    }
+
+	setUpdatingInputs(true);
+	try {
+		useSimulationStore.getState().stop();
+		const result = await window.electronAPI.runExe({
+			...payload,
+			skipExe: skipRunExe,
+		});
+		if (Array.isArray(result?.frames)) {
+			useSimulationStore.getState().setFrames(result.frames);
+			useSimulationOutputStore.getState().setOutput(result.frames, {
+				sourceDate: result.outputDate ?? null,
+			});
+		}
+		await refreshOutputs();
+	} catch (error) {
+      console.error("Failed to update economic inputs", error);
+      window.alert("입력 데이터를 업데이트하지 못했습니다. 다시 시도해주세요.");
+    } finally {
+      setUpdatingInputs(false);
+    }
+  }, [
+    hasInvalidInputs,
+    selectedScenario,
+    skipRunExe,
+	refreshOutputs,
+	updatingInputs,
+]);
 
   const equipmentStates = useEconomicEvaluationStore(
     (state) => state.equipment
@@ -478,15 +552,19 @@ const EconomicEvaluationWithGraph = ({
             </button>
             <button
               type="button"
-              onClick={() => void refreshOutputs()}
-              disabled={loadingOutputs}
+              onClick={() => void handleInputUpdate()}
+              disabled={loadingOutputs || updatingInputs}
               className={`rounded-md border border-emerald-500 px-3 py-1 text-xs transition ${
-                loadingOutputs
+                loadingOutputs || updatingInputs
                   ? "cursor-not-allowed bg-emerald-500/10 text-emerald-200"
                   : "text-emerald-200 hover:bg-emerald-500/10"
               }`}
             >
-              {loadingOutputs ? "불러오는 중..." : "입력 데이터 업데이트"}
+              {updatingInputs
+                ? "재계산 중..."
+                : loadingOutputs
+                ? "불러오는 중..."
+                : "입력 데이터 업데이트"}
             </button>
             <button
               type="button"

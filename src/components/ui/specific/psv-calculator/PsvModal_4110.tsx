@@ -1,5 +1,6 @@
 import SFC4110 from "@/assets/sfc/sfc_4110.png";
 import { DEVICES } from "@/constants/devices";
+import useOutputTotalDownloader from "@/hooks/useOutputTotalDownloader";
 import { usePsvSimulation } from "@/hooks/usePsvSimulation";
 import { useInteractionStore } from "@/store/useInteractionStore";
 import type { DeviceProperty, ScenarioInterface } from "@/types";
@@ -75,11 +76,11 @@ const CHART_VARIABLES: ChartVariable[] = [
 	{ key: "P_TkAccL", name: "P_TkAccL", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "P_TkOpFullL", name: "P_TkOpFullL", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "P_TkOpStartL", name: "P_TkOpStartL", unit: "-", plotId: "PlotPSVLBk1" },
-	{ key: "P_TkL", name: "P_TkL", unit: "-", plotId: "PlotPSVLBk1" },
+	{ key: "P_TkL_1", name: "P_TkL_1", unit: "-", plotId: "PlotPSVLBk1" },
 	{ key: "W_Req_kgsL", name: "W_Req_kgsL", unit: "-", plotId: "PlotPSVLBk2" },
 	{ key: "W_OpFullL", name: "W_OpFullL", unit: "-", plotId: "PlotPSVLBk2" },
-	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk2" },
-	{ key: "W_OutL", name: "W_OutL", unit: "-", plotId: "PlotPSVLBk3" },
+	{ key: "W_OutLs", name: "W_OutLs", unit: "-", plotId: "PlotPSVLBk2" },
+	{ key: "W_OutLh", name: "W_OutLh", unit: "-", plotId: "PlotPSVLBk3" },
 	{ key: "SD_1PL", name: "SD_1PL", unit: "-", plotId: "PlotPSVLBk3" },
 ];
 
@@ -97,19 +98,22 @@ export const PsvModal_4110: FC<PsvCalculatorModalProps> = () => {
   const inputProps = useMemo(() => flattenProps(GROUPS, "input"), []);
   const outputProps = useMemo(() => flattenProps(GROUPS, "output"), []);
 
-  const {
-    inputs,
-    outputs,
-    chartData,
-    running,
-    runSimulation,
-    setInputValue,
-    loadInputs,
-  } = usePsvSimulation({
-    sfc: "4110",
-    inputProps,
-    outputProps,
-  });
+	const {
+		inputs,
+		outputs,
+		chartData,
+		running,
+		outputDate,
+		runSimulation,
+		setInputValue,
+		loadInputs,
+	} = usePsvSimulation({
+		sfc: "4110",
+		inputProps,
+		outputProps,
+	});
+
+	const downloadOutputTotal = useOutputTotalDownloader(outputDate);
 
   const { typeTabs, activeType, selectType } = usePsvTypeTabs({
     sfc: "4110",
@@ -218,13 +222,14 @@ export const PsvModal_4110: FC<PsvCalculatorModalProps> = () => {
           ))}
         </div>
 
-        <PsvButtons
-          onClose={() => setPsvOpen(false)}
-          onRun={handleRun}
-          onOpenChart={handleOpenChart}
-          disabled={running}
-          chartDisabled={chartData.length === 0}
-        />
+		<PsvButtons
+			onClose={() => setPsvOpen(false)}
+			onRun={handleRun}
+			onOpenChart={handleOpenChart}
+			onSave={downloadOutputTotal}
+			disabled={running}
+			chartDisabled={chartData.length === 0}
+		/>
 
         {running && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-sm text-white">

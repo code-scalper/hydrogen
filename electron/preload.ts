@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("read-economic-evaluation", payload),
   downloadReportFiles: (payload?: { date?: string }) =>
     ipcRenderer.invoke("download-report-files", payload),
+  downloadOutputTotal: (payload?: { date?: string }) =>
+    ipcRenderer.invoke("download-output-total", payload),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {
