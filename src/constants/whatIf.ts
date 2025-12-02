@@ -153,27 +153,30 @@ export type WhatIfScenario5110TypeId = keyof typeof SCENARIO_5110_DEFAULTS;
 const scenarioValueToString = (value: number | string | boolean): string =>
   typeof value === "boolean" ? (value ? "1" : "0") : `${value}`;
 
-const withScenarioDefaults = <T extends Record<string, string>>(
+const withScenarioDefaults = <T extends object>(
   typeId: WhatIfScenario5110TypeId,
   keys: string[],
   fallback: T
 ): T => {
-  const scenarioDefaults = SCENARIO_5110_DEFAULTS[typeId];
-  const next = { ...fallback };
+  const scenarioDefaults = SCENARIO_5110_DEFAULTS[
+    typeId
+  ] as Record<string, number | string | boolean> | undefined;
+  const next = { ...fallback } as Record<string, string>;
+  const fallbackRecord = fallback as Record<string, string>;
   if (!scenarioDefaults) {
-    return next;
+    return next as T;
   }
 
   for (const key of keys) {
     const raw = scenarioDefaults[key];
     if (raw === undefined || raw === null) {
-      next[key as keyof T] = fallback[key as keyof T] ?? "";
+      next[key] = fallbackRecord[key] ?? "";
       continue;
     }
-    next[key as keyof T] = scenarioValueToString(raw);
+    next[key] = scenarioValueToString(raw);
   }
 
-  return next;
+  return next as T;
 };
 
 const scenarioRadioLabel = (typeId: string) => {
