@@ -63,8 +63,18 @@ const BaseContentHeader = () => {
   const hasOutputData = outputFrames.length > 0;
   const [graphModalOpen, setGraphModalOpen] = useState(false);
   const graphButtonDisabled = !hasOutputData && !outputLoading;
-  const graphButtonLabel =
-    outputLoading && !hasOutputData ? "불러오는 중..." : "그래프 확인";
+	const graphButtonLabel =
+		outputLoading && !hasOutputData ? "불러오는 중..." : "그래프 확인";
+
+	const handleGraphButtonClick = () => {
+		console.log("[GraphModal] open requested", {
+			frameCount: outputFrames.length,
+			loading: outputLoading,
+			error: outputError,
+			sourceDate: outputSourceDate,
+		});
+		setGraphModalOpen(true);
+	};
 
   useEffect(() => {
     if (outputFrames.length === 0) {
@@ -174,10 +184,10 @@ const BaseContentHeader = () => {
           >
             로그 확인
           </Button>
-          <Button
-            variant="solid"
-            radius="none"
-            disabled={graphButtonDisabled}
+			<Button
+				variant="solid"
+				radius="none"
+				disabled={graphButtonDisabled}
             className={`!text-slate-200 ${
               hasOutputData
                 ? "!bg-slate-700 hover:!bg-slate-600"
@@ -185,8 +195,8 @@ const BaseContentHeader = () => {
                 ? "!bg-slate-700/70 !cursor-wait"
                 : "!bg-slate-800/60 !text-slate-500 cursor-not-allowed"
             }`}
-            onClick={() => setGraphModalOpen(true)}
-          >
+				onClick={handleGraphButtonClick}
+			>
             {graphButtonLabel}
           </Button>
         </div>
