@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {"ts":"2025-12-03 22:07:10","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
 {"ts":"2025-12-03 22:07:22","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
 {"ts":"2025-12-03 22:07:22","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
@@ -24,3 +25,70 @@
 {"ts":"2025-12-03 22:07:42","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
 {"ts":"2025-12-03 22:07:42","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
 {"ts":"2025-12-03 22:07:42","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+=======
+<<<<<<< HEAD
+{"ts":"2025-12-02 18:18:16","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-12-02 18:18:34","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-12-02 18:18:34","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-12-02 18:18:36","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-12-02 18:18:36","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-12-02 18:18:42","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-12-02 18:18:42","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-12-02 18:18:42","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-12-02 18:18:42","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-12-02 18:18:48","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:18:49","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:18:50","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:18:51","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:18:54","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-12-02 18:18:57","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-12-02 18:18:57","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-12-02 18:18:57","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-12-02 18:18:57","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+{"ts":"2025-12-02 18:20:10","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-12-02 18:20:12","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-12-02 18:20:12","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-12-02 18:20:12","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-12-02 18:20:12","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-12-02 18:20:13","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-12-02 18:20:13","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-12-02 18:20:13","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-12-02 18:20:13","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:15","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-12-02 18:20:16","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-12-02 18:20:17","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-12-02 18:20:17","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-12-02 18:20:17","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-12-02 18:20:17","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+=======
+{"ts":"2025-10-24 09:30:25","level":"PRG","code":"PRG0101","desc":"초기화 시작","solution":{"ko":"초기화를 시작합니다.","en":"Initialization starting."}}
+{"ts":"2025-10-24 09:30:29","level":"INF","code":"INF0150","desc":"패스워드 검증 통과","solution":{"ko":"패스워드 검증을 통과했습니다.","en":"Input password verified."}}
+{"ts":"2025-10-24 09:30:29","level":"PRG","code":"PRG0201","desc":"입력 로드 시작","solution":{"ko":"입력 데이터를 불러오는 중입니다.","en":"Loading inputs."}}
+{"ts":"2025-10-24 09:30:29","level":"INF","code":"INF0290","desc":"입력 로드 완료","solution":{"ko":"입력 로드를 완료했습니다.","en":"Inputs loaded."}}
+{"ts":"2025-10-24 09:30:29","level":"PRG","code":"PRG0401","desc":"실행 준비(파라미터 설정)","solution":{"ko":"실행 준비 중입니다.","en":"Configuring run."}}
+{"ts":"2025-10-24 09:30:30","level":"INF","code":"INF0490","desc":"실행 준비 완료","solution":{"ko":"실행을 준비했습니다.","en":"Pre-run configured."}}
+{"ts":"2025-10-24 09:30:30","level":"PRG","code":"PRG0501","desc":"시뮬레이션 실행 시작","solution":{"ko":"시뮬레이션을 시작합니다.","en":"Simulation starting."}}
+{"ts":"2025-10-24 09:30:30","level":"PRG","code":"PRG0601","desc":"입력 검증 시작","solution":{"ko":"검증 중입니다.","en":"Validating inputs."}}
+{"ts":"2025-10-24 09:30:31","level":"INF","code":"INF0690","desc":"검증 통과","solution":{"ko":"입력 검증이 완료되었습니다.","en":"Validation passed."}}
+{"ts":"2025-10-24 09:30:33","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-10-24 09:30:34","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-10-24 09:30:35","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-10-24 09:30:35","level":"ERR","code":"ERR1100","desc":"For Error Log Test.","solution":{"ko":"If this Error Log appears, it is normal.","en":"If this Error Log appears, it is normal."}}
+{"ts":"2025-10-24 09:30:37","level":"PRG","code":"PRG0801","desc":"결과 저장 시작","solution":{"ko":"결과 저장 중입니다.","en":"Saving outputs."}}
+{"ts":"2025-10-24 09:30:38","level":"INF","code":"INF0890","desc":"결과 저장 완료","solution":{"ko":"결과 파일을 확인해 주세요.","en":"Outputs saved."}}
+{"ts":"2025-10-24 09:30:38","level":"INF","code":"INF0980","desc":"시뮬레이션 정상 종료","solution":{"ko":"시뮬레이션이 완료되었습니다.","en":"Simulation finished."}}
+{"ts":"2025-10-24 09:30:38","level":"PRG","code":"PRG0985","desc":"정리 시작","solution":{"ko":"정리 작업을 시작합니다.","en":"Finalizing."}}
+{"ts":"2025-10-24 09:30:38","level":"INF","code":"INF0990","desc":"정상 종료","solution":{"ko":"프로그램을 종료해도 좋습니다.","en":"Run completed successfully."}}
+>>>>>>> 15ec33d703bb2c3c9e7bfb58d41402b2d7796310
+>>>>>>> 1879ba9b34269db6455f65aaad72df187cd6a041

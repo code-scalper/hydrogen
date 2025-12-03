@@ -73,35 +73,14 @@ const DIAGRAM = {
 };
 
 const CHART_VARIABLES: ChartVariable[] = [
-  { key: "SOC_Tk1_3", name: "SOC_Tk1_3", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "m_HFP1_1", name: "m_HFP1_1", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "APRR1_1", name: "APRR1_1", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "P_Ba1_1", name: "P_Ba1_1", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "P_Tk1_3", name: "P_Tk1_3", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "T_Tk1_1", name: "T_Tk1_1", unit: "-", plotId: "PlotDisp1 · Fueling State" },
-  { key: "D1Step", name: "D1Step", unit: "-", plotId: "PlotDisp1 · Fueling Step" },
-  { key: "DeFuel1_LBk", name: "DeFuel1_LBk", unit: "-", plotId: "PlotDisp1 · Cascade Flow Rate" },
-  { key: "DeFuel1_MBk", name: "DeFuel1_MBk", unit: "-", plotId: "PlotDisp1 · Cascade Flow Rate" },
-  { key: "DeFuel1_HBk", name: "DeFuel1_HBk", unit: "-", plotId: "PlotDisp1 · Cascade Flow Rate" },
-  { key: "P_Tk1_4", name: "P_Tk1_4", unit: "-", plotId: "PlotDisp1 · Mobility Tank Pressure" },
-  { key: "SOC_Tk2_1", name: "SOC_Tk2_1", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "m_HFP2", name: "m_HFP2", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "APRR2", name: "APRR2", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "P_Ba2", name: "P_Ba2", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "P_Tk2_1", name: "P_Tk2_1", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "T_Tk2", name: "T_Tk2", unit: "-", plotId: "PlotDisp2 · Fueling State" },
-  { key: "D2Step", name: "D2Step", unit: "-", plotId: "PlotDisp2 · Fueling Step" },
-  { key: "DeFuel2_LBk", name: "DeFuel2_LBk", unit: "-", plotId: "PlotDisp2 · Cascade Flow Rate" },
-  { key: "DeFuel2_MBk", name: "DeFuel2_MBk", unit: "-", plotId: "PlotDisp2 · Cascade Flow Rate" },
-  { key: "DeFuel2_HBk", name: "DeFuel2_HBk", unit: "-", plotId: "PlotDisp2 · Cascade Flow Rate" },
-  { key: "P_Tk2_2", name: "P_Tk2_2", unit: "-", plotId: "PlotDisp2 · Mobility Tank Pressure" },
-  { key: "SOC_Tk1_1", name: "SOC_Tk1_1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "m_HFP1", name: "m_HFP1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "APRR1", name: "APRR1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "P_Ba1", name: "P_Ba1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "T_Ba1", name: "T_Ba1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "P_Tk1", name: "P_Tk1", unit: "-", plotId: "Plot1TimeFu" },
-  { key: "T_Tk1", name: "T_Tk1", unit: "-", plotId: "Plot1TimeFu" },
+	// Only keep the 1TimeFu chart so the modal renders a single graph instead of nine panels.
+	{ key: "SOC_Tk1_1", name: "SOC_Tk1_1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "m_HFP1", name: "m_HFP1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "APRR1", name: "APRR1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "P_Ba1", name: "P_Ba1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "T_Ba1", name: "T_Ba1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "P_Tk1", name: "P_Tk1", unit: "-", plotId: "Plot1TimeFu" },
+	{ key: "T_Tk1", name: "T_Tk1", unit: "-", plotId: "Plot1TimeFu" },
 ];
 
 const flattenProps = (groups: GroupDefinition[], kind: GroupKind) =>

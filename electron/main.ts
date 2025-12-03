@@ -760,7 +760,12 @@ ipcMain.handle(
         fs.copyFileSync(file.path, destination);
         saved.push(destination);
       } catch (error) {
-        console.error("Failed to copy report file", file.path, destination, error);
+        console.error(
+          "Failed to copy report file",
+          file.path,
+          destination,
+          error
+        );
         return { success: false, reason: "COPY_FAILED", file: file.name };
       }
     }

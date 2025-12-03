@@ -16367,7 +16367,16 @@ ipcMain$1.handle(
         fs$1.copyFileSync(file.path, destination);
         saved.push(destination);
       } catch (error2) {
+<<<<<<< HEAD
         console.error("Failed to copy report file", file.path, destination, error2);
+=======
+        console.error(
+          "Failed to copy report file",
+          file.path,
+          destination,
+          error2
+        );
+>>>>>>> 1879ba9b34269db6455f65aaad72df187cd6a041
         return { success: false, reason: "COPY_FAILED", file: file.name };
       }
     }

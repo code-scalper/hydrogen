@@ -130,15 +130,19 @@ const modalContainerClass =
 const contentClass =
 	"flex h-full max-h-[90vh] w-full max-w-7xl overflow-hidden rounded-lg border border-slate-700 bg-slate-900/95 shadow-2xl";
 
-export const SimulationGraphModal = ({
-	isOpen,
+type SimulationGraphModalContentProps = Omit<
+	SimulationGraphModalProps,
+	"isOpen"
+>;
+
+const SimulationGraphModalContent = ({
 	onClose,
 	frames,
 	sourceDate,
 	loading = false,
 	error = null,
 	onReload,
-}: SimulationGraphModalProps) => {
+}: SimulationGraphModalContentProps) => {
 	const sortedFrames = useMemo(() => {
 		if (frames.length < 2) {
 			return frames;
@@ -192,15 +196,8 @@ export const SimulationGraphModal = ({
 	);
 
 	useEffect(() => {
-		if (!isOpen) {
-			return;
-		}
 		setActiveGroupId((previous) => previous ?? firstAvailableGroupId);
-	}, [firstAvailableGroupId, isOpen]);
-
-	if (!isOpen) {
-		return null;
-	}
+	}, [firstAvailableGroupId]);
 
 	const activeGroup = OUTPUT_CHART_GROUPS.find(
 		(group) => group.id === activeGroupId,
@@ -455,6 +452,17 @@ export const SimulationGraphModal = ({
 			</div>
 		</div>
 	);
+};
+
+export const SimulationGraphModal = ({
+	isOpen,
+	...rest
+}: SimulationGraphModalProps) => {
+	if (!isOpen) {
+		return null;
+	}
+
+	return <SimulationGraphModalContent {...rest} />;
 };
 
 export default SimulationGraphModal;

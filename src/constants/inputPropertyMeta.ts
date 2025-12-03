@@ -477,7 +477,7 @@ export const INPUT_PROPERTY_META: Record<string, InputPropertyMeta> = {
   },
   D2On: {
     name: "디스펜서 2 적용 여부",
-    description: "Dispenser 2 (1)적용, (0)미적용",
+    description: "Dispenser 2 (0)적용, (1)미적용",
     unit: "-",
     min: 0,
     max: 1,
