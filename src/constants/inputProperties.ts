@@ -2347,8 +2347,13 @@ const INPUT_PROPERTIES_BASE = {
     unit: "-",
     description: "Dispenser 2 Step 10",
     io: "input",
-    type: "select",
+    type: "radio",
     displayOnDiagram: true,
+
+    options: [
+      { id: "0", name: "사용" },
+      { id: "1", name: "미사용" },
+    ],
     x: 0.425,
     y: 0.51,
     order: 153,
