@@ -59,20 +59,20 @@ declare global {
 			}) => Promise<
 				| { success: true; files: string[]; date: string; opened: boolean }
 				| {
-						 success: false;
-						 reason: "NO_OUTPUT_DIR" | "MISSING_FILES" | "COPY_FAILED";
-						 missing?: string[];
-						 file?: string;
-				   }
+						success: false;
+						reason: "NO_OUTPUT_DIR" | "MISSING_FILES" | "COPY_FAILED";
+						missing?: string[];
+						file?: string;
+				  }
 			>;
 			downloadOutputTotal: (payload?: {
 				date?: string;
 			}) => Promise<
 				| { success: true; file: string; date: string; opened: boolean }
 				| {
-						 success: false;
-						 reason: "NO_OUTPUT_DIR" | "MISSING_FILE" | "COPY_FAILED";
-				   }
+						success: false;
+						reason: "NO_OUTPUT_DIR" | "MISSING_FILE" | "COPY_FAILED";
+				  }
 			>;
 		};
 		electronStore: {

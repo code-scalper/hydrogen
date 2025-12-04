@@ -2,8 +2,8 @@ import { useBasicDataStore } from "@/store/useBasicDataStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useEffect, useMemo, useState } from "react";
 import LabeledInput from "../LabelInput";
-import LabelSelect from "../LabelSelect";
 import LabelRadioGroup from "../LabelRadioGroup";
+import LabelSelect from "../LabelSelect";
 
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
@@ -83,7 +83,10 @@ export const AdjustBasicDataModal = ({
 		debouncedUpdateValue(key, val);
 	};
 
-	const renderField = (input: (typeof scenarioBaseData)[number], index: number) => {
+	const renderField = (
+		input: (typeof scenarioBaseData)[number],
+		index: number,
+	) => {
 		if (input.type === "text") {
 			return (
 				<LabeledInput

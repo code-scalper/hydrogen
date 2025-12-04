@@ -149,7 +149,7 @@ export const usePsvSimulation = ({
 			setStatus("simulation failed");
 			throw error;
 		} finally {
-		setRunning(false);
+			setRunning(false);
 		}
 	}, [inputKeys, inputs, openAnalysisModal, outputKeys, sfc, skipRunExe]);
 

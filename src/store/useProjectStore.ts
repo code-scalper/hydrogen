@@ -544,12 +544,18 @@ export const useProjectStore = create<ProjectState>()(
 					(candidate) => candidate.id === device.id,
 				) as DeviceInterface | undefined;
 
+				const shouldSyncScenario =
+					state.selectedScenario?.id === device.scenarioId;
+
 				set({
 					folderList: updatedFolderList,
 					selectedDevice:
 						state.selectedDevice && state.selectedDevice.id === device.id
-							? updatedDevice ?? state.selectedDevice
+							? (updatedDevice ?? state.selectedDevice)
 							: state.selectedDevice,
+					selectedScenario: shouldSyncScenario
+						? (updatedScenario ?? state.selectedScenario)
+						: state.selectedScenario,
 				});
 			},
 

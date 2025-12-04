@@ -56,7 +56,7 @@ const ChartModal: FC<ChartModalProps> = ({
 		return () => {
 			window.clearTimeout(timer);
 		};
-	}, [open, data, type]);
+	}, [open]);
 
 	if (!open) return null;
 
@@ -95,18 +95,18 @@ const ChartModal: FC<ChartModalProps> = ({
 
 				<h2 className="text-xl font-bold mb-4">📊 Chart Preview ({type})</h2>
 
-			{/* 차트 영역 */}
-			<div className="flex-1 overflow-auto relative">
-				{renderChart()}
-				{isPreparing && (
-					<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/80 text-gray-700">
-						<div className="h-10 w-10 rounded-full border-2 border-gray-300 border-t-gray-600 animate-spin" />
-						<p className="text-base font-semibold">
-							미리 그래프를 그리는중입니다...
-						</p>
-					</div>
-				)}
-			</div>
+				{/* 차트 영역 */}
+				<div className="flex-1 overflow-auto relative">
+					{renderChart()}
+					{isPreparing && (
+						<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/80 text-gray-700">
+							<div className="h-10 w-10 rounded-full border-2 border-gray-300 border-t-gray-600 animate-spin" />
+							<p className="text-base font-semibold">
+								미리 그래프를 그리는중입니다...
+							</p>
+						</div>
+					)}
+				</div>
 
 				{/* 테이블 영역 (옵션) */}
 				{showTable && variables && <ChartVariableTable variables={variables} />}

@@ -90,10 +90,10 @@ export const CreateScenarioModal = ({
 			scenarios
 				.filter((scenario) => !HIDDEN_SCENARIOS.has(scenario.id))
 				.map((scenario) => ({
-				label: scenario.sfcName,
-				key: scenario.id,
-				data: scenario,
-				disabled: DISABLED_SCENARIOS.has(scenario.id),
+					label: scenario.sfcName,
+					key: scenario.id,
+					data: scenario,
+					disabled: DISABLED_SCENARIOS.has(scenario.id),
 				})) || [];
 		return items ? items : [];
 	}, [scenarios]);

@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import PlotlyWrapper from "@/components/ui/PlotlyWrapper";
 import { WHAT_IF_BASIC_FIELDS } from "@/constants/whatIf";
 import useWhatIfStore from "@/store/useWhatIfStore";
@@ -20,13 +22,23 @@ export const WhatIfAnalisys = ({
 	setShowModal,
 	handleEvent,
 }: WhatIfAnalysisProps) => {
-	const { dataset, normalized, loading } = useWhatIfStore();
+	const dataset = useWhatIfStore((state) => state.dataset);
+	const normalized = useWhatIfStore((state) => state.normalized);
+	const loading = useWhatIfStore((state) => state.loading);
+	const setLoading = useWhatIfStore((state) => state.setLoading);
+
+	const close = () => {
+		setShowModal(false);
+		setLoading(false);
+	};
+
+	const handlePlotRendered = useCallback(() => {
+		setLoading(false);
+	}, [setLoading]);
 
 	if (!showModal) {
 		return null;
 	}
-
-	const close = () => setShowModal(false);
 
 	const chartData = (): Partial<Plotly.Data>[] => {
 		if (!dataset) {
@@ -188,8 +200,14 @@ export const WhatIfAnalisys = ({
 											plot_bgcolor: "rgba(15, 23, 42, 0.8)",
 										}}
 										config={{ responsive: true, displaylogo: false }}
-										onInitialized={plotEvents.onInitialized}
-										onUpdate={plotEvents.onUpdate}
+										onInitialized={(figure, graphDiv) => {
+											plotEvents.onInitialized?.(figure, graphDiv);
+											handlePlotRendered();
+										}}
+										onUpdate={(figure, graphDiv) => {
+											plotEvents.onUpdate?.(figure, graphDiv);
+											handlePlotRendered();
+										}}
 										style={{ width: "100%", height: "100%" }}
 									/>
 								)}

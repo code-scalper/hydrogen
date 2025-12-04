@@ -250,10 +250,7 @@ const SimulationGraphModalContent = ({
 			}
 			renderedChartsRef.current.add(chartId);
 			setChartRenderProgress((previous) => {
-				const nextCompleted = Math.min(
-					previous.total,
-					previous.completed + 1,
-				);
+				const nextCompleted = Math.min(previous.total, previous.completed + 1);
 				if (nextCompleted === previous.completed) {
 					return previous;
 				}
@@ -401,12 +398,12 @@ const SimulationGraphModalContent = ({
 					</div>
 					<div className="flex-1 overflow-y-auto">
 						<ul className="divide-y divide-slate-800 text-sm text-slate-300">
-					{OUTPUT_CHART_GROUPS.map((group) => {
-						const groupHasData = group.charts.some((chart) =>
-							chart.series.some((series) =>
-								availableSeries.has(series.key),
-							),
-						);
+							{OUTPUT_CHART_GROUPS.map((group) => {
+								const groupHasData = group.charts.some((chart) =>
+									chart.series.some((series) =>
+										availableSeries.has(series.key),
+									),
+								);
 								const isActive = group.id === activeGroupId;
 								return (
 									<li key={group.id}>

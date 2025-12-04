@@ -49,7 +49,9 @@ export const useOutputTotalDownloader = (date: string | null) => {
 				return;
 			}
 
-			window.alert("Output_Total.csv 파일을 다운로드했습니다. (다운로드 폴더 확인)");
+			window.alert(
+				"Output_Total.csv 파일을 다운로드했습니다. (다운로드 폴더 확인)",
+			);
 		} catch (error) {
 			console.error("download-output-total", error);
 			window.alert("파일을 다운로드하지 못했습니다.");

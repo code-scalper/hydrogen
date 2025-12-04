@@ -10,7 +10,7 @@ import type {
 	ProjectInterface,
 	ScenarioInterface,
 } from "@/types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BaseToast from "../BaseToast";
 
@@ -53,6 +53,7 @@ export const CreateDeviceModal = ({
 	// };
 
 	const [showExtra, setShowExtra] = useState(false);
+	const [pendingProps, setPendingProps] = useState<DeviceProperty[]>([]);
 
 	const scenarioDefaults = useMemo<ScenarioDefaultValue | undefined>(() => {
 		if (!selectedDevice) {
@@ -111,9 +112,10 @@ export const CreateDeviceModal = ({
 				const existingValue = hasMeaningfulValue(prop.value)
 					? `${prop.value}`
 					: "";
-				const nextValue = existingValue.length > 0
-					? existingValue
-					: resolvedDefault ?? prop.value ?? "";
+				const nextValue =
+					existingValue.length > 0
+						? existingValue
+						: (resolvedDefault ?? prop.value ?? "");
 
 				return {
 					...prop,
@@ -125,6 +127,14 @@ export const CreateDeviceModal = ({
 		[scenarioDefaults],
 	);
 
+	useEffect(() => {
+		if (!selectedDevice) {
+			setPendingProps([]);
+			return;
+		}
+		setPendingProps(hydrateProps(selectedDevice.props));
+	}, [hydrateProps, selectedDevice]);
+
 	const resetPropsToDefault = useCallback(() => {
 		if (!selectedDevice) return;
 		const confirmed = window.confirm(
@@ -133,21 +143,81 @@ export const CreateDeviceModal = ({
 		if (!confirmed) {
 			return;
 		}
-		const nextProps = selectedDevice.props.map((prop) => {
-			const fallback = prop.defaultValue ?? "";
-			updateDevicePropValue(selectedDevice, prop.key, fallback);
-			return { ...prop, value: fallback };
-		});
-		setSelectedDevice({ ...selectedDevice, props: nextProps });
-	}, [selectedDevice, updateDevicePropValue, setSelectedDevice]);
+		setPendingProps((previous) =>
+			previous.map((prop) => ({
+				...prop,
+				value: prop.defaultValue ?? "",
+			})),
+		);
+	}, [selectedDevice]);
 
-	const [properties1, properties2] = useMemo(() => {
-		const allProps = hydrateProps(selectedDevice?.props);
-		const half = Math.ceil(allProps.length / 2);
-		const first = allProps.slice(0, half);
-		const second = allProps.slice(half);
-		return [first, second];
-	}, [selectedDevice, hydrateProps]);
+	const { firstProps, secondProps, splitIndex } = useMemo(() => {
+		const half = Math.ceil(pendingProps.length / 2);
+		return {
+			firstProps: pendingProps.slice(0, half),
+			secondProps: pendingProps.slice(half),
+			splitIndex: half,
+		};
+	}, [pendingProps]);
+
+	const handlePendingPropChange = useCallback(
+		(propIndex: number, value: string) => {
+			setPendingProps((previous) => {
+				if (!previous[propIndex]) {
+					return previous;
+				}
+				const next = [...previous];
+				next[propIndex] = { ...next[propIndex], value };
+				return next;
+			});
+		},
+		[],
+	);
+
+	const hasPendingChanges = useMemo(() => {
+		if (!selectedDevice) {
+			return false;
+		}
+		const originalProps = selectedDevice.props ?? [];
+		if (originalProps.length !== pendingProps.length) {
+			return true;
+		}
+		return pendingProps.some((prop, index) => {
+			const original = originalProps[index];
+			return `${original?.value ?? ""}` !== `${prop.value ?? ""}`;
+		});
+	}, [pendingProps, selectedDevice]);
+
+	const handleApplyChanges = useCallback(() => {
+		if (!selectedDevice || pendingProps.length === 0) {
+			return;
+		}
+		if (!hasPendingChanges) {
+			return;
+		}
+		const originalProps = selectedDevice.props ?? [];
+		pendingProps.forEach((prop, index) => {
+			if (!prop.key) {
+				return;
+			}
+			const nextValue = `${prop.value ?? ""}`;
+			const prevValue = `${originalProps[index]?.value ?? ""}`;
+			if (nextValue === prevValue) {
+				return;
+			}
+			updateDevicePropValue(selectedDevice, prop.key, nextValue);
+		});
+		setSelectedDevice({
+			...selectedDevice,
+			props: pendingProps.map((prop) => ({ ...prop })),
+		});
+	}, [
+		hasPendingChanges,
+		pendingProps,
+		selectedDevice,
+		setSelectedDevice,
+		updateDevicePropValue,
+	]);
 
 	const parentProject = useMemo<ProjectInterface | null>(() => {
 		const target = folders.find(
@@ -207,16 +277,18 @@ export const CreateDeviceModal = ({
 								items={devices}
 								displayProperty="name"
 								selectedId={selectedDevice?.id}
-								onItemClick={(device) =>
+								onItemClick={(device) => {
+									const hydratedProps = hydrateProps(device.props);
 									setSelectedDevice({
 										...device,
-										props: hydrateProps(device.props),
+										props: hydratedProps,
 										outputProps: hydrateProps(
 											(device.outputProps as DeviceProperty[] | undefined) ??
 												[],
 										),
-									})
-								}
+									});
+									setPendingProps(hydratedProps);
+								}}
 							/>
 						</div>
 						<div className="space-y-3 flex-1">
@@ -243,33 +315,35 @@ export const CreateDeviceModal = ({
 							{selectedDevice && (
 								<div className="flex space-x-5">
 									<div className="w-[350px] bg-gray-700 overflow-y-auto max-h-[400px]">
-										{properties1.map((prop, index) => (
-										<DevicePropertyInput
-											label={prop.name || prop.key}
-											key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
-											value={prop.value || ""}
-											unit={prop.unit}
-											type={prop.type}
-											options={prop.options}
-											onChange={(val) =>
-												updateDevicePropValue(selectedDevice, prop.key, val)
-											}
-										/>
+										{firstProps.map((prop, index) => (
+											<DevicePropertyInput
+												label={prop.name || prop.key}
+												key={`${selectedDevice?.id}-${
+													prop.key ?? index
+												}-${index}-${selectedDevice.scenarioId}`}
+												value={prop.value || ""}
+												unit={prop.unit}
+												type={prop.type}
+												options={prop.options}
+												onChange={(val) => handlePendingPropChange(index, val)}
+											/>
 										))}
 									</div>
 									<div className="w-[350px] bg-gray-700 overflow-y-auto max-h-[400px]">
-										{properties2.map((prop, index) => (
-										<DevicePropertyInput
-											label={prop.name || prop.key}
-											key={`${selectedDevice?.id}-${prop.key}-${index}-${selectedDevice.scenarioId}`}
-											value={prop.value || ""}
-											unit={prop.unit}
-											type={prop.type}
-											options={prop.options}
-											onChange={(val) =>
-												updateDevicePropValue(selectedDevice, prop.key, val)
-											}
-										/>
+										{secondProps.map((prop, index) => (
+											<DevicePropertyInput
+												label={prop.name || prop.key}
+												key={`${selectedDevice?.id}-${prop.key ?? index}-${
+													splitIndex + index
+												}-${selectedDevice.scenarioId}`}
+												value={prop.value || ""}
+												unit={prop.unit}
+												type={prop.type}
+												options={prop.options}
+												onChange={(val) =>
+													handlePendingPropChange(splitIndex + index, val)
+												}
+											/>
 										))}
 									</div>
 								</div>
@@ -285,7 +359,19 @@ export const CreateDeviceModal = ({
 								onClick={onClose}
 								className="text-xs px-4 py-1 bg-gray-500 text-gray-200 hover:bg-gray-600"
 							>
-								취소
+								닫기
+							</button>
+							<button
+								type="button"
+								onClick={handleApplyChanges}
+								disabled={!hasPendingChanges}
+								className={`text-xs px-4 py-1 font-semibold ${
+									hasPendingChanges
+										? "bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+										: "bg-gray-700/60 text-gray-400 cursor-not-allowed"
+								}`}
+							>
+								적용
 							</button>
 							{/* <button
                 onClick={onPsvClick}
@@ -298,9 +384,7 @@ export const CreateDeviceModal = ({
 				</div>
 
 				{/* 추가 정보 영역 */}
-				{showExtra && selectedDevice && (
-					<ExtraInfoPanel props={hydrateProps(selectedDevice.props)} />
-				)}
+				{showExtra && selectedDevice && <ExtraInfoPanel props={pendingProps} />}
 
 				<BaseToast open={open} setOpen={setOpen} toastMessage={toastMessage} />
 			</div>

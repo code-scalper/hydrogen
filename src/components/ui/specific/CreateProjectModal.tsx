@@ -88,13 +88,13 @@ export const CreateProjectModal = ({
 						>
 							프로젝트 설명
 						</label>
-					<TextArea
-						id={descriptionInputId}
-						placeholder=""
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						size="1" // 1 = small, 2 = default, 3 = large
-						className="!border-none !border rounded p-1 px-2 
+						<TextArea
+							id={descriptionInputId}
+							placeholder=""
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							size="1" // 1 = small, 2 = default, 3 = large
+							className="!border-none !border rounded p-1 px-2 
 						placeholder-gray-400
 						!focus:outline-none !focus:ring-2 !focus:ring-blue-800 flex-1 !bg-gray-700 !text-white"
 							onKeyDown={(e) => {
